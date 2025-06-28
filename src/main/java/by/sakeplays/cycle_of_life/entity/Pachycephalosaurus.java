@@ -44,7 +44,7 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
             return PlayState.STOP;
         }
 
-        if (getPlayer().isCreative()) {
+        if (getPlayer().getDeltaMovement().x() != 0 || getPlayer().getDeltaMovement().z() != 0) {
             return state.setAndContinue(WALK_ANIM);
         }
 
