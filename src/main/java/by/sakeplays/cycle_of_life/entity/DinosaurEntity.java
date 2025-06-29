@@ -68,4 +68,5 @@ public abstract class DinosaurEntity extends LivingEntity {
                 .add(Attributes.FOLLOW_RANGE, 24D);
     }
 
+
 }

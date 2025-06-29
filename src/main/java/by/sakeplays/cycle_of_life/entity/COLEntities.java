@@ -19,6 +19,10 @@ public class COLEntities {
             ("pachycephalosaurus", () -> EntityType.Builder.of(Pachycephalosaurus::new, MobCategory.MISC)
             .sized(0.75f, 0.75f).build("pachycephalosaurus"));
 
+    public static final Supplier<EntityType<Deinonychus>> DEINONYCHUS = ENTITY_TYPES.register
+            ("deinonychus", () -> EntityType.Builder.of(Deinonychus::new, MobCategory.MISC)
+                    .sized(0.75f, 0.75f).build("deinonychus"));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

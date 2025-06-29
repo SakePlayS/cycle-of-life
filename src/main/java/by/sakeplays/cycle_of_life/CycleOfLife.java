@@ -1,6 +1,8 @@
 package by.sakeplays.cycle_of_life;
 
+import by.sakeplays.cycle_of_life.client.entity.DeinonychusRenderer;
 import by.sakeplays.cycle_of_life.client.entity.PachycephalosaurusRenderer;
+import by.sakeplays.cycle_of_life.common.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import org.slf4j.Logger;
@@ -42,7 +44,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class CycleOfLife
 {
     public static final String MODID = "cycle_of_life";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
@@ -69,6 +71,7 @@ public class CycleOfLife
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         COLEntities.register(modEventBus);
+        DataAttachments.register(modEventBus);
 
 
         NeoForge.EVENT_BUS.register(this);
@@ -114,6 +117,7 @@ public class CycleOfLife
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
 
             EntityRenderers.register(COLEntities.PACHYCEPHALOSAURUS.get(), PachycephalosaurusRenderer::new);
+            EntityRenderers.register(COLEntities.DEINONYCHUS.get(), DeinonychusRenderer::new);
 
         }
     }

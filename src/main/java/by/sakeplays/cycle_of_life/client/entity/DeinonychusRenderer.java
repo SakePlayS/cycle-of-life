@@ -2,46 +2,45 @@ package by.sakeplays.cycle_of_life.client.entity;
 
 import by.sakeplays.cycle_of_life.common.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
-import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-public class PachycephalosaurusRenderer extends GeoEntityRenderer<Pachycephalosaurus> {
+import java.util.Optional;
 
-    float animTime = 0;
-
-    public PachycephalosaurusRenderer(EntityRendererProvider.Context renderManager) {
-        super(renderManager, new PachycephalosaurusModel());
+public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
+    public DeinonychusRenderer(EntityRendererProvider.Context renderManager) {
+        super(renderManager, new DeinonychusModel());
     }
 
     @Override
-    public void preRender(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+    public void preRender(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+
+        poseStack.scale(0.9f, 0.9f, 0.9f);
+
+        handleNeckRotation(model, animatable, partialTick);
+        handleBodyRotation(model, animatable, partialTick);
+
+    }
+
+    private void handleBodyRotation(BakedGeoModel model, Deinonychus animatable, float partialTick) {
+        float playerRot = animatable.getPlayer().getData(DataAttachments.TURN_DEGREE);
 
         if (animatable.playerId == null) {
             return;
         }
-
-        handleBodyRotation(model, animatable, partialTick);
-        handleNeckRotation(model, animatable, partialTick);
-
+        model.getBone("center").get().setRotY(Mth.lerp(partialTick, model.getBone("center").get().getRotY(), playerRot));
     }
 
-
-    private void handleBodyRotation(BakedGeoModel model, Pachycephalosaurus animatable, float partialTick) {
-
-        float playerRot = animatable.getPlayer().getData(DataAttachments.TURN_DEGREE);
-
-        model.getBone("root").get().setRotY(Mth.lerp(partialTick, model.getBone("root").get().getRotY(), playerRot));
-    }
-
-    private void handleNeckRotation(BakedGeoModel model, Pachycephalosaurus animatable, float partialTick) {
+    private void handleNeckRotation(BakedGeoModel model, Deinonychus animatable, float partialTick) {
         float playerRot = (animatable.getPlayer().getData(DataAttachments.TURN_DEGREE));
         float playerYaw = (animatable.getPlayer().getYRot() * -Mth.DEG_TO_RAD);
 
@@ -65,14 +64,14 @@ public class PachycephalosaurusRenderer extends GeoEntityRenderer<Pachycephalosa
             return;
         }
 
-        model.getBone("head_rot").get().setRotY(Mth.lerp(partialTick, model.getBone("head_rot").get().getRotY(), playerDiff * 0.8f));
-        model.getBone("neck_rot").get().setRotY(Mth.lerp(partialTick, model.getBone("neck_rot").get().getRotY(), playerDiff * 0.8f));
+        model.getBone("head_tilt").get().setRotY(Mth.lerp(partialTick, model.getBone("head_tilt").get().getRotY(), playerDiff * 0.8f));
+        model.getBone("neck_tilt").get().setRotY(Mth.lerp(partialTick, model.getBone("neck_tilt").get().getRotY(), playerDiff * 0.8f));
     }
 
     @Override
-    public long getInstanceId(Pachycephalosaurus animatable) {
+    public long getInstanceId(Deinonychus animatable) {
         return animatable.getPlayer().getId();
     }
+
+
 }
-
-

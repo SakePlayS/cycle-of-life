@@ -1,29 +1,25 @@
 package by.sakeplays.cycle_of_life.entity;
 
-
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
-import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
-
-    protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("pachycephalosaurus.walking");
-    protected static final RawAnimation IDLE = RawAnimation.begin().thenLoop("pachycephalosaurus.idle");
-
-
-    public Pachycephalosaurus(EntityType<? extends LivingEntity> entityType, Level level) {
-        super(entityType, level);
-    }
+public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
+    protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("deinonychus.walking");
+    protected static final RawAnimation IDLE = RawAnimation.begin().thenLoop("deinonychus.idle");
+
+
+    public Deinonychus(EntityType<? extends LivingEntity> entityType, Level level) {
+        super(entityType, level);
+    }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -45,7 +41,7 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
     }
 
 
-    protected PlayState movementController(final AnimationState<Pachycephalosaurus> state) {
+    protected PlayState movementController(final AnimationState<Deinonychus> state) {
 
         if (getPlayer() != null) {
 
@@ -62,6 +58,4 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
         return PlayState.STOP;
     }
-
-
 }

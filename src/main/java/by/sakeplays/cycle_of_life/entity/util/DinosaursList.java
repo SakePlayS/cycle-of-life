@@ -3,18 +3,19 @@ package by.sakeplays.cycle_of_life.entity.util;
 public enum DinosaursList {
 
 
-    PACHYCEPHALOSAURUS(0.00166f, 425f, 3f, 4f, 120, 2f,
+    PACHYCEPHALOSAURUS(0.00166f, 425f, 3f, 4f, 7.5f, 2f,
             0.1f, 1750f, 350, 0.00015f, 0.00015f,
-            Diet.HERBIVORE, false),
+            Diet.HERBIVORE, false, 1),
 
-    DEINONYCHUS(0.002f,75f, 5f, 12f, 215, 3f,
+    DEINONYCHUS(0.002f,75f, 5f, 12f, 13f, 3f,
             0.25f, 1000f, 200, 0.00008f, 0.00012f,
-            Diet.CARNIVORE, false);
+            Diet.CARNIVORE, false, 2);
 
     private final float weight;
     private final float heatResistance;
     private final float coldResistance;
-    private final int turnSped;
+    private final float turnSpeed;
+    public final int ID;
     private final float bleedResistance;
     private final float staminaRegen;
     private final float staminaPool;
@@ -25,21 +26,22 @@ public enum DinosaursList {
     private final float dehydrationPerSec;
 
 
-    DinosaursList(float growthPerMin, float weight, float heatResistance, float coldResistance, int turnSpeed,
+    DinosaursList(float growthPerMin, float weight, float heatResistance, float coldResistance, float turnSpeed,
                   float bleedResistance, float staminaRegen, float staminaPool, int scentRange,
-                  float starvationPerSec, float dehydrationPerSec, Diet diet, boolean cannibalistic) {
+                  float starvationPerSec, float dehydrationPerSec, Diet diet, boolean cannibalistic, int ID) {
         this.weight = weight;
         this.heatResistance = heatResistance;
         this.bleedResistance = bleedResistance;
         this.staminaPool = staminaPool;
         this.coldResistance = coldResistance;
-        this.turnSped = turnSpeed;
+        this.turnSpeed = turnSpeed;
         this.staminaRegen = staminaRegen;
         this.diet = diet;
         this.cannibalistic = cannibalistic;
         this.scentRange = scentRange;
         this.starvationPerSec = starvationPerSec;
         this.dehydrationPerSec = dehydrationPerSec;
+        this.ID = ID;
     }
 
     public float getWeight() {
@@ -54,8 +56,8 @@ public enum DinosaursList {
         return coldResistance;
     }
 
-    public int getTurnSped() {
-        return turnSped;
+    public float getTurnSpeed() {
+        return turnSpeed;
     }
 
     public float getBleedResistance() {
@@ -88,5 +90,9 @@ public enum DinosaursList {
 
     public float getDehydrationPerSec() {
         return dehydrationPerSec;
+    }
+
+    public int getID() {
+        return ID;
     }
 }
