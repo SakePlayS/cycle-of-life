@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.util.DinosaursList;
 import by.sakeplays.cycle_of_life.network.to_server.RequestSelectDinosaur;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,12 @@ public class DinoSelectionScreen extends Screen {
             CONFIRM_BUTTON.active = false;
         } else {
             CONFIRM_BUTTON.active = true;
+            if (Minecraft.getInstance().player != null) {
+                if (Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() != 0) {
+                    onClose();
+                    Minecraft.getInstance().setScreen(null);
+                }
+            }
         }
     }
 

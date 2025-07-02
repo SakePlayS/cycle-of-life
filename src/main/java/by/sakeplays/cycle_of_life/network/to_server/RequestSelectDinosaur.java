@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.network.to_server;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.common.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.network.to_client.SyncSelectedDinosaur;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -27,10 +27,10 @@ public record RequestSelectDinosaur(int selectedDinoID) implements CustomPacketP
     );
 
     public static void handleServer(final RequestSelectDinosaur packet, final IPayloadContext context) {
-        context.enqueueWork(() -> context.player().getData(DataAttachments.SELECTED_DINOSAUR).setValue(packet.selectedDinoID()))
+        context.enqueueWork(() -> context.player().getData(DataAttachments.DINO_DATA).setSelectedDinosaur(packet.selectedDinoID()))
 
                 .thenRun(() -> PacketDistributor.sendToAllPlayers((new SyncSelectedDinosaur(context.player().getId(),
-                        context.player().getData(DataAttachments.SELECTED_DINOSAUR).getValue()))));
+                        context.player().getData(DataAttachments.DINO_DATA).getSelectedDinosaur()))));
 
     }
 }

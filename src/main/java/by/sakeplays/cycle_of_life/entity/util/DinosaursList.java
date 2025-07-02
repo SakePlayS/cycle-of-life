@@ -3,13 +3,13 @@ package by.sakeplays.cycle_of_life.entity.util;
 public enum DinosaursList {
 
 
-    PACHYCEPHALOSAURUS(0.00166f, 425f, 3f, 4f, 7.5f, 2f,
-            0.1f, 1750f, 350, 0.00015f, 0.00015f,
-            Diet.HERBIVORE, false, 1),
+    PACHYCEPHALOSAURUS(0.12f,0.42f, 0.008f, 425f, 3f, 4f,
+            7.5f, 0.32f, 2f, 0.1f, 1750f, 350, 0.005f,
+            0.00015f, 0.00015f, Diet.HERBIVORE, false, 5.12f,1),
 
-    DEINONYCHUS(0.002f,75f, 5f, 12f, 13f, 3f,
-            0.25f, 1000f, 200, 0.00008f, 0.00012f,
-            Diet.CARNIVORE, false, 2);
+    DEINONYCHUS(0.13f,0.45f,0.1f,75f, 5f, 12f,
+            13f, 0.45f, 3f, 0.25f, 1000f, 200, 0.03f,
+            0.00008f, 0.00012f, Diet.CARNIVORE, false, 1.45f, 2);
 
     private final float weight;
     private final float heatResistance;
@@ -24,11 +24,17 @@ public enum DinosaursList {
     private final int scentRange;
     private final float starvationPerSec;
     private final float dehydrationPerSec;
+    private final float swimSpeed;
+    private final float walkSpeed;
+    private final float sprintSpeed;
+    private final float acceleration;
+    private final float growthPerMin;
+    private final float startWeight;
 
 
-    DinosaursList(float growthPerMin, float weight, float heatResistance, float coldResistance, float turnSpeed,
-                  float bleedResistance, float staminaRegen, float staminaPool, int scentRange,
-                  float starvationPerSec, float dehydrationPerSec, Diet diet, boolean cannibalistic, int ID) {
+    DinosaursList(float walkSpeed, float sprintSpeed, float growthPerMin, float weight, float heatResistance, float coldResistance, float turnSpeed,
+                  float swimSpeed, float bleedResistance, float staminaRegen, float staminaPool, int scentRange, float acceleration,
+                  float starvationPerSec, float dehydrationPerSec, Diet diet, boolean cannibalistic, float startWeight, int ID) {
         this.weight = weight;
         this.heatResistance = heatResistance;
         this.bleedResistance = bleedResistance;
@@ -42,6 +48,12 @@ public enum DinosaursList {
         this.starvationPerSec = starvationPerSec;
         this.dehydrationPerSec = dehydrationPerSec;
         this.ID = ID;
+        this.swimSpeed = swimSpeed;
+        this.walkSpeed = walkSpeed;
+        this.sprintSpeed = sprintSpeed;
+        this.acceleration = acceleration;
+        this.growthPerMin = growthPerMin;
+        this.startWeight = startWeight;
     }
 
     public float getWeight() {
@@ -94,5 +106,34 @@ public enum DinosaursList {
 
     public int getID() {
         return ID;
+    }
+
+    public static DinosaursList getById (int ID) {
+        if (ID == 1) return PACHYCEPHALOSAURUS;
+        return DEINONYCHUS;
+    }
+
+    public float getSwimSpeed() {
+        return swimSpeed;
+    }
+
+    public float getSprintSpeed() {
+        return sprintSpeed;
+    }
+
+    public float getWalkSpeed() {
+        return walkSpeed;
+    }
+
+    public float getAcceleration() {
+        return acceleration;
+    }
+
+    public float getGrowthPerMin() {
+        return growthPerMin;
+    }
+
+    public float getStartWeight() {
+        return startWeight;
     }
 }

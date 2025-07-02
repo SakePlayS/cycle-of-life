@@ -1,5 +1,6 @@
 package by.sakeplays.cycle_of_life.entity;
 
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +14,7 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("deinonychus.walking");
+    public static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("deinonychus.walking");
     protected static final RawAnimation IDLE = RawAnimation.begin().thenLoop("deinonychus.idle");
 
 
@@ -47,8 +48,7 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
             Player player = getPlayer();
 
-            if ((Math.abs(getPlayer().getDeltaMovement().x()) > 0.001f || Math.abs(getPlayer().getDeltaMovement().z()) > 0.001f)
-                    && player.onGround())  {
+            if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
                 return state.setAndContinue(WALK_ANIM);
             }
 

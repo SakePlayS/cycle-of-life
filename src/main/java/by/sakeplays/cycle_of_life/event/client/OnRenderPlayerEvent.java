@@ -2,32 +2,23 @@ package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.screen.DinoSelectionScreen;
-import by.sakeplays.cycle_of_life.common.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.util.DinosaursList;
 import com.mojang.blaze3d.platform.InputConstants;
-import cpw.mods.modlauncher.api.IEnvironment;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderPlayerEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import org.lwjgl.glfw.GLFW;
+import net.neoforged.neoforge.client.event.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
@@ -66,7 +57,7 @@ public class OnRenderPlayerEvent {
             return;
         }
 
-        if (player.getData(DataAttachments.SELECTED_DINOSAUR).getValue() == 0) {
+        if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) {
             return;
         }
 
@@ -85,12 +76,17 @@ public class OnRenderPlayerEvent {
     }
 
     @SubscribeEvent
+    public static void clientHudEvent(RenderGuiEvent.Pre event) {
+    }
+
+
+    @SubscribeEvent
     public static void frameRender(RenderFrameEvent.Pre event) {
         AbstractClientPlayer player = Minecraft.getInstance().player;
         Minecraft instance = Minecraft.getInstance();
 
         if (instance.screen == null && player != null) {
-            if (player.getData(DataAttachments.SELECTED_DINOSAUR).getValue() == 0) {
+            if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) {
                 instance.setScreen(new DinoSelectionScreen(Component.literal("Select the dino")));
             }
         }
@@ -99,10 +95,13 @@ public class OnRenderPlayerEvent {
         instance.options.fov().set(85);
         instance.options.fovEffectScale().set(0.25d);
 
+
         instance.options.keyLeft.setKey(InputConstants.UNKNOWN);
         instance.options.keyRight.setKey(InputConstants.UNKNOWN);
         instance.options.keyUp.setKey(InputConstants.UNKNOWN);
         instance.options.keyDown.setKey(InputConstants.UNKNOWN);
+        instance.options.keySprint.setKey(InputConstants.UNKNOWN);
+
 
     }
 
@@ -113,11 +112,13 @@ public class OnRenderPlayerEvent {
 
 
     private static DinosaurEntity getDinoToRender(Player player) {
-        int selectedDino = player.getData(DataAttachments.SELECTED_DINOSAUR).getValue();
+        int selectedDino = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
 
         if (selectedDino == DinosaursList.PACHYCEPHALOSAURUS.getID()) return COLEntities.PACHYCEPHALOSAURUS.get().create(player.level());
         return COLEntities.DEINONYCHUS.get().create(player.level());
 
     }
+
+
 
 }

@@ -1,11 +1,10 @@
 package by.sakeplays.cycle_of_life.entity;
 
 
-import net.minecraft.network.chat.Component;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
@@ -51,8 +50,7 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
             Player player = getPlayer();
 
-            if ((Math.abs(getPlayer().getDeltaMovement().x()) > 0.001f || Math.abs(getPlayer().getDeltaMovement().z()) > 0.001f)
-                    && player.onGround())  {
+            if (player.getData(DataAttachments.DINO_DATA).isMoving())  {
                 return state.setAndContinue(WALK_ANIM);
             }
 

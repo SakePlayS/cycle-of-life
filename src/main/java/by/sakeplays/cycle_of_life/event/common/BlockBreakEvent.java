@@ -1,17 +1,19 @@
 package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.common.DataAttachments;
+import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncGrowth;
 import by.sakeplays.cycle_of_life.network.to_client.SyncSelectedDinosaur;
 import by.sakeplays.cycle_of_life.network.to_client.SyncTurnDegree2C;
-import net.minecraft.network.chat.Component;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnHistory;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -27,29 +29,47 @@ public class BlockBreakEvent {
         Entity entity = event.getEntity();
 
         if (entity instanceof Player player) {
+
+
             tick++;
             if (tick > 10) {
                 tick = 0;
                 if (!player.level().isClientSide())  {
-                    PacketDistributor.sendToPlayersTrackingEntity(player, new SyncSelectedDinosaur(player.getId(),  // sync selected dino to other players
-                            player.getData(DataAttachments.SELECTED_DINOSAUR).getValue()));
+                    PacketDistributor.sendToPlayersTrackingEntity(player, new SyncSelectedDinosaur(player.getId(),
+                            player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur())); // sync selected dino to other clients
+
+                    float newGrowth = player.getData(DataAttachments.DINO_DATA).getGrowth()
+                            + Util.getDino(player).getGrowthPerMin() / 120f;
+
+                    newGrowth = Math.min(1f, newGrowth);
+
+                    player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
+                    PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));  // sync growth to other clients
+
                 }
             }
 
+            float turnDegree = player.getData(DataAttachments.DINO_DATA).getTurnDegree();
+
             if (!player.level().isClientSide())  {
+
                 PacketDistributor.sendToPlayersTrackingEntity(player, new SyncTurnDegree2C(player.getId(),   // sync turn degree to other players
-                        player.getData(DataAttachments.TURN_DEGREE)));
+                        turnDegree));
+
+
+
+            } else {
+                Util.recordTurnHistory(player, turnDegree);
+                PacketDistributor.sendToServer(new SyncTurnHistory(player.getId(), turnDegree));
+
+                Util.recordYHistory(player, (float) player.getY());
+                PacketDistributor.sendToServer(new SyncYHistory(player.getId(), (float) player.getY()));
             }
 
         }
 
     }
 
-
-    @SubscribeEvent
-    public static void onBlockBreak(BlockEvent.BreakEvent event) {
-        Player player = event.getPlayer();
-    }
 
     @SubscribeEvent
     public static void onPlayerLogIn(PlayerEvent.PlayerLoggedInEvent event) {
@@ -66,12 +86,12 @@ public class BlockBreakEvent {
         for (ServerPlayer serverPlayer : playerList) {
             if (serverPlayer != loggedInPlayer) {
                 PacketDistributor.sendToPlayer((ServerPlayer) loggedInPlayer, new SyncSelectedDinosaur(serverPlayer.getId(),
-                        serverPlayer.getData(DataAttachments.SELECTED_DINOSAUR).getValue()));
+                        serverPlayer.getData(DataAttachments.DINO_DATA).getSelectedDinosaur()));
             }
         }
 
         PacketDistributor.sendToPlayer((ServerPlayer) loggedInPlayer, new SyncSelectedDinosaur(loggedInPlayer.getId(),
-                loggedInPlayer.getData(DataAttachments.SELECTED_DINOSAUR).getValue()));
+                loggedInPlayer.getData(DataAttachments.DINO_DATA).getSelectedDinosaur()));
     }
 
 

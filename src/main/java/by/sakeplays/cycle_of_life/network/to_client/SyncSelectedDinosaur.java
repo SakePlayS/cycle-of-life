@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.network.to_client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.common.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -31,7 +31,7 @@ public record SyncSelectedDinosaur(int playerId, int selectedDino) implements Cu
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerId()) instanceof Player player) {
 
-                player.getData(DataAttachments.SELECTED_DINOSAUR).setValue(packet.selectedDino());
+                player.getData(DataAttachments.DINO_DATA).setSelectedDinosaur(packet.selectedDino());
 
             }
         });
