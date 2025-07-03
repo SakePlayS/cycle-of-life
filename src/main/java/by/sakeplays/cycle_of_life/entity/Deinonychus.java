@@ -58,4 +58,5 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
         return PlayState.STOP;
     }
+
 }

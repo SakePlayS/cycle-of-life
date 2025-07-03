@@ -25,6 +25,6 @@ public record SyncTurnDegree2S(float turnDegree) implements CustomPacketPayload 
     );
 
     public static void handleServer(final SyncTurnDegree2S packet, final IPayloadContext context) {
-        context.enqueueWork(() -> context.player().getData(DataAttachments.DINO_DATA).setTurnDegree(packet.turnDegree()));
+        context.enqueueWork(() -> context.player().setData(DataAttachments.PLAYER_TURN, packet.turnDegree()));
     }
 }

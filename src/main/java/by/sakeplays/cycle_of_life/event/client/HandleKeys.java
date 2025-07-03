@@ -7,6 +7,8 @@ import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncDinoSprint;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncDinoWalking;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnDegree;
+import by.sakeplays.cycle_of_life.network.to_client.SyncTurnDegree2C;
+import by.sakeplays.cycle_of_life.network.to_server.SyncTurnDegree2S;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -61,10 +63,11 @@ public class HandleKeys {
             turnMultiplier = turnMultiplier + turnSpeed;
             turnMultiplier = Math.min(1, turnMultiplier + turnSpeed);
 
-            float desiredTurnDegree = player.getData(DataAttachments.DINO_DATA).getTurnDegree() + turnSpeed * Util.getTurnPenalty(player) * Math.abs(turnMultiplier);
+            float desiredTurnDegree = player.getData(DataAttachments.PLAYER_TURN)
+                    + turnSpeed * Util.getTurnPenalty(player) * Math.abs(turnMultiplier);
 
 
-            player.getData(DataAttachments.DINO_DATA).setTurnDegree(desiredTurnDegree);
+            player.setData(DataAttachments.PLAYER_TURN, desiredTurnDegree);
             PacketDistributor.sendToServer(new SyncTurnDegree(desiredTurnDegree, player.getId()));
         }
 
@@ -73,9 +76,9 @@ public class HandleKeys {
             turnMultiplier = Math.max(-1, turnMultiplier - turnSpeed);
 
 
-            float desiredTurnDegree = player.getData(DataAttachments.DINO_DATA).getTurnDegree() - turnSpeed * Util.getTurnPenalty(player) * Math.abs(turnMultiplier);
+            float desiredTurnDegree = player.getData(DataAttachments.PLAYER_TURN) - turnSpeed * Util.getTurnPenalty(player) * Math.abs(turnMultiplier);
 
-            player.getData(DataAttachments.DINO_DATA).setTurnDegree(desiredTurnDegree);
+            player.setData(DataAttachments.PLAYER_TURN,desiredTurnDegree);
             PacketDistributor.sendToServer(new SyncTurnDegree(desiredTurnDegree, player.getId()));
         }
 
@@ -91,7 +94,7 @@ public class HandleKeys {
     private static void handleForwardMovement(Player player) {
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
 
-        float turnDegree = dinoData.getTurnDegree();
+        float turnDegree = player.getData(DataAttachments.PLAYER_TURN);
         float walkSpeed = Util.getWalkSpeed(player);
         float sprintSpeed = Util.getSprintSpeed(player);
         float acceleration = Util.getAcceleration(player);

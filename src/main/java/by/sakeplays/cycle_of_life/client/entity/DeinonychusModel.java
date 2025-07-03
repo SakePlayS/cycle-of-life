@@ -6,17 +6,15 @@ import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.loading.math.MathParser;
 import software.bernie.geckolib.model.GeoModel;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 
 public class DeinonychusModel extends GeoModel<Deinonychus> {
 
-
-    private int tick = 0;
-    private int t2 = 0;
 
     @Override
     public ResourceLocation getModelResource(Deinonychus animatable) {
@@ -37,8 +35,6 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
     public void setCustomAnimations(Deinonychus animatable, long instanceId, AnimationState<Deinonychus> animationState) {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
-        tickModel(animatable);
-
 
         if (animationState.isCurrentAnimation(Deinonychus.WALK_ANIM)) {
             animationState.setControllerSpeed(1.3f);
@@ -48,27 +44,34 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
         float partialTick = animationState.getPartialTick();
 
-        handleBodyRotation(this, animatable, partialTick);
-        handleNeckRotation(this, animatable, partialTick);
-        handleTailPhysics(this, animatable, partialTick);
+        handleBodyRotation(this, animationState.getAnimatable(), partialTick);
+        handleNeckRotation(this, animationState.getAnimatable(), partialTick);
+        handleTailPhysics(this, animationState.getAnimatable(), partialTick);
 
+        animatable.getPlayer().sendSystemMessage(Component.literal(animatable.getPlayer().getName().getString() + " " + instanceId));
 
     }
 
     private void handleBodyRotation(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
-        float playerRot = animatable.getPlayer().getData(DataAttachments.DINO_DATA).getTurnDegree();
+        float playerRot = animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
 
         if (animatable.playerId == null) {
             return;
         }
         model.getBone("center").get().setRotY(Mth.lerp(partialTick, model.getBone("center").get().getRotY(), playerRot));
+
     }
 
 
 
 
     private void handleNeckRotation(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
-        float playerRot = (animatable.getPlayer().getData(DataAttachments.DINO_DATA).getTurnDegree());
+
+        if (animatable.playerId == null) {
+            return;
+        }
+
+        float playerRot = (animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
         float playerYaw = (animatable.getPlayer().getYRot() * -Mth.DEG_TO_RAD);
 
         float playerDiff = playerYaw - playerRot;
@@ -97,6 +100,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
     private void handleTailPhysics(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
 
+
         ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
         ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
 
@@ -108,16 +112,16 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
             return;
         }
 
-        float dy = Util.calculateTailXRot(yHistory);
+        float tailRotX = Util.calculateTailXRot(yHistory);
         float tailRotY = Util.calculateTailYRot(turnDegreeHistory,
-                animatable.getPlayer().getData(DataAttachments.DINO_DATA).getTurnDegree());
+                animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
 
         model.getBone("tail_1_rot").get()
-                .setRotX(Mth.lerp(partialTick, model.getBone("tail_1_rot").get().getRotX(),dy * 35));
+                .setRotX(Mth.lerp(partialTick, model.getBone("tail_1_rot").get().getRotX(),tailRotX * 35));
         model.getBone("tail_2_rot").get()
-                .setRotX(Mth.lerp(partialTick, model.getBone("tail_2_rot").get().getRotX(),dy * 35));
+                .setRotX(Mth.lerp(partialTick, model.getBone("tail_2_rot").get().getRotX(),tailRotX * 35));
         model.getBone("tail_3_rot").get()
-                .setRotX(Mth.lerp(partialTick, model.getBone("tail_3_rot").get().getRotX(),dy * 35));
+                .setRotX(Mth.lerp(partialTick, model.getBone("tail_3_rot").get().getRotX(),tailRotX * 35));
 
 
         model.getBone("tail_1_rot").get()
@@ -126,26 +130,5 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
                 .setRotY(Mth.lerp(partialTick, model.getBone("tail_2_rot").get().getRotY(),tailRotY * -35));
         model.getBone("tail_3_rot").get()
                 .setRotY(Mth.lerp(partialTick, model.getBone("tail_3_rot").get().getRotY(),tailRotY * -35));
-
     }
-
-
-    private void tickModel(Deinonychus animatable) {
-        if (this.tick != animatable.getPlayer().tickCount) {
-            this.tick = animatable.getPlayer().tickCount;
-
-            t2++;
-            if (t2 > 20) {
-                t2 = 0;
-
-
-            }
-        }
-    }
-
-
-
-
-
-
 }

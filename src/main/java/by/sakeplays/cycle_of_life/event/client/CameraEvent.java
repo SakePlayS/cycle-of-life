@@ -19,7 +19,7 @@ public class CameraEvent {
 
 
 
-        event.setRoll((float) Mth.lerp(event.getPartialTick(), savedRoll, HandleKeys.turnMultiplier * 3));
+        event.setRoll((float) Mth.lerp(event.getPartialTick(), savedRoll, HandleKeys.turnMultiplier * 1.5));
         savedRoll = event.getRoll();
 
     }

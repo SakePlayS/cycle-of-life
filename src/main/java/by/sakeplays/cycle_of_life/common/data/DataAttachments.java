@@ -25,6 +25,9 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<ArrayList<Float>>> TURN_HISTORY = ATTACHMENT_TYPES.register(
             "turn_history", () -> AttachmentType.builder(() -> new ArrayList<Float>()).build());
 
+    public static final Supplier<AttachmentType<Float>> PLAYER_TURN = ATTACHMENT_TYPES.register(
+            "player_turn", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
+
     public static void register(IEventBus eventBus) {
         ATTACHMENT_TYPES.register(eventBus);
     }

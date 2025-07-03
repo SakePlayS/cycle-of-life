@@ -5,7 +5,6 @@ import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncGrowth;
 import by.sakeplays.cycle_of_life.network.to_client.SyncSelectedDinosaur;
-import by.sakeplays.cycle_of_life.network.to_client.SyncTurnDegree2C;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnHistory;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,7 +19,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.List;
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
-public class BlockBreakEvent {
+public class SyncData {
 
     private static int tick;
 
@@ -49,14 +48,9 @@ public class BlockBreakEvent {
                 }
             }
 
-            float turnDegree = player.getData(DataAttachments.DINO_DATA).getTurnDegree();
+            float turnDegree = player.getData(DataAttachments.PLAYER_TURN);
 
             if (!player.level().isClientSide())  {
-
-                PacketDistributor.sendToPlayersTrackingEntity(player, new SyncTurnDegree2C(player.getId(),   // sync turn degree to other players
-                        turnDegree));
-
-
 
             } else {
                 Util.recordTurnHistory(player, turnDegree);

@@ -30,7 +30,7 @@ public record SyncTurnDegree(float turnDegree, int playerID) implements CustomPa
     public static void handleClient(final SyncTurnDegree packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.getData(DataAttachments.DINO_DATA).setTurnDegree(packet.turnDegree);
+                player.setData(DataAttachments.PLAYER_TURN, packet.turnDegree);
             }
         });
     }
@@ -38,8 +38,8 @@ public record SyncTurnDegree(float turnDegree, int playerID) implements CustomPa
     public static void handleServer(final SyncTurnDegree packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.getData(DataAttachments.DINO_DATA).setTurnDegree(packet.turnDegree);
+                player.setData(DataAttachments.PLAYER_TURN, packet.turnDegree);
             }
-        }).thenRun(() -> PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet));
+        }).thenRun(() -> PacketDistributor.sendToAllPlayers(packet));
     }
 }
