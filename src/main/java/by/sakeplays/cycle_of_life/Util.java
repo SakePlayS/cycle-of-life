@@ -1,54 +1,45 @@
 package by.sakeplays.cycle_of_life;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.util.DinosaursList;
+import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.ArrayList;
 
 public class Util {
 
     public static float getTurnSpeed(Player player) {
-        int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+        return getDino(player).getTurnSpeed();
 
-        if (ID == DinosaursList.PACHYCEPHALOSAURUS.getID()) return DinosaursList.PACHYCEPHALOSAURUS.getTurnSpeed();
-        if (ID == DinosaursList.DEINONYCHUS.getID()) return DinosaursList.DEINONYCHUS.getTurnSpeed();
+    }
 
-        return 0f;
+    public static float getStamRegen(Player player) {
+        return getDino(player).getStaminaRegen();
+
     }
 
     public static float getWalkSpeed(Player player) {
-        int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+        return getDino(player).getWalkSpeed();
 
-        if (ID == DinosaursList.PACHYCEPHALOSAURUS.getID()) return DinosaursList.PACHYCEPHALOSAURUS.getWalkSpeed();
-        if (ID == DinosaursList.DEINONYCHUS.getID()) return DinosaursList.DEINONYCHUS.getWalkSpeed();
-
-        return 0f;
     }
 
     public static float getSprintSpeed(Player player) {
-        int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
-
-        if (ID == DinosaursList.PACHYCEPHALOSAURUS.getID()) return DinosaursList.PACHYCEPHALOSAURUS.getSprintSpeed();
-        if (ID == DinosaursList.DEINONYCHUS.getID()) return DinosaursList.DEINONYCHUS.getSprintSpeed();
-
-        return 0f;
+        return getDino(player).getSprintSpeed();
     }
 
     public static float getAcceleration(Player player) {
-        int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+        return getDino(player).getAcceleration();
 
-        if (ID == DinosaursList.PACHYCEPHALOSAURUS.getID()) return DinosaursList.PACHYCEPHALOSAURUS.getAcceleration();
-        if (ID == DinosaursList.DEINONYCHUS.getID()) return DinosaursList.DEINONYCHUS.getAcceleration();
-
-        return 0f;
     }
 
     public static float getSwimSpeed(Player player) {
-        int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
-
-        if (ID == DinosaursList.PACHYCEPHALOSAURUS.getID()) return DinosaursList.PACHYCEPHALOSAURUS.getSwimSpeed();
-        if (ID == DinosaursList.DEINONYCHUS.getID()) return DinosaursList.DEINONYCHUS.getSwimSpeed();
-
-        return 0f;
+        return getDino(player).getSwimSpeed();
     }
 
     public static float getTurnPenalty(Player player) {
@@ -59,11 +50,11 @@ public class Util {
         return 1f;
     }
 
-    public static DinosaursList getDino(Player player) {
+    public static Dinosaurs getDino(Player player) {
         int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
 
-        if (ID == 1) return  DinosaursList.PACHYCEPHALOSAURUS;
-        return  DinosaursList.DEINONYCHUS;
+        if (ID == 1) return  Dinosaurs.PACHYCEPHALOSAURUS;
+        return  Dinosaurs.DEINONYCHUS;
 
     }
 
@@ -83,4 +74,59 @@ public class Util {
             player.getData(DataAttachments.TURN_HISTORY).removeFirst();
         }
     }
+
+
+    public static float calculateTailXRot(ArrayList<Float> arrayList) {
+        float sum = 0;
+        int iterations = 0;
+
+        for (int i = 0; i < arrayList.size() - 1; i++) {
+            sum = sum + (arrayList.get(i + 1) - arrayList.get(i)) * Mth.DEG_TO_RAD;
+            iterations++;
+        }
+
+        return sum/iterations;
+    }
+
+    public static float calculateTailYRot(ArrayList<Float> arrayList, float currentTurnDegree) {
+        float sum = 0;
+        int iterations = 0;
+
+        for (int i = 0; i < arrayList.size(); i++) {
+            sum = sum + (currentTurnDegree - arrayList.get(i)) * Mth.DEG_TO_RAD;
+            iterations++;
+        }
+
+        return sum/iterations;
+    }
+
+    public static void dealDamage(Player target, float dmg, float bleed) {
+        if (target.level().isClientSide) {
+            DinoData data = target.getData(DataAttachments.DINO_DATA);
+            float newBleed = data.getBleed() + bleed;
+            float newHealth = data.getHealth() - dmg;
+
+            data.setBleed(newBleed);
+            PacketDistributor.sendToServer(new SyncBleed(target.getId(),newBleed));
+
+            data.setHealth(newHealth);
+            PacketDistributor.sendToServer(new SyncHealth(target.getId(), newHealth));
+
+        }
+    }
+
+    public static void addStamina(Player target, float stamina) {
+        if (target.level().isClientSide) {
+            DinoData data = target.getData(DataAttachments.DINO_DATA);
+            float newStam = data.getStamina() + stamina;
+
+            if (newStam >  getDino(target).getStaminaPool()) newStam = getDino(target).getStaminaPool();
+
+            data.setStamina(newStam);
+            PacketDistributor.sendToServer(new SyncStamina(target.getId(), newStam));
+
+        }
+    }
+
+
 }

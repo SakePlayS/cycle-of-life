@@ -29,8 +29,8 @@ public record RequestSelectDinosaur(int selectedDinoID) implements CustomPacketP
     public static void handleServer(final RequestSelectDinosaur packet, final IPayloadContext context) {
         context.enqueueWork(() -> context.player().getData(DataAttachments.DINO_DATA).setSelectedDinosaur(packet.selectedDinoID()))
 
-                .thenRun(() -> PacketDistributor.sendToAllPlayers((new SyncSelectedDinosaur(context.player().getId(),
-                        context.player().getData(DataAttachments.DINO_DATA).getSelectedDinosaur()))));
+                .thenRun(() -> PacketDistributor.sendToAllPlayers(new SyncSelectedDinosaur(context.player().getId(),
+                        context.player().getData(DataAttachments.DINO_DATA).getSelectedDinosaur())));
 
     }
 }

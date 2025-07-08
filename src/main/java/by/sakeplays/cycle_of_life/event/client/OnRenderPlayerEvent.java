@@ -5,7 +5,7 @@ import by.sakeplays.cycle_of_life.client.screen.DinoSelectionScreen;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
-import by.sakeplays.cycle_of_life.entity.util.DinosaursList;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -38,7 +38,6 @@ public class OnRenderPlayerEvent {
             return PLAYER_DINOS.get(key);
         }
 
-        player.sendSystemMessage(Component.literal("added"));
 
         DinosaurEntity entity = getDinoToRender(player);
 
@@ -47,6 +46,16 @@ public class OnRenderPlayerEvent {
 
         return PLAYER_DINOS.get(player.getId());
     }
+
+
+    private static DinosaurEntity getDinoToRender(Player player) {
+        int selectedDino = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+
+        if (selectedDino == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return COLEntities.PACHYCEPHALOSAURUS.get().create(player.level());
+        return COLEntities.DEINONYCHUS.get().create(player.level());
+
+    }
+
 
     @SubscribeEvent
     private static void onRender(RenderPlayerEvent.Pre event) {
@@ -65,19 +74,12 @@ public class OnRenderPlayerEvent {
         DinosaurEntity dinosaurEntity = getOrCreateDino(player);
 
         if (!instance.options.getCameraType().isFirstPerson() || player != instance.player) {
+
             instance.getEntityRenderDispatcher().getRenderer(dinosaurEntity).render(dinosaurEntity, player.getViewYRot(event.getPartialTick()),
                     event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
         }
     }
 
-    @SubscribeEvent
-    public static void clientTick(ClientTickEvent.Pre event) {
-
-    }
-
-    @SubscribeEvent
-    public static void clientHudEvent(RenderGuiEvent.Pre event) {
-    }
 
 
     @SubscribeEvent
@@ -94,30 +96,19 @@ public class OnRenderPlayerEvent {
         instance.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         instance.options.fov().set(85);
         instance.options.fovEffectScale().set(0.25d);
-
+        instance.options.bobView().set(false);
 
         instance.options.keyLeft.setKey(InputConstants.UNKNOWN);
         instance.options.keyRight.setKey(InputConstants.UNKNOWN);
         instance.options.keyUp.setKey(InputConstants.UNKNOWN);
         instance.options.keyDown.setKey(InputConstants.UNKNOWN);
         instance.options.keySprint.setKey(InputConstants.UNKNOWN);
+    }
 
+    public static void disableShadow(EntityRenderersEvent.AddLayers event) {
 
     }
 
-    public static void key() {
-
-    }
-
-
-
-    private static DinosaurEntity getDinoToRender(Player player) {
-        int selectedDino = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
-
-        if (selectedDino == DinosaursList.PACHYCEPHALOSAURUS.getID()) return COLEntities.PACHYCEPHALOSAURUS.get().create(player.level());
-        return COLEntities.DEINONYCHUS.get().create(player.level());
-
-    }
 
 
 

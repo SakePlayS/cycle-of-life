@@ -15,8 +15,8 @@ public class KeyMappingsEvent {
             new KeyMapping("key.cycle_of_life.forward", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_W,
                     "key.categories.cycle_of_life.movement");
 
-    public static final KeyMapping BACKWARDS_MAPPING =
-            new KeyMapping("key.cycle_of_life.backwards", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S,
+    public static final KeyMapping DIRECTIONAL_ATTACK =
+            new KeyMapping("key.cycle_of_life.directional_attack", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT,
                     "key.categories.cycle_of_life.movement");
 
     public static final KeyMapping LEFT_MAPPING =
@@ -28,16 +28,27 @@ public class KeyMappingsEvent {
                     "key.categories.cycle_of_life.movement");
 
     public static final KeyMapping SPRINT_MAPPING =
-            new KeyMapping("key.cycle_of_life.growth", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
+            new KeyMapping("key.cycle_of_life.sprint", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
+                    "key.categories.cycle_of_life.movement");
+
+    public static final KeyMapping MAIN_ATTACK_MAPPING =
+            new KeyMapping("key.cycle_of_life.main_attack", InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_LEFT,
+                    "key.categories.cycle_of_life.movement");
+
+    public static final KeyMapping REST_MAPPING =
+            new KeyMapping("key.cycle_of_life.rest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H,
                     "key.categories.cycle_of_life.movement");
 
     @SubscribeEvent
     public static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(FORWARD_MAPPING);
-        event.register(BACKWARDS_MAPPING);
+        event.register(DIRECTIONAL_ATTACK);
         event.register(LEFT_MAPPING);
         event.register(RIGHT_MAPPING);
         event.register(SPRINT_MAPPING);
+        event.register(MAIN_ATTACK_MAPPING);
+        event.register(REST_MAPPING);
+
     }
 }
 

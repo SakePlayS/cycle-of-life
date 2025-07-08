@@ -21,14 +21,20 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private float turnDegree;
     private float health;
     private float growth;
+    private float bloodLevel;
+    private float bleed;
     private float weight;
-
     private boolean isSprinting;
     private boolean isMoving;
+    private boolean isMale;
+    private boolean isSliding;
+
+    private boolean isInitialized;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
-                    float growth, float weight) {
+                    float growth, float weight, boolean isInitialized, float bloodLevel, float bleed, boolean isMale,
+                    boolean isSliding) {
         this.selectedDinosaur = selectedDino;
         this.stamina = stamina;
         this.foodLevel = foodLevel;
@@ -40,7 +46,11 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.acceleration = acceleration;
         this.growth = growth;
         this.weight = weight;
-
+        this.isInitialized = isInitialized;
+        this.bloodLevel = bloodLevel;
+        this.bleed = bleed;
+        this.isMale = isMale;
+        this.isSliding = isSliding;
 
     }
 
@@ -54,9 +64,13 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putFloat("TurnDegree", turnDegree);
         nbt.putFloat("Health", health);
         nbt.putBoolean("IsSprinting", isSprinting);
+        nbt.putBoolean("IsInitialized", isInitialized);
         nbt.putFloat("Acceleration", acceleration);
         nbt.putFloat("Growth", growth);
         nbt.putFloat("Weight", weight);
+        nbt.putFloat("BloodLevel", bloodLevel);
+        nbt.putFloat("Bleed", bleed);
+        nbt.putBoolean("IsMale", isMale);
 
         return nbt;
     }
@@ -70,10 +84,13 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.turnDegree = nbt.getFloat("TurnDegree");
         this.health = nbt.getFloat("Health");
         this.isSprinting = nbt.getBoolean("IsSprinting");
+        this.isInitialized = nbt.getBoolean("IsInitialized");
         this.acceleration = nbt.getFloat("Acceleration");
         this.growth = nbt.getFloat("Growth");
         this.weight = nbt.getFloat("Weight");
-
+        this.bleed = nbt.getFloat("Bleed");
+        this.bloodLevel = nbt.getFloat("BloodLevel");
+        this.isMale = nbt.getBoolean("IsMale");
 
     }
 
@@ -133,7 +150,6 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         return isSprinting;
     }
 
-
     public void setMoving(boolean moving) {
         isMoving = moving;
     }
@@ -166,6 +182,64 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.growth = growth;
     }
 
+    public boolean isInitialized() {
+        return isInitialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        isInitialized = initialized;
+    }
+
+    public float getBloodLevel() {
+        return bloodLevel;
+    }
+
+    public float getBleed() {
+        return bleed;
+    }
+
+    public void setBloodLevel(float bloodLevel) {
+        this.bloodLevel = bloodLevel;
+    }
+
+    public void setBleed(float bleed) {
+        this.bleed = bleed;
+    }
+
+
+    public void fullReset() {
+        setSelectedDinosaur(0);
+        setInitialized(false);
+
+        setStamina(1);
+        setFoodLevel(1);
+        setWaterLevel(1);
+        setWeight(1);
+        setGrowth(0.25f);
+        setBleed(0);
+        setHealth(1);
+        setAcceleration(0f);
+        setBloodLevel(1);
+        setSprinting(false);
+        setMoving(false);
+    }
+
+    public boolean isMale() {
+        return isMale;
+    }
+
+    public void setMale(boolean male) {
+        isMale = male;
+    }
+
+
+    public boolean isSliding() {
+        return isSliding;
+    }
+
+    public void setSliding(boolean sliding) {
+        isSliding = sliding;
+    }
 }
 
 

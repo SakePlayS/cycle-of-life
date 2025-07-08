@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life;
 
 import by.sakeplays.cycle_of_life.client.entity.DeinonychusRenderer;
+import by.sakeplays.cycle_of_life.client.entity.HitboxRenderer;
 import by.sakeplays.cycle_of_life.client.entity.PachycephalosaurusRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
@@ -99,6 +100,7 @@ public class CycleOfLife
 
             EntityRenderers.register(COLEntities.PACHYCEPHALOSAURUS.get(), PachycephalosaurusRenderer::new);
             EntityRenderers.register(COLEntities.DEINONYCHUS.get(), DeinonychusRenderer::new);
+            EntityRenderers.register(COLEntities.HITBOX.get(), HitboxRenderer::new);
 
         }
     }

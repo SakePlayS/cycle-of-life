@@ -31,6 +31,8 @@ public abstract class DinosaurEntity extends LivingEntity {
     }
 
 
+
+
     @Override
     public @NotNull Iterable<ItemStack> getArmorSlots() {
         return NonNullList.withSize(4, ItemStack.EMPTY);
@@ -67,6 +69,8 @@ public abstract class DinosaurEntity extends LivingEntity {
                 .add(Attributes.MOVEMENT_SPEED, 0D)
                 .add(Attributes.FOLLOW_RANGE, 24D);
     }
+
+
 
 
 }

@@ -14,7 +14,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record SyncYHistory(int playerId, float y) implements CustomPacketPayload {
 
     public static final Type<SyncYHistory> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_turn_history"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_y_history"));
 
 
     @Override
@@ -41,7 +41,7 @@ public record SyncYHistory(int playerId, float y) implements CustomPacketPayload
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerId()) instanceof Player player) {
 
-                Util.recordTurnHistory(player, packet.y());
+                Util.recordYHistory(player, packet.y());
 
             }
         }).thenRun(() -> PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet));

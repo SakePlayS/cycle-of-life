@@ -15,7 +15,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record SyncTurnHistory(int playerId, float f) implements CustomPacketPayload {
 
     public static final Type<SyncTurnHistory> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_y_history"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_turn_history"));
 
 
     @Override

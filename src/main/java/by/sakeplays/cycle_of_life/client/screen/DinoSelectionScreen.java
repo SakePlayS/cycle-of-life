@@ -2,7 +2,7 @@ package by.sakeplays.cycle_of_life.client.screen;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.util.DinosaursList;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.to_server.RequestSelectDinosaur;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -27,16 +27,8 @@ public class DinoSelectionScreen extends Screen {
     public void tick() {
         super.tick();
 
-        if (desiredDinosaurID == 0) {
-            CONFIRM_BUTTON.active = false;
-        } else {
-            CONFIRM_BUTTON.active = true;
-            if (Minecraft.getInstance().player != null) {
-                if (Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() != 0) {
-                    onClose();
-                    Minecraft.getInstance().setScreen(null);
-                }
-            }
+        if (CONFIRM_BUTTON != null) {
+            CONFIRM_BUTTON.active = (desiredDinosaurID != 0);
         }
     }
 
@@ -56,19 +48,18 @@ public class DinoSelectionScreen extends Screen {
 
         CONFIRM_BUTTON = new Button.Builder(Component.literal("Confirm"), button -> {
             if (desiredDinosaurID != 0) {
+                Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).setSelectedDinosaur(desiredDinosaurID);
                 PacketDistributor.sendToServer(new RequestSelectDinosaur(desiredDinosaurID));
+                Minecraft.getInstance().setScreen(null);
             }
-
-            onClose();
-            Minecraft.getInstance().setScreen(null);
         }).size(120, 18).pos(width/2 - 60, height - 40).build();
 
         addRenderableWidget(new Button.Builder(Component.literal("Pachycephalosaurus"),button -> {
-            desiredDinosaurID = DinosaursList.PACHYCEPHALOSAURUS.getID();
+            desiredDinosaurID = Dinosaurs.PACHYCEPHALOSAURUS.getID();
         }).size(150, 18).pos(width/2 - 75, height/2).build());
 
         addRenderableWidget(new Button.Builder(Component.literal("Deinonychus"),button -> {
-            desiredDinosaurID = DinosaursList.DEINONYCHUS.getID();
+            desiredDinosaurID = Dinosaurs.DEINONYCHUS.getID();
         }).size(150, 18).pos(width/2 - 75, height/2 + 25).build());
 
 
