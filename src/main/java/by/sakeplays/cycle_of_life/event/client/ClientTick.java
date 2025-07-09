@@ -1,8 +1,11 @@
 package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnHistory;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
 import by.sakeplays.cycle_of_life.network.to_server.SyncHitboxes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -37,7 +40,17 @@ public class ClientTick {
 
     }
 
+    @SubscribeEvent
+    public static void recordHistory(ClientTickEvent.Pre event) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
 
+        float turnDegree = player.getData(DataAttachments.PLAYER_TURN);
 
+        Util.recordYHistory(player, (float) player.getY());
+        PacketDistributor.sendToServer(new SyncYHistory(player.getId(),  (float) player.getY()));
 
+        Util.recordTurnHistory(player, turnDegree);
+        PacketDistributor.sendToServer(new SyncTurnHistory(player.getId(),  turnDegree));
+    }
 }

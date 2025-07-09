@@ -6,9 +6,14 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
+import com.google.common.collect.Multimap;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -17,9 +22,10 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.UUID;
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
-public class SyncData {
+public class OnEntityTick {
 
     private static int tick;
 
@@ -45,6 +51,9 @@ public class SyncData {
             tick++;
             if (tick > 10) {
                 tick = 0;
+
+                handleAttribute(player);
+
                 if (!player.level().isClientSide())  {
                     PacketDistributor.sendToPlayersTrackingEntity(player, new SyncSelectedDinosaur(player.getId(),
                             player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur())); // sync selected dino to other clients
@@ -71,22 +80,22 @@ public class SyncData {
 
                     // tick weight, health and blood level
 
-                    float bleedRegen = Util.getDino(player).getBleedResistance();
+                    float bleedRegen = 0.02f;
 
                     if (player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = bleedRegen * 0.02f;
+                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.02f;
                     }
 
                     if (!player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = bleedRegen * 0.10f;
+                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.10f;
                     }
 
                     if (!player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = bleedRegen * 0.25f;
+                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.25f;
                     }
 
                     if (player.getData(DataAttachments.RESTING_STATE) == 2) {
-                        bleedRegen = Util.getDino(player).getBleedResistance();
+                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.7f;
                         bleedRegen = (float) (bleedRegen * Math.pow(player.getData(DataAttachments.REST_FACTOR), 0.2d));
                     }
 
@@ -161,18 +170,7 @@ public class SyncData {
                 }
             }
 
-            float turnDegree = player.getData(DataAttachments.PLAYER_TURN);
 
-            if (!player.level().isClientSide())  {
-
-                Util.recordYHistory(player, (float) player.getY());
-                PacketDistributor.sendToAllPlayers(new SyncYHistory(player.getId(),  (float) player.getY()));
-            } else {
-
-                Util.recordTurnHistory(player, turnDegree);
-                PacketDistributor.sendToServer(new SyncTurnHistory(player.getId(), turnDegree));
-
-            }
         }
     }
 
@@ -229,5 +227,23 @@ public class SyncData {
                 PacketDistributor.sendToAllPlayers(new SyncInitialized(player.getId(), true));
             }
         }
+    }
+
+    private static void handleAttribute(Player player) {
+        ResourceLocation damageModifier = ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "damageless");
+
+        AttributeInstance damage = player.getAttribute(Attributes.ATTACK_DAMAGE);
+
+        if (damage.getModifier(damageModifier) != null) {
+            damage.removeModifier(damageModifier);
+        }
+
+        AttributeModifier modifier = new AttributeModifier(
+                damageModifier,
+                -999,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        damage.addPermanentModifier(modifier);
     }
 }

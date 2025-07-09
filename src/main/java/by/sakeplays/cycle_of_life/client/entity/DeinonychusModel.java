@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 public class DeinonychusModel extends GeoModel<Deinonychus> {
 
+    private float prevRotY = 0;
 
     @Override
     public ResourceLocation getModelResource(Deinonychus animatable) {
@@ -48,7 +49,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         if (animationState.isCurrentAnimation(Deinonychus.WALK_ANIM)) {
             animationState.setControllerSpeed(1.3f);
         } else if (animationState.isCurrentAnimation(Deinonychus.RUN_ANIM)) {
-            animationState.setControllerSpeed(0.65f);
+            animationState.setControllerSpeed(0.15f);
         } else {
             animationState.setControllerSpeed(1f);
         }
@@ -76,8 +77,12 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
             return;
         }
 
-        center.setRotY(playerRot);
+        float currentRotY = Mth.lerp(partialTick, animatable.prevRotY, playerRot);
+
+        center.setRotY(currentRotY);
         leaningHandler.setRotZ(rotProgress * 0.2f);
+
+        animatable.prevRotY = currentRotY;
     }
 
 
@@ -136,12 +141,18 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         float tailRotY = -30 * Util.calculateTailYRot(turnDegreeHistory,
                 animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
 
-        tail_1_rot.setRotX(tailRotX);
-        tail_2_rot.setRotX(tailRotX);
-        tail_3_rot.setRotX(tailRotX);
+        float currentRotY = Mth.lerp(partialTick, animatable.prevTailRotY, tailRotY);
+        float currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
 
-        tail_1_rot.setRotY(tailRotY);
-        tail_2_rot.setRotY(tailRotY);
-        tail_3_rot.setRotY(tailRotY);
+        tail_1_rot.setRotX(currentRotX);
+        tail_2_rot.setRotX(currentRotX);
+        tail_3_rot.setRotX(currentRotX);
+
+        tail_1_rot.setRotY(currentRotY);
+        tail_2_rot.setRotY(currentRotY);
+        tail_3_rot.setRotY(currentRotY);
+
+        animatable.prevTailRotX = currentRotX;
+        animatable.prevTailRotY = currentRotY;
     }
 }
