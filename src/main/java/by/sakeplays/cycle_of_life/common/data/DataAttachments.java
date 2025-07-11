@@ -53,6 +53,9 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<Boolean>> ATTACK_TURNAROUND = ATTACHMENT_TYPES.register(
             "attack_turnaround", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 
+    public static final Supplier<AttachmentType<Boolean>> ATTEMPTING_PAIRING = ATTACHMENT_TYPES.register(
+            "attempting_pairing", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
     public static final Supplier<AttachmentType<Boolean>> HITBOXES_INITIALIZED = ATTACHMENT_TYPES.register(
             "hitboxes_initialized", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 

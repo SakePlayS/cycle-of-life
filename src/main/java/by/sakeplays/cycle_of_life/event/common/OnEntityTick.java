@@ -75,8 +75,11 @@ public class OnEntityTick {
                             + Util.getDino(player).getGrowthPerMin() / 120f;
                     newGrowth = Math.min(1f, newGrowth);
 
-                    player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
-                    PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));
+                    if (player.getData(DataAttachments.DINO_DATA).isInitialized()) {
+                        player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
+                        PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));
+                        player.refreshDimensions();
+                    }
 
                     // tick weight, health and blood level
 

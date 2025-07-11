@@ -31,6 +31,7 @@ public record SyncGrowth(float growth, int playerID) implements CustomPacketPayl
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
                 player.getData(DataAttachments.DINO_DATA).setGrowth(packet.growth);
+                player.refreshDimensions();
             }
         });
     }

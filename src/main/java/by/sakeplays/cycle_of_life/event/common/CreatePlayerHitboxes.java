@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -29,18 +30,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CreatePlayerHitboxes {
 
     @SubscribeEvent
-    public static void onPlayerLogIn(PlayerTickEvent.Pre event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
+    public static void createHitboxes(PlayerTickEvent.Post event) {
+        if (!event.getEntity().level().isClientSide) {
+
+            Player player = event.getEntity();
+
+            if (player.tickCount < 60) return;
 
             if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) return;
+
 
             if (!player.getData(DataAttachments.HITBOXES_INITIALIZED)) {
                 player.setData(DataAttachments.HITBOXES_INITIALIZED, true);
 
-
                 HitboxEntity headHitbox = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
                 headHitbox.setPlayerId(player.getId());
                 headHitbox.setHitboxType("HEAD");
+                headHitbox.setPos(player.getOnPos().getCenter());
 
                 player.level().addFreshEntity(headHitbox);
 
@@ -48,6 +54,7 @@ public class CreatePlayerHitboxes {
                 HitboxEntity body1 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
                 body1.setPlayerId(player.getId());
                 body1.setHitboxType("BODY1");
+                body1.setPos(player.getOnPos().getCenter());
 
                 player.level().addFreshEntity(body1);
 
@@ -55,6 +62,7 @@ public class CreatePlayerHitboxes {
                 HitboxEntity body2 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
                 body2.setPlayerId(player.getId());
                 body2.setHitboxType("BODY2");
+                body2.setPos(player.getOnPos().getCenter());
 
                 player.level().addFreshEntity(body2);
 
@@ -63,6 +71,7 @@ public class CreatePlayerHitboxes {
                 HitboxEntity tail2 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
                 tail2.setPlayerId(player.getId());
                 tail2.setHitboxType("TAIL1");
+                tail2.setPos(player.getOnPos().getCenter());
 
                 player.level().addFreshEntity(tail2);
 
@@ -70,6 +79,7 @@ public class CreatePlayerHitboxes {
                 HitboxEntity tail3 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
                 tail3.setPlayerId(player.getId());
                 tail3.setHitboxType("TAIl2");
+                tail3.setPos(player.getOnPos().getCenter());
 
                 player.level().addFreshEntity(tail3);
             }

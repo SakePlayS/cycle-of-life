@@ -6,6 +6,7 @@ import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
+import by.sakeplays.cycle_of_life.network.to_server.RequestPlayHurtSound;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -100,7 +101,7 @@ public class Util {
         return sum/iterations;
     }
 
-    public static void dealDamage(Player target, float dmg, float bleed) {
+    public static void dealDamage(Player target, float dmg, float bleed, boolean playHurtSound) {
         if (target.level().isClientSide) {
             DinoData data = target.getData(DataAttachments.DINO_DATA);
             float newBleed = data.getBleed() + bleed;
@@ -111,6 +112,8 @@ public class Util {
 
             data.setHealth(newHealth);
             PacketDistributor.sendToServer(new SyncHealth(target.getId(), newHealth));
+
+            if (playHurtSound) PacketDistributor.sendToServer(new RequestPlayHurtSound(target.getId()));
 
         }
     }

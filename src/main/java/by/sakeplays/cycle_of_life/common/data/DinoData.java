@@ -2,18 +2,14 @@ package by.sakeplays.cycle_of_life.common.data;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.UnknownNullability;
-
-import java.util.ArrayList;
 
 public class DinoData implements INBTSerializable<CompoundTag> {
 
 
     private int selectedDinosaur;
+    private int pairingWith;
     private float stamina;
     private float acceleration;
     private float foodLevel;
@@ -28,8 +24,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private boolean isMoving;
     private boolean isMale;
     private boolean isSliding;
-
     private boolean isInitialized;
+    private boolean isPaired;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
@@ -51,6 +47,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bleed = bleed;
         this.isMale = isMale;
         this.isSliding = isSliding;
+        pairingWith = 0;
+        isPaired = false;
 
     }
 
@@ -58,6 +56,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
         nbt.putInt("SelectedDinosaur", selectedDinosaur);
+        nbt.putInt("PairingWith", pairingWith);
         nbt.putFloat("Stamina", stamina);
         nbt.putFloat("FoodLevel", foodLevel);
         nbt.putFloat("WaterLevel", waterLevel);
@@ -71,6 +70,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putFloat("BloodLevel", bloodLevel);
         nbt.putFloat("Bleed", bleed);
         nbt.putBoolean("IsMale", isMale);
+        nbt.putBoolean("IsPaired", isPaired);
 
         return nbt;
     }
@@ -78,6 +78,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         this.selectedDinosaur = nbt.getInt("SelectedDinosaur");
+        this.pairingWith = nbt.getInt("PairingWith");
         this.stamina = nbt.getFloat("Stamina");
         this.foodLevel = nbt.getFloat("FoodLevel");
         this.waterLevel = nbt.getFloat("WaterLevel");
@@ -91,6 +92,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bleed = nbt.getFloat("Bleed");
         this.bloodLevel = nbt.getFloat("BloodLevel");
         this.isMale = nbt.getBoolean("IsMale");
+        this.isPaired = nbt.getBoolean("IsPaired");
 
     }
 
@@ -222,6 +224,9 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         setBloodLevel(1);
         setSprinting(false);
         setMoving(false);
+        setPairingWith(0);
+        setPaired(false);
+
     }
 
     public boolean isMale() {
@@ -239,6 +244,22 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
     public void setSliding(boolean sliding) {
         isSliding = sliding;
+    }
+
+    public int getPairingWith() {
+        return pairingWith;
+    }
+
+    public void setPairingWith(int pairingWith) {
+        this.pairingWith = pairingWith;
+    }
+
+    public boolean isPaired() {
+        return isPaired;
+    }
+
+    public void setPaired(boolean paired) {
+        isPaired = paired;
     }
 }
 

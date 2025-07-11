@@ -7,7 +7,7 @@ public enum Dinosaurs {
             7.5f, 0.32f, 2f, 0.65f, 1750f, 350, 0.005f,
             0.00065f, 0.00045f, Diet.HERBIVORE, false, 5.12f,0.0006f ,1),
 
-    DEINONYCHUS(0.13f,0.55f,5f,75f, 5f, 12f,
+    DEINONYCHUS(0.13f,0.55f,0.2f,75f, 5f, 12f,
             13f, 0.45f, 0.004f, 0.55f, 2800f, 200, 0.03f,
             0.00031f, 0.00037f, Diet.CARNIVORE, false, 1.45f, 0.0005f,2);
 

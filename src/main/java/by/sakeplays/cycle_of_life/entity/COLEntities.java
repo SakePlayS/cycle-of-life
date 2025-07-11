@@ -18,7 +18,8 @@ public class COLEntities {
             ("hitbox", () -> EntityType.Builder.of(HitboxEntity::new, MobCategory.MISC)
                     .sized(0.75f, 0.75f)
                     .updateInterval(1)
-                    .clientTrackingRange(64).build("hitbox"));
+                    .clientTrackingRange(64)
+                    .setShouldReceiveVelocityUpdates(true).build("hitbox"));
 
 
     public static final Supplier<EntityType<Pachycephalosaurus>> PACHYCEPHALOSAURUS = ENTITY_TYPES.register

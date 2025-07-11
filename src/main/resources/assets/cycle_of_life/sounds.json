@@ -1,0 +1,9 @@
+{
+  "deinonychus_hurt": {
+    "category": "player",
+    "subtitle": "entity.deinonychus.hurt",
+    "sounds": [
+      "cycle_of_life:deinonychus_hurt1", "cycle_of_life:deinonychus_hurt2"
+    ]
+  }
+}

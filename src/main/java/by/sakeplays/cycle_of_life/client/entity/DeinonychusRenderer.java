@@ -29,7 +29,7 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
         float growth = animatable.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth();
-        float size = Mth.lerp(growth, 0.04f, 0.9f);
+        float size = Mth.lerp(growth, 0.04f, 0.8f);
         poseStack.scale(size, size, size);
 
         boolean isMale = animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale();

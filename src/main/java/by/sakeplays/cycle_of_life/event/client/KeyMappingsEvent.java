@@ -13,31 +13,35 @@ import org.lwjgl.glfw.GLFW;
 public class KeyMappingsEvent {
     public static final KeyMapping FORWARD_MAPPING =
             new KeyMapping("key.cycle_of_life.forward", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_W,
-                    "key.categories.cycle_of_life.movement");
-
-    public static final KeyMapping DIRECTIONAL_ATTACK =
-            new KeyMapping("key.cycle_of_life.directional_attack", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
 
     public static final KeyMapping LEFT_MAPPING =
             new KeyMapping("key.cycle_of_life.left", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_A,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
 
     public static final KeyMapping RIGHT_MAPPING =
             new KeyMapping("key.cycle_of_life.right", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_D,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
 
     public static final KeyMapping SPRINT_MAPPING =
             new KeyMapping("key.cycle_of_life.sprint", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping DIRECTIONAL_ATTACK =
+            new KeyMapping("key.cycle_of_life.directional_attack", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT,
+                    "key.categories.cycle_of_life");
 
     public static final KeyMapping MAIN_ATTACK_MAPPING =
             new KeyMapping("key.cycle_of_life.main_attack", InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_LEFT,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
 
     public static final KeyMapping REST_MAPPING =
             new KeyMapping("key.cycle_of_life.rest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H,
-                    "key.categories.cycle_of_life.movement");
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping PAIR_MAPPING =
+            new KeyMapping("key.cycle_of_life.pair", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P,
+                    "key.categories.cycle_of_life");
 
     @SubscribeEvent
     public static void registerBindings(RegisterKeyMappingsEvent event) {
@@ -48,6 +52,7 @@ public class KeyMappingsEvent {
         event.register(SPRINT_MAPPING);
         event.register(MAIN_ATTACK_MAPPING);
         event.register(REST_MAPPING);
+        event.register(PAIR_MAPPING);
 
     }
 }

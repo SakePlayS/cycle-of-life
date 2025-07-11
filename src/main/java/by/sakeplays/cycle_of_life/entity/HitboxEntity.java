@@ -1,5 +1,6 @@
 package by.sakeplays.cycle_of_life.entity;
 
+import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.HitboxData;
 import net.minecraft.nbt.CompoundTag;
@@ -61,7 +62,7 @@ public class HitboxEntity extends Entity {
     public void tick() {
         super.tick();
 
-        if (tickCount < 2) return;
+        if (tickCount < 3) return;
 
         if (getPlayer() == null) {
             this.remove(RemovalReason.DISCARDED);
@@ -71,6 +72,7 @@ public class HitboxEntity extends Entity {
 
         HitboxData data = getPlayer().getData(DataAttachments.HITBOX_DATA);
         float growth = getPlayer().getData(DataAttachments.DINO_DATA).getGrowth();
+
 
         switch (getHitboxType()) {
 
@@ -145,4 +147,8 @@ public class HitboxEntity extends Entity {
         return this.entityData.get(TYPE).toUpperCase();
     }
 
+    @Override
+    public boolean isAlwaysTicking() {
+        return true;
+    }
 }

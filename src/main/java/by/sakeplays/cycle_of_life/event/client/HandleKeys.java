@@ -30,15 +30,15 @@ public class HandleKeys {
     public static float turnMultiplier = 0f;
     private static float speed = 0;
     private static float maxSpeed = 0;
-    private static float trueMaxSpeed = 0;
-    private static int tick = 0;
     private static int attackCooldown = 0;
     private static int backwardsAttackTimer = 0;
     private static boolean turningLocked = false;
     private static boolean canMove = true;
     private static boolean restingPressed = false;
+    private static boolean isPairing = false;
     private static int restingTimerOut = 0;
     private static int restingTimerIn = 0;
+    private static boolean pairingLocked = false;
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -58,6 +58,7 @@ public class HandleKeys {
 
         handleMainAttack(player);
         handleResting(player);
+        handlePairing(player);
 
         boolean sliding = (!player.getData(DataAttachments.DINO_DATA).isMoving() &&
                 (player.getDeltaMovement().x() != 0 || player.getDeltaMovement().z() != 0));
@@ -132,7 +133,10 @@ public class HandleKeys {
 
         if (player.onGround() || player.isInWater()) {
 
-            if (player.isInWater()) walkSpeed = walkSpeed/3;
+            if (player.isInWater()) {
+                walkSpeed = walkSpeed * swimSpeed;
+                sprintSpeed = sprintSpeed * swimSpeed;
+            }
 
             if (dinoData.isSprinting()) {
                 maxSpeed = sprintSpeed;
@@ -174,6 +178,7 @@ public class HandleKeys {
     private static void handleMainAttack(Player player) {
         if (!canMove) return;
 
+        if (KeyMappingsEvent.PAIR_MAPPING.isDown()) return;
 
         float turnDegree = player.getData(DataAttachments.PLAYER_TURN);
 
@@ -217,8 +222,8 @@ public class HandleKeys {
                     Player targetPlayer = target.getPlayer();
 
                     iterations++;
-                    player.level().playLocalSound(targetPlayer.getOnPos(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 2, 1, true);
-                    Util.dealDamage(targetPlayer, 7f * target.getDamageFactor(), 0.06f  * target.getDamageFactor());
+                    Util.dealDamage(targetPlayer, 15f * target.getDamageFactor(),
+                            0.06f  * target.getDamageFactor(), true);
                     Util.addStamina(player, -10f);
                 }
             }
@@ -230,6 +235,8 @@ public class HandleKeys {
 
             player.setData(DataAttachments.ATTACK_TURNAROUND, true);
             PacketDistributor.sendToServer(new SyncAttackTurnaround(true, player.getId()));
+
+            player.sendSystemMessage(Component.literal("Paired with: " + player.getData(DataAttachments.DINO_DATA).getPairingWith()));
 
         }
 
@@ -248,8 +255,8 @@ public class HandleKeys {
                     Player targetPlayer = target.getPlayer();
 
                     iterations++;
-                    player.level().playLocalSound(targetPlayer.getOnPos(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 2, 1, true);
-                    Util.dealDamage(targetPlayer, 15f  * target.getDamageFactor(), 0.15f  * target.getDamageFactor());
+                    Util.dealDamage(targetPlayer, 25f  * target.getDamageFactor(),
+                            0.15f  * target.getDamageFactor(), true);
                     Util.addStamina(player, -30f);
                 }
             }
@@ -262,6 +269,9 @@ public class HandleKeys {
 
     private static void handleResting(Player player) {
         if (KeyMappingsEvent.REST_MAPPING.isDown() ) {
+
+            if (KeyMappingsEvent.PAIR_MAPPING.isDown()) return;
+
             if (!restingPressed && restingTimerOut <= 0) {
                 restingPressed = true;
                 canMove = false;
@@ -270,12 +280,10 @@ public class HandleKeys {
 
                     player.setData(DataAttachments.RESTING_STATE, 1);
                     PacketDistributor.sendToServer(new SyncRestingState(1, player.getId()));
-                    player.sendSystemMessage(Component.literal("1"));
 
                 }
 
                 if (player.getData(DataAttachments.RESTING_STATE) == 2) {
-                    player.sendSystemMessage(Component.literal("3"));
                     player.setData(DataAttachments.RESTING_STATE, 3);
                     PacketDistributor.sendToServer(new SyncRestingState(3, player.getId()));
 
@@ -298,17 +306,77 @@ public class HandleKeys {
             player.setData(DataAttachments.RESTING_STATE, 0);
             PacketDistributor.sendToServer(new SyncRestingState(0, player.getId()));
             canMove = true;
-            player.sendSystemMessage(Component.literal("0"));
 
         }
 
         if (restingTimerIn == 1) {
             player.setData(DataAttachments.RESTING_STATE, 2);
             PacketDistributor.sendToServer(new SyncRestingState(2, player.getId()));
-            player.sendSystemMessage(Component.literal("2"));
 
         }
     }
 
+    private static void handlePairing(Player player) {
 
+        if (attackCooldown > 0) return;
+
+        if (KeyMappingsEvent.PAIR_MAPPING.isDown()) {
+            isPairing = true;
+            canMove = false;
+            turningLocked = true;
+
+            player.setData(DataAttachments.ATTEMPTING_PAIRING, true);
+            PacketDistributor.sendToServer(new SyncAttemptingPairing(true, player.getId()));
+
+        } else if (isPairing){
+            isPairing = false;
+            turningLocked = false;
+            canMove = true;
+            pairingLocked = false;
+
+            player.setData(DataAttachments.ATTEMPTING_PAIRING, false);
+            PacketDistributor.sendToServer(new SyncAttemptingPairing(false, player.getId()));
+        }
+
+        if (isPairing && !pairingLocked) {
+            pairingLocked = true; // make sure we check for targets only 1 time when the player holds down the key
+
+            float dirX = (float) Math.sin(player.getData(DataAttachments.PLAYER_TURN));
+            float dirZ = (float) Math.cos(player.getData(DataAttachments.PLAYER_TURN));
+
+            double x = player.getX() + dirX * 2.5;
+            double y = player.getY();
+            double z = player.getZ() + dirZ * 2.5;
+            double size = 1;
+
+            AABB hitbox = new AABB(
+                    x - size, y, z - size,
+                    x + size, y + 1.2d, z + size
+            );
+
+            int iterations = 0;
+
+            List<Player> possibleTargets = player.level().getEntities(EntityTypeTest.forClass(Player.class), hitbox, e -> true);
+
+
+            for (Player target : possibleTargets) {
+
+                if (target != player && iterations <= 0) {
+
+                    if (target.getData(DataAttachments.DINO_DATA).getGrowth() > 0.99f &&
+                            ((target.getData(DataAttachments.DINO_DATA).isMale() != player.getData(DataAttachments.DINO_DATA).isMale()))) {
+
+
+                        int targetID = target.getId();
+
+                        player.getData(DataAttachments.DINO_DATA).setPairingWith(targetID);
+                        PacketDistributor.sendToServer(new SyncPairingWith(targetID, player.getId()));
+
+
+                        iterations++;
+                    }
+                }
+            }
+        }
+    }
 }

@@ -44,7 +44,7 @@ public class HUDEvent {
 
         Player player = Minecraft.getInstance().player;
 
-        if (player == null || player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 1) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) return;
 
 
         GuiGraphics graphics = event.getGuiGraphics();

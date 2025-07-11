@@ -4,10 +4,7 @@ import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnHistory;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
-import by.sakeplays.cycle_of_life.network.to_server.RequestMovement;
-import by.sakeplays.cycle_of_life.network.to_server.RequestSelectDinosaur;
-import by.sakeplays.cycle_of_life.network.to_server.SyncHitboxes;
-import by.sakeplays.cycle_of_life.network.to_server.SyncTurnDegree2S;
+import by.sakeplays.cycle_of_life.network.to_server.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -39,6 +36,7 @@ public class ModPackets {
         registrar.playToServer(RequestMovement.TYPE, RequestMovement.STREAM_CODEC, RequestMovement::handleServer);
         registrar.playToServer(SyncTurnDegree2S.TYPE, SyncTurnDegree2S.STREAM_CODEC, SyncTurnDegree2S::handleServer);
         registrar.playToServer(SyncHitboxes.TYPE, SyncHitboxes.STREAM_CODEC, SyncHitboxes::handleServer);
+        registrar.playToServer(RequestPlayHurtSound.TYPE, RequestPlayHurtSound.STREAM_CODEC, RequestPlayHurtSound::handleServer);
 
         registrar.playBidirectional(SyncDinoSprint.TYPE, SyncDinoSprint.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoSprint::handleClient, SyncDinoSprint::handleServer));
         registrar.playBidirectional(SyncDinoWalking.TYPE, SyncDinoWalking.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoWalking::handleClient, SyncDinoWalking::handleServer));
@@ -55,6 +53,9 @@ public class ModPackets {
         registrar.playBidirectional(SyncRestingState.TYPE, SyncRestingState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncRestingState::handleClient, SyncRestingState::handleServer));
         registrar.playBidirectional(SyncTurnProgress.TYPE, SyncTurnProgress.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncTurnProgress::handleClient, SyncTurnProgress::handleServer));
         registrar.playBidirectional(SyncIsSliding.TYPE, SyncIsSliding.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncIsSliding::handleClient, SyncIsSliding::handleServer));
+        registrar.playBidirectional(SyncAttemptingPairing.TYPE, SyncAttemptingPairing.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAttemptingPairing::handleClient, SyncAttemptingPairing::handleServer));
+        registrar.playBidirectional(SyncPairingWith.TYPE, SyncPairingWith.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncPairingWith::handleClient, SyncPairingWith::handleServer));
+        registrar.playBidirectional(SyncIsPaired.TYPE, SyncIsPaired.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncIsPaired::handleClient, SyncIsPaired::handleServer));
 
 
     }

@@ -71,6 +71,7 @@ public class CycleOfLife
         CREATIVE_MODE_TABS.register(modEventBus);
         COLEntities.register(modEventBus);
         DataAttachments.register(modEventBus);
+        ModSounds.register(modEventBus);
 
 
         NeoForge.EVENT_BUS.register(this);
