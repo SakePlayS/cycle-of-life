@@ -319,6 +319,7 @@ public class HandleKeys {
     private static void handlePairing(Player player) {
 
         if (attackCooldown > 0) return;
+        if (player.getData(DataAttachments.DINO_DATA).getGrowth() <= 0.99f) return;
 
         if (KeyMappingsEvent.PAIR_MAPPING.isDown()) {
             isPairing = true;
