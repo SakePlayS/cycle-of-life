@@ -1,24 +1,19 @@
-package by.sakeplays.cycle_of_life.client.entity;
+package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
-import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.loading.math.MathParser;
 import software.bernie.geckolib.model.GeoModel;
 
 import java.util.ArrayList;
 
 public class DeinonychusModel extends GeoModel<Deinonychus> {
 
-    private float prevRotY = 0;
 
     @Override
     public ResourceLocation getModelResource(Deinonychus animatable) {
@@ -27,7 +22,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
     @Override
     public ResourceLocation getTextureResource(Deinonychus animatable) {
-        return ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "textures/entity/deinonychus.png");
+        return ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "textures/entity/deinonychus/deinonychus.png");
     }
 
     @Override
@@ -39,12 +34,16 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
     public void setCustomAnimations(Deinonychus animatable, long instanceId, AnimationState<Deinonychus> animationState) {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
+        if (animatable.isForScreenRendering) return;
+
+
         if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) animatable.triggerAnim("attack", "slash");
         if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND)) animatable.triggerAnim("attack", "turnaround_slash");
         if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 1) animatable.triggerAnim("attack", "rest_in");
         if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 2) animatable.triggerAnim("attack", "rest_loop");
         if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 3) animatable.triggerAnim("attack", "rest_out");
 
+        if (animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) >= 1 && animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) < 3) animatable.triggerAnim("attack", "courting_male");
 
         if (animationState.isCurrentAnimation(Deinonychus.WALK_ANIM)) {
             animationState.setControllerSpeed(1.3f);

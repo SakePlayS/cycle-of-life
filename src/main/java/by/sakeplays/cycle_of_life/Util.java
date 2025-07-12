@@ -131,5 +131,20 @@ public class Util {
         }
     }
 
+    public static int rgbaToInt(float r, float g, float b, float a) {
+        int alpha = (int)(a * 255.0f) << 24;
+        int red   = (int)(r * 255.0f) << 16;
+        int green = (int)(g * 255.0f) << 8;
+        int blue  = (int)(b * 255.0f);
+        return alpha | red | green | blue;
+    }
+
+    public static int rgbaToInt(int r, int g, int b, int a) {
+        int alpha = a << 24;
+        int red   = r << 16;
+        int green = g << 8;
+        return alpha | red | green | b;
+    }
+
 
 }

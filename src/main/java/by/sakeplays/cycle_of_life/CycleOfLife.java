@@ -1,6 +1,6 @@
 package by.sakeplays.cycle_of_life;
 
-import by.sakeplays.cycle_of_life.client.entity.DeinonychusRenderer;
+import by.sakeplays.cycle_of_life.client.entity.deinonychus.DeinonychusRenderer;
 import by.sakeplays.cycle_of_life.client.entity.HitboxRenderer;
 import by.sakeplays.cycle_of_life.client.entity.PachycephalosaurusRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
@@ -36,8 +36,6 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import software.bernie.geckolib.loading.math.MathParser;
-import software.bernie.geckolib.loading.math.value.Variable;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(CycleOfLife.MODID)

@@ -56,6 +56,8 @@ public class ModPackets {
         registrar.playBidirectional(SyncAttemptingPairing.TYPE, SyncAttemptingPairing.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAttemptingPairing::handleClient, SyncAttemptingPairing::handleServer));
         registrar.playBidirectional(SyncPairingWith.TYPE, SyncPairingWith.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncPairingWith::handleClient, SyncPairingWith::handleServer));
         registrar.playBidirectional(SyncIsPaired.TYPE, SyncIsPaired.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncIsPaired::handleClient, SyncIsPaired::handleServer));
+        registrar.playBidirectional(SyncPairingState.TYPE, SyncPairingState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncPairingState::handleClient, SyncPairingState::handleServer));
+        registrar.playBidirectional(SyncSkinData.TYPE, SyncSkinData.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncSkinData::handleClient, SyncSkinData::handleServer));
 
 
     }

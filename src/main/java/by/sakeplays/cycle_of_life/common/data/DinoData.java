@@ -29,7 +29,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
-                    float growth, float weight, boolean isInitialized, float bloodLevel, float bleed, boolean isMale,
+                    float growth, float weight, boolean isInitialized, float bloodLevel, float bleed,
                     boolean isSliding) {
         this.selectedDinosaur = selectedDino;
         this.stamina = stamina;
@@ -45,10 +45,14 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.isInitialized = isInitialized;
         this.bloodLevel = bloodLevel;
         this.bleed = bleed;
-        this.isMale = isMale;
         this.isSliding = isSliding;
+
+        isMale = Math.random() < 0.5;
+
         pairingWith = 0;
         isPaired = false;
+
+
 
     }
 
@@ -226,6 +230,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         setMoving(false);
         setPairingWith(0);
         setPaired(false);
+        isMale = Math.random() < 0.5;
+
 
     }
 

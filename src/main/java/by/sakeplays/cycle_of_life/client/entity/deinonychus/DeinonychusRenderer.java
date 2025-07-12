@@ -1,4 +1,4 @@
-package by.sakeplays.cycle_of_life.client.entity;
+package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.Position;
@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +23,13 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
 
     public DeinonychusRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new DeinonychusModel());
+        this.addRenderLayer(new DeinonychusMaleDisplayLayer<>(this));
+        this.addRenderLayer(new DeinonychusBellyLayer<>(this));
+        this.addRenderLayer(new DeinonychusBodyLayer<>(this));
+        this.addRenderLayer(new DeinonychusEyesLayer<>(this));
+        this.addRenderLayer(new DeinonychusFlankLayer<>(this));
+        this.addRenderLayer(new DeinonychusMarkingsLayer<>(this));
+
     }
 
     @Override
@@ -30,6 +38,7 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
 
         float growth = animatable.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth();
         float size = Mth.lerp(growth, 0.04f, 0.8f);
+        if (animatable.isForScreenRendering) size = 1;
         poseStack.scale(size, size, size);
 
         boolean isMale = animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale();
@@ -56,6 +65,10 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
 
 
     private void tick(Deinonychus animatable, BakedGeoModel model) {
+
+        if (animatable.isForScreenRendering) return;
+
+
         tick = animatable.getPlayer().tickCount;
 
         if (animatable.getPlayer() == Minecraft.getInstance().player) {
@@ -91,5 +104,9 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
 
 
         }
+    }
+
+    @Override
+    protected void renderNameTag(Deinonychus entity, Component displayName, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {
     }
 }

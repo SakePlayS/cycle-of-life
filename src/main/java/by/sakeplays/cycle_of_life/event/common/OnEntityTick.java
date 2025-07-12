@@ -4,6 +4,7 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
 import com.google.common.collect.Multimap;
@@ -60,6 +61,14 @@ public class OnEntityTick {
 
                     PacketDistributor.sendToAllPlayers(new SyncIsMale(player.getId(),
                             player.getData(DataAttachments.DINO_DATA).isMale()));
+
+                    // sync skin data
+
+                    SkinData data = player.getData(DataAttachments.SKIN_DATA);
+
+                    PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), data.getEyesColor(),
+                            data.getMarkingsColor(), data.getBodyColor(), data.getFlankColor(),
+                            data.getBellyColor(), data.getMaleDisplayColor()));
 
                     // update resting factor
 
@@ -170,10 +179,16 @@ public class OnEntityTick {
                         player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
                         PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
                     }
+
+                    if (player.getData(DataAttachments.PAIRING_STATE) > 0 && player.getData(DataAttachments.PAIRING_STATE) < 3) {
+                        int newPairingState = player.getData(DataAttachments.PAIRING_STATE) + 1;
+
+                        player.setData(DataAttachments.PAIRING_STATE, newPairingState);
+                        PacketDistributor.sendToAllPlayers(new SyncPairingState(newPairingState, player.getId()));
+
+                    }
                 }
             }
-
-
         }
     }
 
@@ -205,14 +220,6 @@ public class OnEntityTick {
         if (!player.level().isClientSide) {
 
             if (data.getSelectedDinosaur() != 0) {
-
-                if (Math.random() < 0.5) {
-                    data.setMale(false);
-                    PacketDistributor.sendToAllPlayers(new SyncIsMale(player.getId(), false));
-                } else {
-                    data.setMale(true);
-                    PacketDistributor.sendToAllPlayers(new SyncIsMale(player.getId(), true));
-                }
 
                 data.setWeight(Util.getDino(player).getStartWeight());
                 PacketDistributor.sendToAllPlayers(new SyncWeight(player.getId(), Util.getDino(player).getStartWeight()));

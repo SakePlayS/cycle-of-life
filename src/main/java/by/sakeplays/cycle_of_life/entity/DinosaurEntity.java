@@ -19,6 +19,7 @@ public abstract class DinosaurEntity extends LivingEntity {
     }
 
     public volatile Integer playerId;
+    public boolean isForScreenRendering = false;
 
     public Player getPlayer() {
 
@@ -29,8 +30,6 @@ public abstract class DinosaurEntity extends LivingEntity {
 
         return null;
     }
-
-
 
 
     @Override

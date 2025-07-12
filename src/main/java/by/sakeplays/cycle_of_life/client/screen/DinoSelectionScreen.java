@@ -18,6 +18,8 @@ public class DinoSelectionScreen extends Screen {
             "textures/gui/dino_selection_screen/dino_selection_screen_bg.png");
     private int desiredDinosaurID = 0;
     private Button CONFIRM_BUTTON;
+    private Button PACHY_BUTTON;
+    private Button DEINO_BUTTON;
 
     public DinoSelectionScreen(Component title) {
         super(title);
@@ -30,6 +32,8 @@ public class DinoSelectionScreen extends Screen {
         if (CONFIRM_BUTTON != null) {
             CONFIRM_BUTTON.active = (desiredDinosaurID != 0);
         }
+
+        PACHY_BUTTON.active = false;
     }
 
     @Override
@@ -46,24 +50,25 @@ public class DinoSelectionScreen extends Screen {
     protected void init() {
         super.init();
 
-        CONFIRM_BUTTON = new Button.Builder(Component.literal("Confirm"), button -> {
+        CONFIRM_BUTTON = new Button.Builder(Component.literal("Next"), button -> {
             if (desiredDinosaurID != 0) {
-                Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).setSelectedDinosaur(desiredDinosaurID);
-                PacketDistributor.sendToServer(new RequestSelectDinosaur(desiredDinosaurID));
-                Minecraft.getInstance().setScreen(null);
+                Minecraft.getInstance().setScreen(new SkinCreatorScreen(Component.literal("Skin Creation"), desiredDinosaurID));
             }
         }).size(120, 18).pos(width/2 - 60, height - 40).build();
 
-        addRenderableWidget(new Button.Builder(Component.literal("Pachycephalosaurus"),button -> {
+        PACHY_BUTTON =  new Button.Builder(Component.literal("Pachycephalosaurus"),button -> {
             desiredDinosaurID = Dinosaurs.PACHYCEPHALOSAURUS.getID();
-        }).size(150, 18).pos(width/2 - 75, height/2).build());
+        }).size(150, 18).pos(width/2 - 75, height/2).build();
 
-        addRenderableWidget(new Button.Builder(Component.literal("Deinonychus"),button -> {
+        DEINO_BUTTON = new Button.Builder(Component.literal("Deinonychus"),button -> {
             desiredDinosaurID = Dinosaurs.DEINONYCHUS.getID();
-        }).size(150, 18).pos(width/2 - 75, height/2 + 25).build());
+        }).size(150, 18).pos(width/2 - 75, height/2 + 25).build();
 
 
         addRenderableWidget(CONFIRM_BUTTON);
+        addRenderableWidget(PACHY_BUTTON);
+        addRenderableWidget(DEINO_BUTTON);
+
     }
 
     @Override

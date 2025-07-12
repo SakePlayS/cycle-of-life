@@ -19,7 +19,10 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<DinoData>> DINO_DATA = ATTACHMENT_TYPES.register(
             "dino_data", () -> AttachmentType.serializable(() -> new DinoData(0, 1f, 1f,
                     1f, 0f, 1f, false, false, 0, 0.25f,
-                    10f, false, 1 ,0, true, false)).build());
+                    10f, false, 1 ,0,  false)).build());
+
+    public static final Supplier<AttachmentType<SkinData>> SKIN_DATA = ATTACHMENT_TYPES.register(
+            "skin_data", () -> AttachmentType.serializable(SkinData::new).build());
 
     public static final Supplier<AttachmentType<HitboxData>> HITBOX_DATA = ATTACHMENT_TYPES.register(
             "hitbox_data", () -> AttachmentType.serializable(() -> new HitboxData(
@@ -40,6 +43,9 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<Integer>> RESTING_STATE = ATTACHMENT_TYPES.register(
             "resting_state", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    public static final Supplier<AttachmentType<Integer>> PAIRING_STATE = ATTACHMENT_TYPES.register(
+            "pairing_state", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
     public static final Supplier<AttachmentType<Float>> TURN_PROGRESS = ATTACHMENT_TYPES.register(
             "turn_progress", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());

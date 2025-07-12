@@ -42,7 +42,7 @@ public record SyncPairingWith(int v, int playerID) implements CustomPacketPayloa
                 player.getData(DataAttachments.DINO_DATA).setPairingWith(packet.v());
             }
         }).thenRun(() -> {
-            PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet);
+            PacketDistributor.sendToAllPlayers(packet);
 
             if (context.player().level().getEntity(packet.v) instanceof Player targetPlayer) {
 
@@ -56,6 +56,12 @@ public record SyncPairingWith(int v, int playerID) implements CustomPacketPayloa
                     targetPlayer.getData(DataAttachments.DINO_DATA).setPaired(true);
                     PacketDistributor.sendToAllPlayers(new SyncIsPaired(true, targetPlayer.getId()));
                     targetPlayer.sendSystemMessage(Component.literal("Pairing complete. With: " + context.player().getName().getString()));
+
+                    targetPlayer.setData(DataAttachments.PAIRING_STATE, 1);
+                    PacketDistributor.sendToAllPlayers(new SyncPairingState(1, targetPlayer.getId()));
+
+                    context.player().setData(DataAttachments.PAIRING_STATE, 1);
+                    PacketDistributor.sendToAllPlayers(new SyncPairingState(1, context.player().getId()));
 
                 }
             }

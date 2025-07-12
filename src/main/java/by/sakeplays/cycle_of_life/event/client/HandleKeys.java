@@ -9,8 +9,6 @@ import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -38,6 +36,7 @@ public class HandleKeys {
     private static boolean isPairing = false;
     private static int restingTimerOut = 0;
     private static int restingTimerIn = 0;
+    private static int pairingTimeOut = 0;
     private static boolean pairingLocked = false;
 
     @SubscribeEvent
@@ -47,7 +46,6 @@ public class HandleKeys {
         if (player == null) {
             return;
         }
-
 
         attackCooldown--;
         backwardsAttackTimer--;
@@ -65,7 +63,6 @@ public class HandleKeys {
 
         player.getData(DataAttachments.DINO_DATA).setSliding(sliding);
         PacketDistributor.sendToServer(new SyncIsSliding(sliding, player.getId()));
-
     }
 
 
@@ -235,9 +232,6 @@ public class HandleKeys {
 
             player.setData(DataAttachments.ATTACK_TURNAROUND, true);
             PacketDistributor.sendToServer(new SyncAttackTurnaround(true, player.getId()));
-
-            player.sendSystemMessage(Component.literal("Paired with: " + player.getData(DataAttachments.DINO_DATA).getPairingWith()));
-
         }
 
         if (backwardsAttackTimer > 8) {
@@ -318,8 +312,20 @@ public class HandleKeys {
 
     private static void handlePairing(Player player) {
 
+        pairingTimeOut--;
+
+        if (player.getData(DataAttachments.PAIRING_STATE) == 1) pairingTimeOut = 55;
+        if (pairingTimeOut > 0) {
+            canMove = false;
+            turningLocked = true;
+        } else if (pairingTimeOut == 0) {
+            canMove = true;
+            turningLocked = false;
+        }
+
         if (attackCooldown > 0) return;
         if (player.getData(DataAttachments.DINO_DATA).getGrowth() <= 0.99f) return;
+        if (player.getData(DataAttachments.DINO_DATA).isPaired()) return;
 
         if (KeyMappingsEvent.PAIR_MAPPING.isDown()) {
             isPairing = true;
@@ -337,6 +343,9 @@ public class HandleKeys {
 
             player.setData(DataAttachments.ATTEMPTING_PAIRING, false);
             PacketDistributor.sendToServer(new SyncAttemptingPairing(false, player.getId()));
+
+            player.getData(DataAttachments.DINO_DATA).setPairingWith(0);
+            PacketDistributor.sendToServer(new SyncPairingWith(0, player.getId()));
         }
 
         if (isPairing && !pairingLocked) {
@@ -379,5 +388,9 @@ public class HandleKeys {
                 }
             }
         }
+    }
+
+    private static void attemptToPlaceNest(Player player) {
+
     }
 }
