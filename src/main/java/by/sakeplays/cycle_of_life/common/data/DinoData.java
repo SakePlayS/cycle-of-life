@@ -26,6 +26,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private boolean isSliding;
     private boolean isInitialized;
     private boolean isPaired;
+    private boolean isDrinking;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
@@ -51,6 +52,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
         pairingWith = 0;
         isPaired = false;
+        isDrinking = false;
 
 
 
@@ -75,6 +77,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putFloat("Bleed", bleed);
         nbt.putBoolean("IsMale", isMale);
         nbt.putBoolean("IsPaired", isPaired);
+        nbt.putBoolean("IsDrinking", isDrinking);
 
         return nbt;
     }
@@ -97,6 +100,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bloodLevel = nbt.getFloat("BloodLevel");
         this.isMale = nbt.getBoolean("IsMale");
         this.isPaired = nbt.getBoolean("IsPaired");
+        this.isDrinking = nbt.getBoolean("IsDrinking");
 
     }
 
@@ -266,6 +270,14 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
     public void setPaired(boolean paired) {
         isPaired = paired;
+    }
+
+    public boolean isDrinking() {
+        return isDrinking;
+    }
+
+    public void setDrinking(boolean drinking) {
+        isDrinking = drinking;
     }
 }
 

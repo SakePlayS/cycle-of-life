@@ -2,6 +2,11 @@ package by.sakeplays.cycle_of_life;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
+import by.sakeplays.cycle_of_life.entity.COLEntities;
+import by.sakeplays.cycle_of_life.entity.Deinonychus;
+import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
+import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
@@ -123,9 +128,9 @@ public class Util {
             DinoData data = target.getData(DataAttachments.DINO_DATA);
             float newStam = data.getStamina() + stamina;
 
-            if (newStam >  getDino(target).getStaminaPool()) newStam = getDino(target).getStaminaPool();
+            if (newStam >  Util.getStaminaUpgraded(target)) newStam = Util.getStaminaUpgraded(target);
 
-            data.setStamina(newStam);
+            target.getData(DataAttachments.DINO_DATA).setStamina(newStam);
             PacketDistributor.sendToServer(new SyncStamina(target.getId(), newStam));
 
         }
@@ -144,6 +149,25 @@ public class Util {
         int red   = r << 16;
         int green = g << 8;
         return alpha | red | green | b;
+    }
+
+    public static float getStaminaUpgraded(Player player) {
+        EnhancedStamina data = player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA;
+
+
+        return getDino(player).getStaminaPool() * (1 + data.getValue(data.getLevel()));
+    }
+
+    public static DinosaurEntity getBody(Player player) {
+        return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
+    }
+
+    public static float calculateGrowth(DinosaurEntity entity) {
+
+        if (entity.isBody()) return Mth.lerp(entity.getBodyGrowth(), 0.04f, 0.8f);
+        if (entity.isForScreenRendering) return 1;
+        return Mth.lerp(entity.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth(), 0.04f, 0.8f);
+
     }
 
 

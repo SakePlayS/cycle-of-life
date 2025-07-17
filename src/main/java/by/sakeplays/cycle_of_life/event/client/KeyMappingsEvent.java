@@ -43,6 +43,14 @@ public class KeyMappingsEvent {
             new KeyMapping("key.cycle_of_life.pair", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping EAT_MAPPING =
+            new KeyMapping("key.cycle_of_life.eat", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E,
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping CHARACTER_MAPPING =
+            new KeyMapping("key.cycle_of_life.character_info", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_TAB,
+                    "key.categories.cycle_of_life");
+
     @SubscribeEvent
     public static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(FORWARD_MAPPING);
@@ -53,6 +61,8 @@ public class KeyMappingsEvent {
         event.register(MAIN_ATTACK_MAPPING);
         event.register(REST_MAPPING);
         event.register(PAIR_MAPPING);
+        event.register(EAT_MAPPING);
+        event.register(CHARACTER_MAPPING);
 
     }
 }

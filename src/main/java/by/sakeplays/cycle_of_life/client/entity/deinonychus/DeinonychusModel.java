@@ -4,13 +4,16 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DeinonychusModel extends GeoModel<Deinonychus> {
 
@@ -37,20 +40,47 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         if (animatable.isForScreenRendering) return;
 
 
-        if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) animatable.triggerAnim("attack", "slash");
-        if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND)) animatable.triggerAnim("attack", "turnaround_slash");
-        if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 1) animatable.triggerAnim("attack", "rest_in");
-        if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 2) animatable.triggerAnim("attack", "rest_loop");
-        if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 3) animatable.triggerAnim("attack", "rest_out");
+        if (!animatable.isBody()) {
 
-        if (animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) >= 1 && animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) < 3) animatable.triggerAnim("attack", "courting_male");
+            if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) {
 
-        if (animationState.isCurrentAnimation(Deinonychus.WALK_ANIM)) {
-            animationState.setControllerSpeed(1.3f);
-        } else if (animationState.isCurrentAnimation(Deinonychus.RUN_ANIM)) {
-            animationState.setControllerSpeed(0.15f);
-        } else {
-            animationState.setControllerSpeed(1f);
+                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("LEFT"))
+                    animatable.triggerAnim("attack", "slash_left");
+                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("RIGHT"))
+                    animatable.triggerAnim("attack", "slash_right");
+                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("STILL"))
+                    animatable.triggerAnim("attack", "bite");
+
+            }
+
+            if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND))
+                animatable.triggerAnim("attack", "turnaround_slash");
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 1)
+                animatable.triggerAnim("attack", "rest_in");
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 2)
+                animatable.triggerAnim("attack", "rest_loop");
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 3)
+                animatable.triggerAnim("attack", "rest_out");
+
+            if (animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) >= 1 && animatable.getPlayer().getData(DataAttachments.PAIRING_STATE) < 3) {
+                if (animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale()) {
+                    animatable.triggerAnim("attack", "courting_male");
+                } else {
+                    animatable.triggerAnim("attack", "courting_female");
+                }
+            }
+
+            if (animationState.isCurrentAnimation(Deinonychus.WALK_ANIM)) {
+                animationState.setControllerSpeed(1.3f);
+            } else if (animationState.isCurrentAnimation(Deinonychus.RUN_ANIM)) {
+                animationState.setControllerSpeed(0.15f);
+            } else {
+                animationState.setControllerSpeed(1f);
+            }
+
+            if (animatable.getPlayer().tickCount % 20 == 0) {
+                if (Math.random() < 0.1) animatable.triggerAnim("blink", "blink");
+            }
         }
 
 
@@ -65,15 +95,17 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
     }
 
     private void handleBodyRotation(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
-        float playerRot = animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
-        float rotProgress = animatable.getPlayer().getData(DataAttachments.TURN_PROGRESS);
+
+        float playerRot = 0;
+        float rotProgress = 0;
 
         GeoBone center = getAnimationProcessor().getBone("center");
         GeoBone leaningHandler = getAnimationProcessor().getBone("leaning_handler");
 
 
-        if (animatable.playerId == null) {
-            return;
+        if (animatable.playerId != null && !animatable.isBody()) {
+            rotProgress = animatable.getPlayer().getData(DataAttachments.TURN_PROGRESS);
+            playerRot = animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
         }
 
         float currentRotY = Mth.lerp(partialTick, animatable.prevRotY, playerRot);
@@ -92,13 +124,14 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         GeoBone head_tilt = getAnimationProcessor().getBone("head_tilt");
         GeoBone neck_tilt = getAnimationProcessor().getBone("neck_tilt");
 
+        float playerRot = 0;
+        float playerYaw = 0;
 
-        if (animatable.playerId == null) {
-            return;
+        if (animatable.playerId != null && !animatable.isBody()) {
+            playerRot = (animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
+            playerYaw = (animatable.getPlayer().getYRot() * -Mth.DEG_TO_RAD);
         }
 
-        float playerRot = (animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
-        float playerYaw = (animatable.getPlayer().getYRot() * -Mth.DEG_TO_RAD);
 
         float playerDiff = playerYaw - playerRot;
 
@@ -127,21 +160,28 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
     private void handleTailPhysics(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
 
+
         GeoBone tail_1_rot = getAnimationProcessor().getBone("tail_1_rot");
         GeoBone tail_2_rot = getAnimationProcessor().getBone("tail_2_rot");
         GeoBone tail_3_rot = getAnimationProcessor().getBone("tail_3_rot");
 
-        ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
-        ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
+        float currentRotY = 0;
+        float currentRotX = 0;
 
-        if (yHistory.size() < 6 || turnDegreeHistory.size() < 9) return;
+        if (animatable.playerId != null && !animatable.isBody()) {
 
-        float tailRotX = 35 * Util.calculateTailXRot(yHistory);
-        float tailRotY = -30 * Util.calculateTailYRot(turnDegreeHistory,
-                animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
+            ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
+            ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
 
-        float currentRotY = Mth.lerp(partialTick, animatable.prevTailRotY, tailRotY);
-        float currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
+            if (yHistory.size() < 6 || turnDegreeHistory.size() < 9) return;
+
+            float tailRotX = 35 * Util.calculateTailXRot(yHistory);
+            float tailRotY = -30 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
+
+            currentRotY = Mth.lerp(partialTick, animatable.prevTailRotY, tailRotY);
+            currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
+        }
 
         tail_1_rot.setRotX(currentRotX);
         tail_2_rot.setRotX(currentRotX);
@@ -154,4 +194,5 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         animatable.prevTailRotX = currentRotX;
         animatable.prevTailRotY = currentRotY;
     }
+
 }

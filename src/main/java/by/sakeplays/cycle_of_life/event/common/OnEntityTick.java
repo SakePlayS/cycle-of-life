@@ -2,14 +2,20 @@ package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
+import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
+import by.sakeplays.cycle_of_life.entity.COLEntities;
+import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
+import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
-import com.google.common.collect.Multimap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -18,12 +24,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-
-import java.util.List;
-import java.util.UUID;
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class OnEntityTick {
@@ -39,6 +41,28 @@ public class OnEntityTick {
             if ((player.getData(DataAttachments.DINO_DATA).getBloodLevel() <= 0f ||
                     player.getData(DataAttachments.DINO_DATA).getHealth() <= 0f) &&
                     !player.level().isClientSide()) {
+
+                DinosaurEntity body = Util.getBody(player);
+                body.setBody(true);
+                body.setPos(player.getX(), player.getY(), player.getZ());
+
+                SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
+
+                body.setBodyColor(skinData.getBodyColor());
+                body.setBellyColor(skinData.getBellyColor());
+                body.setEyesColor(skinData.getEyesColor());
+                body.setMarkingsColor(skinData.getMarkingsColor());
+                body.setFlankColor(skinData.getFlankColor());
+                body.setMaleDisplayColor(skinData.getMaleDisplayColor());
+
+                body.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
+                body.setBodyRot(player.getData(DataAttachments.PLAYER_TURN));
+                body.playerId = player.getId();
+                body.setOldPlayer(player.getId());
+                body.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
+
+                player.level().addFreshEntity(body);
+
 
                 player.getData(DataAttachments.DINO_DATA).fullReset();
                 PacketDistributor.sendToAllPlayers(new SyncFullReset(player.getId()));
@@ -84,6 +108,9 @@ public class OnEntityTick {
                             + Util.getDino(player).getGrowthPerMin() / 120f;
                     newGrowth = Math.min(1f, newGrowth);
 
+                    float cubicGrowth = (float) Math.pow(newGrowth, 3);
+
+
                     if (player.getData(DataAttachments.DINO_DATA).isInitialized()) {
                         player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
                         PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));
@@ -112,7 +139,7 @@ public class OnEntityTick {
                     }
 
 
-                    float newWeight = Mth.lerp(newGrowth, Util.getDino(player).getStartWeight(), Util.getDino(player).getWeight());
+                    float newWeight = Mth.lerp(cubicGrowth, Util.getDino(player).getStartWeight(), Util.getDino(player).getWeight());
 
                     float healthWeightRatio =  player.getData(DataAttachments.DINO_DATA).getHealth() /
                             player.getData(DataAttachments.DINO_DATA).getWeight();
@@ -150,35 +177,16 @@ public class OnEntityTick {
 
                     // tick food and water
 
-                    float newWaterLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getWaterLevel()
-                            - Util.getDino(player).getDehydrationPerSec() * 0.5f));
+                    handleWaterTick(player);
+
                     float newFoodLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getFoodLevel()
                             - Util.getDino(player).getStarvationPerSec() * 0.5f));
 
-                    player.getData(DataAttachments.DINO_DATA).setWaterLevel(newWaterLevel);
-                    PacketDistributor.sendToAllPlayers(new SyncWaterLevel(player.getId(), newWaterLevel));
 
                     player.getData(DataAttachments.DINO_DATA).setFoodLevel(newFoodLevel);
                     PacketDistributor.sendToAllPlayers(new SyncFoodLevel(player.getId(), newFoodLevel));
 
-
-                    // Tick stamina
-
-                    if (! player.getData(DataAttachments.DINO_DATA).isSprinting()) {
-
-                        float newStam = Math.min(Util.getDino(player).getStaminaPool(),
-                                player.getData(DataAttachments.DINO_DATA).getStamina() + Util.getStamRegen(player)
-                                        * player.getData(DataAttachments.REST_FACTOR));
-
-                        player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
-                        PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
-                    } else {
-                        float newStam = Math.max(0,  player.getData(DataAttachments.DINO_DATA).getStamina()
-                                - 3.5f);
-
-                        player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
-                        PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
-                    }
+                    handleStaminaTick(player);
 
                     if (player.getData(DataAttachments.PAIRING_STATE) > 0 && player.getData(DataAttachments.PAIRING_STATE) < 3) {
                         int newPairingState = player.getData(DataAttachments.PAIRING_STATE) + 1;
@@ -193,28 +201,42 @@ public class OnEntityTick {
     }
 
 
-    @SubscribeEvent
-    public static void onPlayerLogIn(PlayerEvent.PlayerLoggedInEvent event) {
-        Player loggedInPlayer = event.getEntity();
-        List<ServerPlayer> playerList;
+    private static void handleWaterTick(Player player) {
+        float newWaterLevel = player.getData(DataAttachments.DINO_DATA).getWaterLevel();
 
-        if (loggedInPlayer.getServer() == null) {
+        if (player.getData(DataAttachments.DINO_DATA).isDrinking()) {
 
-            return;
-        }
+            double x = player.getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().x();
+            double y = player.getY() - 0.5;
+            double z = player.getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().z();
 
-        playerList = loggedInPlayer.getServer().getPlayerList().getPlayers();
+            if (player.level().getBiome(BlockPos.containing(x, y, z)).is(BiomeTags.IS_OCEAN)) {
+                Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).SALTWATER_TOLERANCE;
+                float progress = data.getProgress() + 0.0025f;
 
-        for (ServerPlayer serverPlayer : playerList) {
-            if (serverPlayer != loggedInPlayer) {
-                PacketDistributor.sendToPlayer((ServerPlayer) loggedInPlayer, new SyncSelectedDinosaur(serverPlayer.getId(),
-                        serverPlayer.getData(DataAttachments.DINO_DATA).getSelectedDinosaur()));
+
+                newWaterLevel = Math.min(1f, newWaterLevel + 0.0075f);
+                data.setProgress(progress);
+                PacketDistributor.sendToAllPlayers(new SyncAdaptation("SALTWATER_TOLERANCE", progress, data.getLevel(), player.getId(), data.isUpgraded()));
+
+            } else {
+                newWaterLevel = Math.min(1f, newWaterLevel + 0.015f);
             }
+
+            if (newWaterLevel >= 0.999f) {
+                player.getData(DataAttachments.DINO_DATA).setDrinking(false);
+                PacketDistributor.sendToAllPlayers(new RequestDrinking(false, player.getId()));
+            }
+        } else {
+            newWaterLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getWaterLevel()
+                    - Util.getDino(player).getDehydrationPerSec() * 0.5f));
         }
 
-        PacketDistributor.sendToPlayer((ServerPlayer) loggedInPlayer, new SyncSelectedDinosaur(loggedInPlayer.getId(),
-                loggedInPlayer.getData(DataAttachments.DINO_DATA).getSelectedDinosaur()));
+        player.getData(DataAttachments.DINO_DATA).setWaterLevel(newWaterLevel);
+        PacketDistributor.sendToAllPlayers(new SyncWaterLevel(player.getId(), newWaterLevel));
     }
+
+
 
     private static void initialize(Player player, DinoData data) {
         if (!player.level().isClientSide) {
@@ -255,5 +277,54 @@ public class OnEntityTick {
         );
 
         damage.addPermanentModifier(modifier);
+    }
+
+    private static void handleStaminaTick(Player player) {
+
+        EnhancedStamina enhancedStamina = player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA;
+
+        if (!player.getData(DataAttachments.DINO_DATA).isSprinting() || !player.getData(DataAttachments.DINO_DATA).isMoving()) {
+
+            float additionalStam = Util.getStamRegen(player)
+                    * player.getData(DataAttachments.REST_FACTOR);
+            float newStam = Math.min(Util.getStaminaUpgraded(player),
+                    player.getData(DataAttachments.DINO_DATA).getStamina() + additionalStam);
+
+            if (newStam >= Util.getStaminaUpgraded(player) * 0.5f) {
+
+                player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
+                PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
+            } else if (newStam >= Util.getStaminaUpgraded(player) * 0.25 && newStam < Util.getStaminaUpgraded(player) * 0.5 ) {
+                if (!player.getData(DataAttachments.DINO_DATA).isMoving()) {
+                    belowHalfStamRegenTick(player, newStam, enhancedStamina, additionalStam);
+                }
+            } else {
+                if (player.getData(DataAttachments.RESTING_STATE) == 2) {
+                    belowHalfStamRegenTick(player, newStam, enhancedStamina, additionalStam);
+                }
+            }
+        } else {
+
+            if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
+
+                float newStam = Math.max(0, player.getData(DataAttachments.DINO_DATA).getStamina()
+                        - 3.5f);
+
+                player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
+                PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
+            }
+        }
+    }
+
+    private static void belowHalfStamRegenTick(Player player, float newStam, EnhancedStamina enhancedStamina, float additionalStam) {
+        player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
+        PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
+
+        float newProgress = enhancedStamina.getProgress() + additionalStam / (2 * Util.getStaminaUpgraded(player));
+        player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.setProgress(newProgress);
+
+        PacketDistributor.sendToAllPlayers(new SyncAdaptation("ENHANCED_STAMINA", newProgress,
+                player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.getLevel(), player.getId(),
+                player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.isUpgraded()));
     }
 }

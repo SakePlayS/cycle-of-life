@@ -30,6 +30,7 @@ public class ModPackets {
         registrar.playToClient(SyncFoodLevel.TYPE, SyncFoodLevel.STREAM_CODEC, SyncFoodLevel::handleClient);
         registrar.playToClient(SyncWaterLevel.TYPE, SyncWaterLevel.STREAM_CODEC, SyncWaterLevel::handleClient);
         registrar.playToClient(SyncIsMale.TYPE, SyncIsMale.STREAM_CODEC, SyncIsMale::handleClient);
+        registrar.playToClient(SyncAdaptation.TYPE, SyncAdaptation.STREAM_CODEC, SyncAdaptation::handleClient);
 
 
         registrar.playToServer(RequestSelectDinosaur.TYPE, RequestSelectDinosaur.STREAM_CODEC, RequestSelectDinosaur::handleServer);
@@ -58,6 +59,8 @@ public class ModPackets {
         registrar.playBidirectional(SyncIsPaired.TYPE, SyncIsPaired.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncIsPaired::handleClient, SyncIsPaired::handleServer));
         registrar.playBidirectional(SyncPairingState.TYPE, SyncPairingState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncPairingState::handleClient, SyncPairingState::handleServer));
         registrar.playBidirectional(SyncSkinData.TYPE, SyncSkinData.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncSkinData::handleClient, SyncSkinData::handleServer));
+        registrar.playBidirectional(RequestDrinking.TYPE, RequestDrinking.STREAM_CODEC, new DirectionalPayloadHandler<>(RequestDrinking::handleClient, RequestDrinking::handleServer));
+        registrar.playBidirectional(SyncTurningState.TYPE, SyncTurningState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncTurningState::handleClient, SyncTurningState::handleServer));
 
 
     }

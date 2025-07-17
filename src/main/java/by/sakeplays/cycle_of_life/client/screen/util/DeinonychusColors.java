@@ -6,48 +6,51 @@ public class DeinonychusColors {
 
     public static final List<ColorOption> MARKINGS
             = List.of(
-            new ColorOption(34, 32, 55, 1f),
-            new ColorOption(32, 50, 55, 1f),
-            new ColorOption(54, 28, 28, 1f),
-            new ColorOption(70, 24, 15, 1f),
-            new ColorOption(49, 56, 44, 1f),
-            new ColorOption(37, 59, 55, 1f),
-            new ColorOption(21, 18, 40, 1f),
-            new ColorOption(13, 38, 12, 1f),
-            new ColorOption(57, 53, 1, 1f),
+            new ColorOption(28, 48, 29, 1f), // dark forest green
 
-            new ColorOption(52, 28, 54, 1f)
+            new ColorOption(20, 24, 34, 1f), // super dark gray (blue-ish)
+
+            new ColorOption(36, 25, 25, 1f), // super dark gray (red-ish)
+
+            new ColorOption(58, 63, 35, 1f), // swamp green
+
+            new ColorOption(51, 39, 22, 1f), // brown
+
+            new ColorOption(54, 26, 1, 1f) // dark red
+
     );
 
     public static final List<ColorOption> BODY
             = List.of(
-            new ColorOption(45, 52, 78, 1f),
-            new ColorOption(64, 45, 78, 1f),
-            new ColorOption(89, 60, 43, 1f),
-            new ColorOption(138, 79, 46, 1f),
-            new ColorOption(63, 103, 96, 1f),
-            new ColorOption(63, 91, 68, 1f),
-            new ColorOption(61, 69, 39, 1f),
-            new ColorOption(52, 65, 21, 1f),
-            new ColorOption(33, 71, 31, 1f),
-            new ColorOption(38, 39, 64, 1f),
+            new ColorOption(43, 79, 53, 1f), // dark forest green
 
-            new ColorOption(45, 68, 72, 1f)
+            new ColorOption(91, 108, 67, 1f), // swamp green
+
+            new ColorOption(33, 42, 54, 1f), // super dark gray (blue-ish)
+
+            new ColorOption(64, 48, 48, 1f), // super dark gray (red-ish)
+
+            new ColorOption(83, 59, 41, 1f), // brown
+
+            new ColorOption(101, 61, 55, 1f) // dark red
 
     );
 
     public static final List<ColorOption> FLANK
             = List.of(
-            new ColorOption(75, 106, 111, 1f),
-            new ColorOption(83, 86, 116, 1f),
-            new ColorOption(132, 103, 61, 1f),
-            new ColorOption(181, 137, 78, 1f),
-            new ColorOption(96, 142, 88, 1f),
-            new ColorOption(102, 134, 122, 1f),
-            new ColorOption(42, 50, 82, 1f),
-            new ColorOption(53, 88, 85, 1f),
+            new ColorOption(59, 115, 91, 1f), // dark forest green
 
-            new ColorOption(97, 83, 116, 1f)
+            new ColorOption(120, 144, 102, 1f), // swamp green
+
+            new ColorOption(56, 71, 81, 1f), // super dark gray (blue-ish)
+
+            new ColorOption(34, 44, 51, 1f), // super dark gray (blue-ish) / 2
+
+            new ColorOption(88, 70, 70, 1f), // super dark gray (red-ish)
+
+            new ColorOption(125, 91, 73, 1f), // brown
+
+            new ColorOption(145, 103, 85, 1f) // dark red
 
     );
 

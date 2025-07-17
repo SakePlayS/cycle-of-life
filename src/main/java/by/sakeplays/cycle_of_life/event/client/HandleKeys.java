@@ -2,6 +2,8 @@ package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.client.screen.AdaptationsScreen;
+import by.sakeplays.cycle_of_life.client.screen.StatsScreen;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.entity.HitboxEntity;
@@ -20,6 +22,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = CycleOfLife.MODID, value = Dist.CLIENT)
@@ -38,6 +41,10 @@ public class HandleKeys {
     private static int restingTimerIn = 0;
     private static int pairingTimeOut = 0;
     private static boolean pairingLocked = false;
+    private static boolean drinkingLocked = false;
+    private static boolean turningStateUpdateLock = false;
+    private static String oldTurningState = "STILL";
+
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -57,6 +64,8 @@ public class HandleKeys {
         handleMainAttack(player);
         handleResting(player);
         handlePairing(player);
+        requestDrinking(player);
+        openCharacterInfo();
 
         boolean sliding = (!player.getData(DataAttachments.DINO_DATA).isMoving() &&
                 (player.getDeltaMovement().x() != 0 || player.getDeltaMovement().z() != 0));
@@ -64,6 +73,7 @@ public class HandleKeys {
         player.getData(DataAttachments.DINO_DATA).setSliding(sliding);
         PacketDistributor.sendToServer(new SyncIsSliding(sliding, player.getId()));
     }
+
 
 
     private static void handleSprint(Player player) {
@@ -76,10 +86,14 @@ public class HandleKeys {
         }
     }
 
+
+
     private static void handleTurning(Player player) {
 
         if (turningLocked) return;
         if (!canMove) return;
+
+        syncTurningState(player);
 
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;;
 
@@ -118,6 +132,8 @@ public class HandleKeys {
         PacketDistributor.sendToServer(new SyncTurnProgress(turnMultiplier, player.getId()));
     }
 
+
+
     private static void handleForwardMovement(Player player) {
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
 
@@ -146,7 +162,8 @@ public class HandleKeys {
             }
         }
 
-        maxSpeed = maxSpeed * Mth.lerp(growth, 0.1f, 1f);
+        float adjustedSpeed = (float) Math.pow(growth, 1f/3f);
+        maxSpeed = maxSpeed * Mth.lerp(adjustedSpeed, 0.1f, 1f);
 
         if (player.onGround() || player.isInWater()) {
             if (KeyMappingsEvent.FORWARD_MAPPING.isDown()) {
@@ -171,6 +188,8 @@ public class HandleKeys {
 
         player.setDeltaMovement(dx * speed, player.getDeltaMovement().y, dz * speed);
     }
+
+
 
     private static void handleMainAttack(Player player) {
         if (!canMove) return;
@@ -392,5 +411,59 @@ public class HandleKeys {
 
     private static void attemptToPlaceNest(Player player) {
 
+    }
+
+
+
+    private static void requestDrinking(Player player) {
+        if (KeyMappingsEvent.EAT_MAPPING.isDown()) {
+            if (!drinkingLocked) {
+                drinkingLocked = true;
+                PacketDistributor.sendToServer(new RequestDrinking(true, player.getId()));
+            }
+        } else {
+            if (drinkingLocked) {
+                drinkingLocked = false;
+                PacketDistributor.sendToServer(new RequestDrinking(false, player.getId()));
+            }
+        }
+    }
+
+    private static void openCharacterInfo() {
+        if (KeyMappingsEvent.CHARACTER_MAPPING.isDown()) {
+            if (!(Minecraft.getInstance().screen instanceof StatsScreen)) {
+                Minecraft.getInstance().setScreen(new StatsScreen(Component.literal("Stats")));
+            }
+        }
+    }
+
+    private static void syncTurningState(Player player) {
+        if (KeyMappingsEvent.LEFT_MAPPING.isDown() && KeyMappingsEvent.RIGHT_MAPPING.isDown()) {
+
+                player.setData(DataAttachments.TURNING_STATE, "STILL");
+
+        }
+        if (!KeyMappingsEvent.LEFT_MAPPING.isDown() && !KeyMappingsEvent.RIGHT_MAPPING.isDown()) {
+
+                player.setData(DataAttachments.TURNING_STATE, "STILL");
+
+        }
+        if (KeyMappingsEvent.LEFT_MAPPING.isDown() && !KeyMappingsEvent.RIGHT_MAPPING.isDown()) {
+
+                player.setData(DataAttachments.TURNING_STATE, "LEFT");
+
+        }
+        if (!KeyMappingsEvent.LEFT_MAPPING.isDown() && KeyMappingsEvent.RIGHT_MAPPING.isDown()) {
+
+                player.setData(DataAttachments.TURNING_STATE, "RIGHT");
+
+
+        }
+
+        if (!Objects.equals(oldTurningState, player.getData(DataAttachments.TURNING_STATE))) {
+            PacketDistributor.sendToServer(new SyncTurningState(player.getData(DataAttachments.TURNING_STATE), player.getId()));
+        }
+
+        oldTurningState = player.getData(DataAttachments.TURNING_STATE);
     }
 }

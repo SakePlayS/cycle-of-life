@@ -3,8 +3,6 @@ package by.sakeplays.cycle_of_life.common.data;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.UUID;
-
 public class Nest {
 
     private final int MATRIARCH;

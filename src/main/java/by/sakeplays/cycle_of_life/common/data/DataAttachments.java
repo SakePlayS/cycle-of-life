@@ -2,7 +2,6 @@ package by.sakeplays.cycle_of_life.common.data;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import com.mojang.serialization.Codec;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -23,6 +22,9 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<SkinData>> SKIN_DATA = ATTACHMENT_TYPES.register(
             "skin_data", () -> AttachmentType.serializable(SkinData::new).build());
+
+    public static final Supplier<AttachmentType<AdaptationData>> ADAPTATION_DATA = ATTACHMENT_TYPES.register(
+            "adaptations_data", () -> AttachmentType.serializable(AdaptationData::new).build());
 
     public static final Supplier<AttachmentType<HitboxData>> HITBOX_DATA = ATTACHMENT_TYPES.register(
             "hitbox_data", () -> AttachmentType.serializable(() -> new HitboxData(
@@ -64,6 +66,9 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<Boolean>> HITBOXES_INITIALIZED = ATTACHMENT_TYPES.register(
             "hitboxes_initialized", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
+    public static final Supplier<AttachmentType<String>> TURNING_STATE = ATTACHMENT_TYPES.register(
+            "turning_state", () -> AttachmentType.builder(() -> "STILL").serialize(Codec.STRING).build());
 
     public static void register(IEventBus eventBus) {
         ATTACHMENT_TYPES.register(eventBus);

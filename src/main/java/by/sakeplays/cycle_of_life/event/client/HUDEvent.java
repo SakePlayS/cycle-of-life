@@ -3,6 +3,7 @@ package by.sakeplays.cycle_of_life.event.client;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -44,8 +45,7 @@ public class HUDEvent {
 
         Player player = Minecraft.getInstance().player;
 
-        if (player == null || player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) return;
-
+        if (Minecraft.getInstance().options.hideGui || player == null || player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
 
@@ -67,13 +67,13 @@ public class HUDEvent {
         int xPos = x - 32;
         int yPos = (int) (y * 2 - 80);
 
-        if (player == null) return;
+        EnhancedStamina enhancedStamina = player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA;
 
         float stam = player.getData(DataAttachments.DINO_DATA).getStamina();
-        float stamPool = Util.getDino(player).getStaminaPool();
+        float stamPool = Util.getStaminaUpgraded(player);
         float stamPoolFraction = stamPool / 24;
 
-        if (stam >= stamPool) graphics.blitSprite(NODE_0, xPos, yPos, 64 ,64);
+        if (stam >= stamPoolFraction * 24) graphics.blitSprite(NODE_0, xPos, yPos, 64 ,64);
 
         for (int i = 24; i > 1; i--) {
 
@@ -112,13 +112,13 @@ public class HUDEvent {
 
 
 
-        if (health >= weightFraction) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
+        if (health >= weightFraction * 23) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
 
-        for (int i = 24; i > 1; i--) {
+        for (int i = 23; i > 1; i--) {
 
             if ((health < weightFraction * i) && (health >= weightFraction * (i - 1)))
                 graphics.blitSprite(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID,
-                        "node_" + (25 - i)), xPos, yPos, 32, 32);
+                        "node_" + (24 - i)), xPos, yPos, 32, 32);
 
         }
 
@@ -150,13 +150,13 @@ public class HUDEvent {
                     x - 100, (y * 2 - 36), HexFormat.fromHexDigits("FF5733"));
         }
 
-        if (blood >= weightFraction) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
+        if (blood >= weightFraction * 23) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
 
-        for (int i = 24; i > 1; i--) {
+        for (int i = 23; i > 1; i--) {
 
             if ((blood < weightFraction * i) && (blood >= weightFraction * (i - 1)))
                 graphics.blitSprite(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID,
-                        "node_" + (25 - i)), xPos, yPos, 32, 32);
+                        "node_" + (24 - i)), xPos, yPos, 32, 32);
 
         }
 
@@ -180,13 +180,13 @@ public class HUDEvent {
 
 
 
-        if (food >= foodFraction) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
+        if (food >= foodFraction * 23) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
 
-        for (int i = 24; i > 1; i--) {
+        for (int i = 23; i > 1; i--) {
 
             if ((food < foodFraction * i) && (food >= foodFraction * (i - 1)))
                 graphics.blitSprite(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID,
-                        "node_" + (25 - i)), xPos, yPos, 32, 32);
+                        "node_" + (24 - i)), xPos, yPos, 32, 32);
 
         }
 
@@ -209,13 +209,13 @@ public class HUDEvent {
         int yPos = (int) (y * 2 - 48);
 
 
-        if (water >= waterFraction) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
+        if (water >= waterFraction * 23) graphics.blitSprite(NODE_0, xPos, yPos, 32 ,32);
 
-        for (int i = 24; i > 1; i--) {
+        for (int i = 23; i > 1; i--) {
 
             if ((water < waterFraction * i) && (water >= waterFraction * (i - 1)))
                 graphics.blitSprite(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID,
-                        "node_" + (25 - i)), xPos, yPos, 32, 32);
+                        "node_" + (24 - i)), xPos, yPos, 32, 32);
 
         }
 

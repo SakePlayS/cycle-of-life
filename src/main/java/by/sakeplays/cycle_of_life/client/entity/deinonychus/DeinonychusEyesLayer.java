@@ -29,12 +29,16 @@ public class DeinonychusEyesLayer<T extends Entity & GeoAnimatable> extends GeoR
     @Override
     public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
 
-        SkinData data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
+        int color;
+        SkinData data;
+        if (!animatable.isBody()) {
+            data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
+            color = animatable.isForScreenRendering ? animatable.eyesColor : data.getEyesColor();
 
-        int color = animatable.isForScreenRendering ? animatable.eyesColor: data.getEyesColor();
-        float growth = animatable.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth();
-        float size = Mth.lerp(growth, 0.04f, 0.8f);
-        if (animatable.isForScreenRendering) size = 1;
+        } else {
+            color = animatable.getEyesColor();
+        }
+        float size = Util.calculateGrowth(animatable);
 
         poseStack.pushPose();
         poseStack.scale(1/size, 1/size, 1/size);

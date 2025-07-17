@@ -43,6 +43,6 @@ public record SyncStamina(int playerId, float stamina) implements CustomPacketPa
             if (context.player().level().getEntity(packet.playerId()) instanceof Player player) {
                 player.getData(DataAttachments.DINO_DATA).setStamina(packet.stamina());
             }
-        }).thenRun(() -> PacketDistributor.sendToAllPlayers(packet));
+        }).thenRun(() -> PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet));
     }
 }
