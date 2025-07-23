@@ -2,7 +2,7 @@ package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import net.minecraft.core.BlockPos;
+import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -13,8 +13,7 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
@@ -39,16 +38,20 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     protected static final RawAnimation COURTING_FEMALE = RawAnimation.begin().thenPlay("deinonychus.courting_female");
     protected static final RawAnimation COURTING_MALE = RawAnimation.begin().thenPlay("deinonychus.courting_male");
 
+    protected static final RawAnimation BITE = RawAnimation.begin().thenPlay("deinonychus.bite");
     protected static final RawAnimation SLASH_LEFT = RawAnimation.begin().thenPlay("deinonychus.slash_left");
     protected static final RawAnimation SLASH_RIGHT = RawAnimation.begin().thenPlay("deinonychus.slash_right");
-    protected static final RawAnimation BITE = RawAnimation.begin().thenPlay("deinonychus.bite");
 
     protected static final RawAnimation TURNAROUND_SLASH = RawAnimation.begin().thenPlay("deinonychus.turnaround_slash");
 
     public float prevRotY = 0;
-    public float prevTailRotY = 0;
+    public float prevTailRotY1 = 0;
+    public float prevTailRotY2 = 0;
+    public float prevTailRotY3 = 0;
+
     public float prevTailRotX = 0;
-    public List<Vec3> posHistory = new ArrayList<>();
+
+
 
 
     public Deinonychus(EntityType<? extends LivingEntity> entityType, Level level) {
@@ -65,10 +68,10 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "movement", 5, this::movementController));
         controllers.add(new AnimationController<>(this, "attack", 0, this::attackController)
-                .triggerableAnim("slash_left", SLASH_LEFT)
-                .triggerableAnim("slash_right", SLASH_RIGHT)
                 .triggerableAnim("bite", BITE)
                 .triggerableAnim("turnaround_slash", TURNAROUND_SLASH)
+                .triggerableAnim("slash_right", SLASH_LEFT)
+                .triggerableAnim("slash_left", SLASH_RIGHT)
                 .triggerableAnim("rest_in", REST_IN)
                 .triggerableAnim("rest_out", REST_OUT)
                 .triggerableAnim("rest_loop", REST_LOOP)
@@ -141,7 +144,6 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     }
 
     protected PlayState attackController(final AnimationState<Deinonychus> state) {
-
 
         return PlayState.CONTINUE;
 

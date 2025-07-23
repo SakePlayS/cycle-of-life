@@ -2,6 +2,7 @@ package by.sakeplays.cycle_of_life;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.common.data.HitboxData;
 import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
@@ -12,8 +13,11 @@ import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_server.RequestPlayHurtSound;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -76,7 +80,7 @@ public class Util {
     public static void recordTurnHistory(Player player, float y) {
         player.getData(DataAttachments.TURN_HISTORY).add(y);
 
-        if (player.getData(DataAttachments.TURN_HISTORY).size() > 9) {
+        if (player.getData(DataAttachments.TURN_HISTORY).size() > 7) {
             player.getData(DataAttachments.TURN_HISTORY).removeFirst();
         }
     }
@@ -94,11 +98,11 @@ public class Util {
         return sum/iterations;
     }
 
-    public static float calculateTailYRot(ArrayList<Float> arrayList, float currentTurnDegree) {
+    public static float calculateTailYRot(ArrayList<Float> arrayList, float currentTurnDegree, int lowerBound, int upperBound) {
         float sum = 0;
         int iterations = 0;
 
-        for (int i = 0; i < arrayList.size(); i++) {
+        for (int i = lowerBound; i < upperBound; i++) {
             sum = sum + (currentTurnDegree - arrayList.get(i)) * Mth.DEG_TO_RAD;
             iterations++;
         }
@@ -120,6 +124,29 @@ public class Util {
 
             if (playHurtSound) PacketDistributor.sendToServer(new RequestPlayHurtSound(target.getId()));
 
+        } else {
+            DinoData data = target.getData(DataAttachments.DINO_DATA);
+            float newBleed = data.getBleed() + bleed;
+            float newHealth = data.getHealth() - dmg;
+
+            data.setBleed(newBleed);
+            PacketDistributor.sendToAllPlayers(new SyncBleed(target.getId(),newBleed));
+
+            data.setHealth(newHealth);
+            PacketDistributor.sendToAllPlayers(new SyncHealth(target.getId(), newHealth));
+
+            if (playHurtSound)  {
+                int dinoId = Util.getDino(target).getID();
+
+                switch (dinoId) {
+                    case 2 -> target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                            ModSounds.DEINONYCHUS_HURT.get(), SoundSource.PLAYERS, 1f ,1f +
+                                    (float) ((Math.random() - 0.5) / 4));
+                    default -> target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                            SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1f ,1f +
+                                    (float) ((Math.random() - 0.5) / 4));
+                }
+            }
         }
     }
 
@@ -162,13 +189,74 @@ public class Util {
         return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
     }
 
-    public static float calculateGrowth(DinosaurEntity entity) {
+    public static float calculateGrowth(DinosaurEntity entity, float lowerBound, float upperBound) {
 
-        if (entity.isBody()) return Mth.lerp(entity.getBodyGrowth(), 0.04f, 0.8f);
+        if (entity.isBody()) return Mth.lerp(entity.getBodyGrowth(), lowerBound, upperBound);
         if (entity.isForScreenRendering) return 1;
-        return Mth.lerp(entity.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth(), 0.04f, 0.8f);
+        return Mth.lerp(entity.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth(), lowerBound, upperBound);
 
     }
 
 
+    public static float calculateMaxSpeed(Player player) { // used for display
+        DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+        float growth = data.getGrowth();
+        float maxSpeed = Util.getDino(player).getSprintSpeed();
+        float adjustedSpeed = (float) Math.pow(growth, 1f/2f);
+        maxSpeed = maxSpeed * (Mth.lerp(adjustedSpeed, 0.1f, 1f) * 20);
+
+        return maxSpeed;
+    }
+
+
+    public static float calculateSpeed(Player player) {  // used for actual movement
+        DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+        float growth = data.getGrowth();
+        float speed = data.isSprinting() ? Util.getDino(player).getSprintSpeed() : Util.getDino(player).getWalkSpeed();
+
+
+        float adjustedSpeed = (float) Math.pow(growth, 0.5f);
+        speed = speed * (Mth.lerp(adjustedSpeed, 0.1f, 1f));
+
+        if (player.isInWater()) {
+            speed *= Util.getSwimSpeed(player);
+        }
+
+        return speed;
+    }
+
+    public static boolean attemptToHitPlayer(Player target, AABB attackHitbox, float damage, float bleed, boolean makeNoise) {
+
+        float damageModifier = 0;
+        HitboxData data = target.getData(DataAttachments.HITBOX_DATA);
+
+        if (target.level().getEntity(data.getTail2Id()) instanceof HitboxEntity hitbox) {
+            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
+        }
+
+        if (target.level().getEntity(data.getTail1Id()) instanceof HitboxEntity hitbox) {
+            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
+        }
+
+        if (target.level().getEntity(data.getBody2Id()) instanceof HitboxEntity hitbox) {
+            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
+        }
+
+        if (target.level().getEntity(data.getBody1Id()) instanceof HitboxEntity hitbox) {
+            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
+        }
+
+        if (target.level().getEntity(data.getHeadId()) instanceof HitboxEntity hitbox) {
+            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
+        }
+
+
+
+        if (damageModifier == 0) return false;
+
+        dealDamage(target, damage * damageModifier, bleed * damageModifier, makeNoise);
+        return true;
+    }
 }

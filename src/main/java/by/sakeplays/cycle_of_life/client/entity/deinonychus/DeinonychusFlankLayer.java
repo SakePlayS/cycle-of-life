@@ -38,7 +38,7 @@ public class DeinonychusFlankLayer<T extends Entity & GeoAnimatable> extends Geo
         } else {
             color = animatable.getFlankColor();
         }
-        float size = Util.calculateGrowth(animatable);
+        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
 
         poseStack.pushPose();
         poseStack.scale(1/size, 1/size, 1/size);

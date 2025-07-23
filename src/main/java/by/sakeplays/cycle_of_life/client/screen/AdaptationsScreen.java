@@ -52,7 +52,7 @@ public class AdaptationsScreen extends Screen {
         }
 
         if (BLEED_RESISTANCE.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.BLEED_RESISTANCE, "Bleed Resistance", "Increases your bleed resistance.",
+            renderAdaptationDescription(guiGraphics, data.BLEED_RESISTANCE, "Bleed Resistance", "Increases your V resistance.",
                     "", "", "");
         }
 

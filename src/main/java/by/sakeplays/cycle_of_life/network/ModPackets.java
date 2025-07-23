@@ -5,6 +5,7 @@ import by.sakeplays.cycle_of_life.network.to_client.*;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncTurnHistory;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
 import by.sakeplays.cycle_of_life.network.to_server.*;
+import by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -31,6 +32,8 @@ public class ModPackets {
         registrar.playToClient(SyncWaterLevel.TYPE, SyncWaterLevel.STREAM_CODEC, SyncWaterLevel::handleClient);
         registrar.playToClient(SyncIsMale.TYPE, SyncIsMale.STREAM_CODEC, SyncIsMale::handleClient);
         registrar.playToClient(SyncAdaptation.TYPE, SyncAdaptation.STREAM_CODEC, SyncAdaptation::handleClient);
+        registrar.playToClient(SyncAttackCooldown.TYPE, SyncAttackCooldown.STREAM_CODEC, SyncAttackCooldown::handleClient);
+        registrar.playToClient(SyncTurningLock.TYPE, SyncTurningLock.STREAM_CODEC, SyncTurningLock::handleClient);
 
 
         registrar.playToServer(RequestSelectDinosaur.TYPE, RequestSelectDinosaur.STREAM_CODEC, RequestSelectDinosaur::handleServer);
@@ -38,6 +41,11 @@ public class ModPackets {
         registrar.playToServer(SyncTurnDegree2S.TYPE, SyncTurnDegree2S.STREAM_CODEC, SyncTurnDegree2S::handleServer);
         registrar.playToServer(SyncHitboxes.TYPE, SyncHitboxes.STREAM_CODEC, SyncHitboxes::handleServer);
         registrar.playToServer(RequestPlayHurtSound.TYPE, RequestPlayHurtSound.STREAM_CODEC, RequestPlayHurtSound::handleServer);
+        registrar.playToServer(RequestDeinonychusBite.TYPE, RequestDeinonychusBite.STREAM_CODEC, RequestDeinonychusBite::handleServer);
+        registrar.playToServer(RequestDeinonychusDoubleSlash.TYPE, RequestDeinonychusDoubleSlash.STREAM_CODEC, RequestDeinonychusDoubleSlash::handleServer);
+        registrar.playToServer(RequestDeinonychusSlash.TYPE, RequestDeinonychusSlash.STREAM_CODEC, RequestDeinonychusSlash::handleServer);
+        registrar.playToServer(RequestGrabFood.TYPE, RequestGrabFood.STREAM_CODEC, RequestGrabFood::handleServer);
+
 
         registrar.playBidirectional(SyncDinoSprint.TYPE, SyncDinoSprint.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoSprint::handleClient, SyncDinoSprint::handleServer));
         registrar.playBidirectional(SyncDinoWalking.TYPE, SyncDinoWalking.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoWalking::handleClient, SyncDinoWalking::handleServer));
@@ -45,6 +53,7 @@ public class ModPackets {
         registrar.playBidirectional(SyncTurnDegree.TYPE, SyncTurnDegree.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncTurnDegree::handleClient, SyncTurnDegree::handleServer));
         registrar.playBidirectional(SyncYHistory.TYPE, SyncYHistory.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncYHistory::handleClient, SyncYHistory::handleServer));
         registrar.playBidirectional(SyncTurnHistory.TYPE, SyncTurnHistory.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncTurnHistory::handleClient, SyncTurnHistory::handleServer));
+        registrar.playBidirectional(SyncAttackMainTwo.TYPE, SyncAttackMainTwo.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAttackMainTwo::handleClient, SyncAttackMainTwo::handleServer));
         registrar.playBidirectional(SyncAttackMainOne.TYPE, SyncAttackMainOne.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAttackMainOne::handleClient, SyncAttackMainOne::handleServer));
         registrar.playBidirectional(SyncHealth.TYPE, SyncHealth.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncHealth::handleClient, SyncHealth::handleServer));
         registrar.playBidirectional(SyncBleed.TYPE, SyncBleed.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncBleed::handleClient, SyncBleed::handleServer));
@@ -61,6 +70,9 @@ public class ModPackets {
         registrar.playBidirectional(SyncSkinData.TYPE, SyncSkinData.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncSkinData::handleClient, SyncSkinData::handleServer));
         registrar.playBidirectional(RequestDrinking.TYPE, RequestDrinking.STREAM_CODEC, new DirectionalPayloadHandler<>(RequestDrinking::handleClient, RequestDrinking::handleServer));
         registrar.playBidirectional(SyncTurningState.TYPE, SyncTurningState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncTurningState::handleClient, SyncTurningState::handleServer));
+        registrar.playBidirectional(SyncAdditionalTurn.TYPE, SyncAdditionalTurn.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAdditionalTurn::handleClient, SyncAdditionalTurn::handleServer));
+        registrar.playBidirectional(SyncSpeed.TYPE, SyncSpeed.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncSpeed::handleClient, SyncSpeed::handleServer));
+        registrar.playBidirectional(RequestDeinonychusDoubleSlashStart.TYPE, RequestDeinonychusDoubleSlashStart.STREAM_CODEC, new DirectionalPayloadHandler<>(RequestDeinonychusDoubleSlashStart::handleClient, RequestDeinonychusDoubleSlashStart::handleServer));
 
 
     }

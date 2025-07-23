@@ -30,13 +30,15 @@ public class ClientTick {
         Position body2 = player.getData(DataAttachments.HITBOX_DATA).getBody2Pos();
         Position tail1 = player.getData(DataAttachments.HITBOX_DATA).getTail1Pos();
         Position tail2 = player.getData(DataAttachments.HITBOX_DATA).getTail2Pos();
+        Position grab = player.getData(DataAttachments.HITBOX_DATA).getGrabHandlerPos();
 
         PacketDistributor.sendToServer(new SyncHitboxes(
                 head.x(), head.y(), head.z(),
                 body1.x(), body1.y(), body1.z(),
                 body2.x(), body2.y(), body2.z(),
                 tail1.x(), tail1.y(), tail1.z(),
-                tail2.x(), tail2.y(), tail2.z()));
+                tail2.x(), tail2.y(), tail2.z(),
+                grab.x(), grab.y(), grab.z()));
 
     }
 

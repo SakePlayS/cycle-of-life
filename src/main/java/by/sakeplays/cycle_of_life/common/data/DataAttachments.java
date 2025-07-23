@@ -28,11 +28,12 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<HitboxData>> HITBOX_DATA = ATTACHMENT_TYPES.register(
             "hitbox_data", () -> AttachmentType.serializable(() -> new HitboxData(
-                            new Position(0, 0, 0),
-                            new Position(0, 0, 0),
-                            new Position(0, 0, 0),
-                            new Position(0, 0, 0),
-                            new Position(0, 0, 0))).build());
+                    new Position(0, 0, 0),
+                    new Position(0, 0, 0),
+                    new Position(0, 0, 0),
+                    new Position(0, 0, 0),
+                    new Position(0, 0, 0),
+                    new Position(0, 0, 0))).build());
 
     public static final Supplier<AttachmentType<ArrayList<Float>>> Y_HISTORY = ATTACHMENT_TYPES.register(
             "y_history", () -> AttachmentType.builder(() -> new ArrayList<Float>()).build());
@@ -42,6 +43,12 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<Float>> PLAYER_TURN = ATTACHMENT_TYPES.register(
             "player_turn", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
+
+    public static final Supplier<AttachmentType<Float>> SPEED = ATTACHMENT_TYPES.register(
+            "speed", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
+
+    public static final Supplier<AttachmentType<Float>> ADDITIONAL_TURN = ATTACHMENT_TYPES.register(
+            "additional_turn", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
 
     public static final Supplier<AttachmentType<Integer>> RESTING_STATE = ATTACHMENT_TYPES.register(
             "resting_state", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
@@ -57,6 +64,18 @@ public class DataAttachments {
 
     public static final Supplier<AttachmentType<Boolean>> ATTACK_MAIN_1 = ATTACHMENT_TYPES.register(
             "attack_main_one", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
+    public static final Supplier<AttachmentType<Boolean>> ATTACK_MAIN_2 = ATTACHMENT_TYPES.register(
+            "attack_main_two", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
+    public static final Supplier<AttachmentType<Integer>> ATTACK_COOLDOWN = ATTACHMENT_TYPES.register(
+            "attack_cooldown", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    public static final Supplier<AttachmentType<Integer>> ATTACK_TIMER = ATTACHMENT_TYPES.register(
+            "attack_timer", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    public static final Supplier<AttachmentType<Float>> DESIRED_ATTACK_ANGLE = ATTACHMENT_TYPES.register(
+            "desired_attack_angle", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
 
     public static final Supplier<AttachmentType<Boolean>> ATTACK_TURNAROUND = ATTACHMENT_TYPES.register(
             "attack_turnaround", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());

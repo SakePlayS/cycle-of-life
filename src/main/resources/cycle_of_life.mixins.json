@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "by.sakeplays.cycle_of_life.mixins",
   "compatibilityLevel": "JAVA_17",
-  "mixins": ["GuiMixin", "ClientHooksMixin", "CameraAccessor", "CameraMixin"],
+  "mixins": ["GuiMixin", "ClientHooksMixin", "CameraAccessor", "HitboxMixin"],
   "injectors": {
     "defaultRequire": 1
   }

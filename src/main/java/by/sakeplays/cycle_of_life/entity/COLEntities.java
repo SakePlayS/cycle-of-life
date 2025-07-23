@@ -26,6 +26,10 @@ public class COLEntities {
             ("pachycephalosaurus", () -> EntityType.Builder.of(Pachycephalosaurus::new, MobCategory.MISC)
             .sized(0.75f, 0.75f).build("pachycephalosaurus"));
 
+    public static final Supplier<EntityType<MeatChunkEntity>> MEAT_CHUNK = ENTITY_TYPES.register
+            ("meat_chunk", () -> EntityType.Builder.of(MeatChunkEntity::new, MobCategory.MISC)
+                    .sized(0.2f, 0.2f).build("meat_chunk"));
+
     public static final Supplier<EntityType<Deinonychus>> DEINONYCHUS = ENTITY_TYPES.register
             ("deinonychus", () -> EntityType.Builder.of(Deinonychus::new, MobCategory.MISC)
                     .sized(0.75f, 0.75f).build("deinonychus"));

@@ -97,19 +97,17 @@ public class OnRenderPlayerEvent {
         instance.options.fov().set(85);
         instance.options.fovEffectScale().set(0.25d);
         instance.options.bobView().set(false);
+        instance.options.entityShadows().set(false);
 
         instance.options.keyLeft.setKey(InputConstants.UNKNOWN);
         instance.options.keyRight.setKey(InputConstants.UNKNOWN);
         instance.options.keyUp.setKey(InputConstants.UNKNOWN);
         instance.options.keyDown.setKey(InputConstants.UNKNOWN);
         instance.options.keySprint.setKey(InputConstants.UNKNOWN);
+        instance.options.keyInventory.setKey(InputConstants.UNKNOWN);
+        instance.options.keySocialInteractions.setKey(InputConstants.UNKNOWN);
+        instance.options.keyAttack.setKey(InputConstants.UNKNOWN);
+        instance.options.keyUse.setKey(InputConstants.UNKNOWN);
+
     }
-
-    public static void disableShadow(EntityRenderersEvent.AddLayers event) {
-
-    }
-
-
-
-
 }

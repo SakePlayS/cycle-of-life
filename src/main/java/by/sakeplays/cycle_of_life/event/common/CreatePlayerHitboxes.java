@@ -4,15 +4,19 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.common.data.HitboxData;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -35,55 +39,57 @@ public class CreatePlayerHitboxes {
 
             Player player = event.getEntity();
 
-            if (player.tickCount < 60) return;
+            if (player.tickCount < 20) return;
 
             if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) return;
 
+            if (player.tickCount % 20 == 0) {
+
+                if (!hitboxesExist(player)) {
+                    player.setData(DataAttachments.HITBOXES_INITIALIZED, false);
+                    CycleOfLife.LOGGER.warn("Hitboxes missing for " + player.getName().getString() + ". Reinitializing.");
+                }
+            }
 
             if (!player.getData(DataAttachments.HITBOXES_INITIALIZED)) {
-                player.setData(DataAttachments.HITBOXES_INITIALIZED, true);
 
-                HitboxEntity headHitbox = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
-                headHitbox.setPlayerId(player.getId());
-                headHitbox.setHitboxType("HEAD");
-                headHitbox.setPos(player.getOnPos().getCenter());
+                ServerLevel level = (ServerLevel) player.level();
 
-                player.level().addFreshEntity(headHitbox);
+                HitboxData data = player.getData(DataAttachments.HITBOX_DATA);
 
+                data.setHeadId(spawnHitbox(level, player, "HEAD"));
+                data.setBody1Id(spawnHitbox(level, player, "BODY1"));
+                data.setBody2Id(spawnHitbox(level, player, "BODY2"));
+                data.setTail1Id(spawnHitbox(level, player, "TAIL1"));
+                data.setTail2Id(spawnHitbox(level, player, "TAIL2"));
 
-                HitboxEntity body1 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
-                body1.setPlayerId(player.getId());
-                body1.setHitboxType("BODY1");
-                body1.setPos(player.getOnPos().getCenter());
+                // if for whatever reason hitboxes fail to spawn, try again.
 
-                player.level().addFreshEntity(body1);
-
-
-                HitboxEntity body2 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
-                body2.setPlayerId(player.getId());
-                body2.setHitboxType("BODY2");
-                body2.setPos(player.getOnPos().getCenter());
-
-                player.level().addFreshEntity(body2);
-
-
-
-                HitboxEntity tail2 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
-                tail2.setPlayerId(player.getId());
-                tail2.setHitboxType("TAIL1");
-                tail2.setPos(player.getOnPos().getCenter());
-
-                player.level().addFreshEntity(tail2);
-
-
-                HitboxEntity tail3 = new HitboxEntity(COLEntities.HITBOX.get(), player.level());
-                tail3.setPlayerId(player.getId());
-                tail3.setHitboxType("TAIl2");
-                tail3.setPos(player.getOnPos().getCenter());
-
-                player.level().addFreshEntity(tail3);
+                if (!hitboxesExist(player)) {
+                    player.setData(DataAttachments.HITBOXES_INITIALIZED, false);
+                    CycleOfLife.LOGGER.warn("Hitboxes failed to spawn for " + player.getName().getString() + ". Retrying.");
+                } else {
+                    player.setData(DataAttachments.HITBOXES_INITIALIZED, true);
+                }
             }
         }
+    }
+
+    private static boolean hitboxesExist(Player player) {
+        double x = player.getX();
+        double y = player.getY();
+        double z = player.getZ();
+        double size = 10;
+
+        AABB hitbox = new AABB(
+                x - size, y - size, z - size,
+                x + size, y + size, z + size
+        );
+
+
+        List<HitboxEntity> hitboxes = player.level().getEntities(EntityTypeTest.forClass(HitboxEntity.class), hitbox, e -> e.getPlayer() == player);
+
+        return !hitboxes.isEmpty();
 
     }
 
@@ -94,5 +100,15 @@ public class CreatePlayerHitboxes {
                 player.setData(DataAttachments.HITBOXES_INITIALIZED, false);
             }
         }
+    }
+
+
+    private static int spawnHitbox(ServerLevel level, Player player, String type) {
+        HitboxEntity hitbox = new HitboxEntity(COLEntities.HITBOX.get(), level);
+        hitbox.setPlayerId(player.getId());
+        hitbox.setHitboxType(type);
+        hitbox.setPos(player.getOnPos().getCenter());
+        level.addFreshEntity(hitbox);
+        return hitbox.getId();
     }
 }

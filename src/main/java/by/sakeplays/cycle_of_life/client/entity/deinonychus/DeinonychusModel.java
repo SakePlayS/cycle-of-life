@@ -3,10 +3,14 @@ package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.Position;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -43,14 +47,15 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         if (!animatable.isBody()) {
 
             if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) {
+                animatable.triggerAnim("attack", "bite");
+            }
 
-                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("LEFT"))
-                    animatable.triggerAnim("attack", "slash_left");
-                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("RIGHT"))
+            if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_2)) {
+                if (Math.random() < 0.5) {
                     animatable.triggerAnim("attack", "slash_right");
-                if (animatable.getPlayer().getData(DataAttachments.TURNING_STATE).equals("STILL"))
-                    animatable.triggerAnim("attack", "bite");
-
+                } else {
+                    animatable.triggerAnim("attack", "slash_left");
+                }
             }
 
             if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND))
@@ -90,6 +95,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         handleBodyRotation(this, animationState.getAnimatable(), partialTick);
         handleNeckRotation(this, animationState.getAnimatable(), partialTick);
         handleTailPhysics(this, animationState.getAnimatable(), partialTick);
+        //handleTailPhysicsFromPos(this, animationState.getAnimatable(), partialTick);
 
 
     }
@@ -97,21 +103,17 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
     private void handleBodyRotation(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
 
         float playerRot = 0;
-        float rotProgress = 0;
 
         GeoBone center = getAnimationProcessor().getBone("center");
-        GeoBone leaningHandler = getAnimationProcessor().getBone("leaning_handler");
 
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            rotProgress = animatable.getPlayer().getData(DataAttachments.TURN_PROGRESS);
-            playerRot = animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
         }
 
         float currentRotY = Mth.lerp(partialTick, animatable.prevRotY, playerRot);
 
         center.setRotY(currentRotY);
-        leaningHandler.setRotZ(rotProgress * 0.2f);
 
         animatable.prevRotY = currentRotY;
     }
@@ -126,73 +128,89 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
         float playerRot = 0;
         float playerYaw = 0;
+        float additionalTurn = 0;
+        float targetYaw = 0;
+        float rot = animatable.headRot;
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            playerRot = (animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
-            playerYaw = (animatable.getPlayer().getYRot() * -Mth.DEG_TO_RAD);
+            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerYaw = animatable.getPlayer().getYRot();
+            additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
+            targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
         }
 
 
-        float playerDiff = playerYaw - playerRot;
 
-        while (playerDiff > 3.14159f) {
-            playerDiff = playerDiff - 6.28319f;
-        }
+        float desiredHeadRot = -Math.clamp(
+                Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
+                -0.35f, 0.35f);
 
-        while (playerDiff < -3.14159f) {
-            playerDiff = playerDiff + 6.28319f;
-        }
-
-        if (playerDiff < 0) {
-            playerDiff = Math.max(-0.5f, playerDiff);
-        } else {
-            playerDiff = Math.min(0.5f, playerDiff);
-        }
-
-        float headRot = playerDiff * 0.8f;
-        float neckRot = playerDiff * 0.8f;
+        rot += (desiredHeadRot - rot) * 0.13f / ((float) 60 / Math.min(60, Minecraft.getInstance().getFps() + 1));
 
 
-        neck_tilt.setRotY(neckRot);
-        head_tilt.setRotY(headRot);
+        neck_tilt.setRotY(rot * 1.15f);
+        head_tilt.setRotY(rot * 1.5f);
+
+        animatable.headRot = rot;
 
     }
 
     private void handleTailPhysics(GeoModel<Deinonychus> model, Deinonychus animatable, float partialTick) {
 
-
         GeoBone tail_1_rot = getAnimationProcessor().getBone("tail_1_rot");
         GeoBone tail_2_rot = getAnimationProcessor().getBone("tail_2_rot");
         GeoBone tail_3_rot = getAnimationProcessor().getBone("tail_3_rot");
+        GeoBone leaningHandler = getAnimationProcessor().getBone("leaning_handler");
 
-        float currentRotY = 0;
+        float currentRotY1 = 0;
+        float currentRotY2 = 0;
+        float currentRotY3 = 0;
+
         float currentRotX = 0;
+        float speed = 1;
 
         if (animatable.playerId != null && !animatable.isBody()) {
+
+            speed += animatable.getPlayer().getData(DataAttachments.SPEED);
 
             ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
             ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
 
-            if (yHistory.size() < 6 || turnDegreeHistory.size() < 9) return;
+            if (yHistory.size() < 6 || turnDegreeHistory.size() < 7) return;
 
             float tailRotX = 35 * Util.calculateTailXRot(yHistory);
-            float tailRotY = -30 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN));
+            float tailRotY1 = (20 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 0, 2)) / speed;
 
-            currentRotY = Mth.lerp(partialTick, animatable.prevTailRotY, tailRotY);
+            float tailRotY2 = (30 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 2, 4)) / speed;
+            float tailRotY3 = (40 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 4, 6)) / speed;
+
+            currentRotY1 = Mth.lerp(partialTick, animatable.prevTailRotY1, tailRotY1);
+            currentRotY2 = Mth.lerp(partialTick, animatable.prevTailRotY2, tailRotY2);
+            currentRotY3 = Mth.lerp(partialTick, animatable.prevTailRotY3, tailRotY3);
+
             currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
+
         }
+
+        leaningHandler.setRotZ(currentRotY1 / -1.75f);
 
         tail_1_rot.setRotX(currentRotX);
         tail_2_rot.setRotX(currentRotX);
         tail_3_rot.setRotX(currentRotX);
 
-        tail_1_rot.setRotY(currentRotY);
-        tail_2_rot.setRotY(currentRotY);
-        tail_3_rot.setRotY(currentRotY);
+        tail_1_rot.setRotY(currentRotY1);
+        tail_2_rot.setRotY(currentRotY2);
+        tail_3_rot.setRotY(currentRotY3);
 
         animatable.prevTailRotX = currentRotX;
-        animatable.prevTailRotY = currentRotY;
+        animatable.prevTailRotY1 = currentRotY1;
+        animatable.prevTailRotY2 = currentRotY2;
+        animatable.prevTailRotY3 = currentRotY3;
+
     }
+
 
 }

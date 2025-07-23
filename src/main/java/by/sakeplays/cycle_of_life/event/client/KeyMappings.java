@@ -10,7 +10,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = CycleOfLife.MODID, value = Dist.CLIENT)
-public class KeyMappingsEvent {
+public class KeyMappings {
     public static final KeyMapping FORWARD_MAPPING =
             new KeyMapping("key.cycle_of_life.forward", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_W,
                     "key.categories.cycle_of_life");
@@ -22,6 +22,11 @@ public class KeyMappingsEvent {
     public static final KeyMapping RIGHT_MAPPING =
             new KeyMapping("key.cycle_of_life.right", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_D,
                     "key.categories.cycle_of_life");
+
+    public static final KeyMapping BACKWARD_MAPPING =
+            new KeyMapping("key.cycle_of_life.backward", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S,
+                    "key.categories.cycle_of_life");
+
 
     public static final KeyMapping SPRINT_MAPPING =
             new KeyMapping("key.cycle_of_life.sprint", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
@@ -35,12 +40,20 @@ public class KeyMappingsEvent {
             new KeyMapping("key.cycle_of_life.main_attack", InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_LEFT,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping MAIN_ATTACK_MAPPING_2 =
+            new KeyMapping("key.cycle_of_life.main_attack_2", InputConstants.Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_RIGHT,
+                    "key.categories.cycle_of_life");
+
     public static final KeyMapping REST_MAPPING =
             new KeyMapping("key.cycle_of_life.rest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H,
                     "key.categories.cycle_of_life");
 
     public static final KeyMapping PAIR_MAPPING =
             new KeyMapping("key.cycle_of_life.pair", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P,
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping GRAB_MAPPING =
+            new KeyMapping("key.cycle_of_life.grab", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G,
                     "key.categories.cycle_of_life");
 
     public static final KeyMapping EAT_MAPPING =
@@ -59,10 +72,13 @@ public class KeyMappingsEvent {
         event.register(RIGHT_MAPPING);
         event.register(SPRINT_MAPPING);
         event.register(MAIN_ATTACK_MAPPING);
+        event.register(MAIN_ATTACK_MAPPING_2);
         event.register(REST_MAPPING);
         event.register(PAIR_MAPPING);
         event.register(EAT_MAPPING);
+        event.register(GRAB_MAPPING);
         event.register(CHARACTER_MAPPING);
+        event.register(BACKWARD_MAPPING);
 
     }
 }

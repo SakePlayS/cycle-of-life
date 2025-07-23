@@ -48,10 +48,7 @@ public class StatsScreen extends Screen {
         Player player = Minecraft.getInstance().player;
         DinoData data = player.getData(DataAttachments.DINO_DATA);
 
-        float growth = data.getGrowth();
-        float maxSpeed = Util.getDino(player).getSprintSpeed();
-        float adjustedSpeed = (float) Math.pow(growth, 1f/3f);
-        maxSpeed = maxSpeed * (Mth.lerp(adjustedSpeed, 0.1f, 1f) * 20);
+        float maxSpeed = Util.calculateMaxSpeed(player);
 
         stats.add(Pair.of("Weight: " + data.getWeight() + " kg", Util.rgbaToInt(150, 255, 255, 1)));
         stats.add(Pair.of("Growth: " + (int)(data.getGrowth() * 100) + "%", Util.rgbaToInt(150, 255, 255, 1)));

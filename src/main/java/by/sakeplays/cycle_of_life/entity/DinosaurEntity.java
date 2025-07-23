@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -17,6 +18,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class DinosaurEntity extends LivingEntity {
 
     public DinosaurEntity(EntityType<? extends LivingEntity> entityType, Level level) {
@@ -26,6 +30,9 @@ public abstract class DinosaurEntity extends LivingEntity {
     public double headXOld = 0;
     public double headYOld = 0;
     public double headZOld = 0;
+    public List<Position> tailBonePositionHistory = new ArrayList<>();
+
+    public float headRot = 0;
 
     public int eyesColor = Util.rgbaToInt(0.45f, 0.65f, 0.95f, 1f);
     public int bodyColor = Util.rgbaToInt(0.2f, 0.2f, 0.33f, 1f);
@@ -48,6 +55,9 @@ public abstract class DinosaurEntity extends LivingEntity {
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.FLOAT);
 
     public static final EntityDataAccessor<Float> BODY_ROT =
+            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.FLOAT);
+
+    public static final EntityDataAccessor<Float> REMAINING_WEIGHT =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.FLOAT);
 
     public static final EntityDataAccessor<Integer> OLD_PLAYER =
@@ -88,6 +98,7 @@ public abstract class DinosaurEntity extends LivingEntity {
         builder.define(BODY_BELLY_COLOR, 0);
         builder.define(BODY_FLANK_COLOR, 0);
         builder.define(BODY_MARKINGS_COLOR, 0);
+        builder.define(REMAINING_WEIGHT, 1f);
 
     }
 
@@ -99,6 +110,8 @@ public abstract class DinosaurEntity extends LivingEntity {
         setMale(compound.getBoolean("IsMale"));
         setBodyGrowth(compound.getFloat("BodyGrowth"));
         setBodyRot(compound.getFloat("BodyRot"));
+
+        setRemainingWeight(compound.getFloat("RemainingWeight"));
 
         setOldPlayer(compound.getInt("OldPlayer"));
 
@@ -119,6 +132,8 @@ public abstract class DinosaurEntity extends LivingEntity {
         compound.putBoolean("IsMale", isMale());
         compound.putFloat("BodyGrowth", getBodyGrowth());
         compound.putFloat("BodyRot", getBodyRot());
+
+        compound.putFloat("RemainingWeight", getRemainingWeight());
 
         compound.putInt("OldPlayer", getOldPlayerID());
 
@@ -184,6 +199,13 @@ public abstract class DinosaurEntity extends LivingEntity {
                 .add(Attributes.FOLLOW_RANGE, 24D);
     }
 
+    @Override
+    public void tick() {
+        super.tick();
+
+        if (getRemainingWeight() <= 0) this.remove(RemovalReason.DISCARDED);
+    }
+
     public boolean isBody() {
         return this.entityData.get(IS_BODY);
     }
@@ -206,6 +228,14 @@ public abstract class DinosaurEntity extends LivingEntity {
 
     public float getBodyGrowth() {
         return this.entityData.get(BODY_GROWTH);
+    }
+
+    public void setRemainingWeight(float val) {
+        this.entityData.set(REMAINING_WEIGHT, val);
+    }
+
+    public float getRemainingWeight() {
+        return this.entityData.get(REMAINING_WEIGHT);
     }
 
     public void setBodyRot(float val) {
@@ -270,6 +300,12 @@ public abstract class DinosaurEntity extends LivingEntity {
 
     public int getEyesColor() {
         return this.entityData.get(BODY_EYES_COLOR);
+    }
+
+    public void recordTailPosHistory(Position pos) {
+        tailBonePositionHistory.add(pos);
+
+        if (tailBonePositionHistory.size() > 11) tailBonePositionHistory.removeFirst();
     }
 
 

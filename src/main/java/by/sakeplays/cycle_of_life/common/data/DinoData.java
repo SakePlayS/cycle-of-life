@@ -20,6 +20,11 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private float bloodLevel;
     private float bleed;
     private float weight;
+
+    private float carriedMeatSize;
+    private int carriedMeatType;
+
+
     private boolean isSprinting;
     private boolean isMoving;
     private boolean isMale;
@@ -27,6 +32,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private boolean isInitialized;
     private boolean isPaired;
     private boolean isDrinking;
+    private boolean carryingItem;
+    private boolean isCharging;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
@@ -47,12 +54,17 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bloodLevel = bloodLevel;
         this.bleed = bleed;
         this.isSliding = isSliding;
+        this.isCharging = false;
+
 
         isMale = Math.random() < 0.5;
 
         pairingWith = 0;
         isPaired = false;
         isDrinking = false;
+        carryingItem = false;
+        this.carriedMeatType = 0;
+        this.carriedMeatSize = 0.7f;
 
 
 
@@ -278,6 +290,38 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
     public void setDrinking(boolean drinking) {
         isDrinking = drinking;
+    }
+
+    public boolean isCarryingItem() {
+        return carryingItem;
+    }
+
+    public void setCarryingItem(boolean carryingItem) {
+        this.carryingItem = carryingItem;
+    }
+
+    public float getCarriedMeatSize() {
+        return carriedMeatSize;
+    }
+
+    public void setCarriedMeatSize(float carriedMeatSize) {
+        this.carriedMeatSize = carriedMeatSize;
+    }
+
+    public int getCarriedMeatType() {
+        return carriedMeatType;
+    }
+
+    public void setCarriedMeatType(int carriedMeatType) {
+        this.carriedMeatType = carriedMeatType;
+    }
+
+    public boolean isCharging() {
+        return isCharging;
+    }
+
+    public void setCharging(boolean charging) {
+        isCharging = charging;
     }
 }
 

@@ -38,6 +38,13 @@ public class OnEntityTick {
 
         if (entity instanceof Player player) {
 
+            if (!player.level().isClientSide) {
+                int newCD = player.getData(DataAttachments.ATTACK_COOLDOWN) - 1;
+
+                player.setData(DataAttachments.ATTACK_COOLDOWN, newCD);
+                PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(player.getId(), newCD));
+            }
+
             if ((player.getData(DataAttachments.DINO_DATA).getBloodLevel() <= 0f ||
                     player.getData(DataAttachments.DINO_DATA).getHealth() <= 0f) &&
                     !player.level().isClientSide()) {
@@ -117,7 +124,7 @@ public class OnEntityTick {
                         player.refreshDimensions();
                     }
 
-                    // tick weight, health and blood level
+                    // tick i, health and blood level
 
                     float bleedRegen = 0.02f;
 
@@ -172,7 +179,7 @@ public class OnEntityTick {
                     PacketDistributor.sendToAllPlayers(new SyncBloodLevel(player.getId(), newBloodLevel));
 
                     player.getData(DataAttachments.DINO_DATA).setWeight(newWeight);
-                    PacketDistributor.sendToAllPlayers(new SyncWeight(player.getId(), newWeight));  // sync weight to other clients
+                    PacketDistributor.sendToAllPlayers(new SyncWeight(player.getId(), newWeight));  // sync i to other clients
 
 
                     // tick food and water
@@ -308,7 +315,7 @@ public class OnEntityTick {
             if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
 
                 float newStam = Math.max(0, player.getData(DataAttachments.DINO_DATA).getStamina()
-                        - 3.5f);
+                        - 1.75f);
 
                 player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
                 PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));

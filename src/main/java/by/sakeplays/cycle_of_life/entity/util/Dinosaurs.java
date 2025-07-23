@@ -3,12 +3,12 @@ package by.sakeplays.cycle_of_life.entity.util;
 public enum Dinosaurs {
 
 
-    PACHYCEPHALOSAURUS(0.12f,0.42f, 0.008f, 425f, 3f, 4f,
-            7.5f, 0.32f, 2f, 0.65f, 1750f, 350, 0.005f,
+    PACHYCEPHALOSAURUS(0.12f,0.58f, 0.08f, 425f, 3f, 4f,
+            11f, 0.32f, 0.005f, 0.65f, 1750f, 350, 0.02f,
             0.00065f, 0.00045f, Diet.HERBIVORE, false, 5.12f,0.0006f ,1),
 
-    DEINONYCHUS(0.13f,0.55f,0.2f,75f, 5f, 12f,
-            13f, 0.28f, 0.004f, 0.55f, 2800f, 200, 0.03f,
+    DEINONYCHUS(0.17f,0.65f,0.08f,75f, 5f, 12f,
+            17f, 0.28f, 0.007f, 0.55f, 2800f, 200, 0.03f,
             0.00031f, 0.00037f, Diet.CARNIVORE, false, 1.45f, 0.0005f,2);
 
     private final float weight;

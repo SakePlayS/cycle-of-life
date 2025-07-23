@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.checkerframework.checker.units.qual.A;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,9 +22,19 @@ public class ClientHooksMixin {
     @ModifyReturnValue(method = "getDetachedCameraDistance", at = @At("RETURN"))
     private static float modifyDefaultCameraDistance(float original) {
 
-        if (Minecraft.getInstance().player == null) return 4F;
+        Player player = Minecraft.getInstance().player;
 
-        return 3F * (0.1f + (Math.max(0f, Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getGrowth() - 0.1f)));
+        if (player == null) return 4F;
+
+        float scale = 0;
+
+        scale = switch (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur()) {
+            case 1 -> 1.2f;
+            case 2 -> 1f;
+            default -> 1f;
+        };
+
+        return 3F * scale * (0.1f + (Math.max(0f, Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getGrowth() - 0.1f)));
     }
 
 }

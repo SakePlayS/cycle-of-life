@@ -15,7 +15,8 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                            double body1X, double body1Y, double body1Z,
                            double body2X, double body2Y, double body2Z,
                            double tail1X, double tail1Y, double tail1Z,
-                           double tail2X, double tail2Y, double tail2Z) implements CustomPacketPayload {
+                           double tail2X, double tail2Y, double tail2Z,
+                           double grabX, double grabY, double grabZ) implements CustomPacketPayload {
 
     public static final Type<SyncHitboxes> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_head_pos"));
@@ -33,6 +34,8 @@ public record SyncHitboxes(double headX, double headY, double headZ,
             player.getData(DataAttachments.HITBOX_DATA).setBody2Pos(new Position(packet.body2X(), packet.body2Y() ,packet.body2Z()));
             player.getData(DataAttachments.HITBOX_DATA).setTail1Pos(new Position(packet.tail1X(), packet.tail1Y() ,packet.tail1Z()));
             player.getData(DataAttachments.HITBOX_DATA).setTail2Pos(new Position(packet.tail2X(), packet.tail2Y() ,packet.tail2Z()));
+            player.getData(DataAttachments.HITBOX_DATA).setGrabHandlerPos(new Position(packet.grabX, packet.grabY ,packet.grabZ));
+
         });
     }
 
@@ -41,6 +44,7 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                 @Override
                 public SyncHitboxes decode(FriendlyByteBuf buf) {
                     return new SyncHitboxes(
+                            buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
@@ -70,6 +74,10 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                     buf.writeDouble(val.tail2X());
                     buf.writeDouble(val.tail2Y());
                     buf.writeDouble(val.tail2Z());
+
+                    buf.writeDouble(val.grabX);
+                    buf.writeDouble(val.grabY());
+                    buf.writeDouble(val.grabZ());
                 }
             };
 }

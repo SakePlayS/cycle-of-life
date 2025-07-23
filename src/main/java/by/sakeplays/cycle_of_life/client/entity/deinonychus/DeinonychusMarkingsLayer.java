@@ -38,7 +38,7 @@ public class DeinonychusMarkingsLayer<T extends Entity & GeoAnimatable> extends 
         } else {
             color = animatable.getMarkingsColor();
         }
-        float size = Util.calculateGrowth(animatable);
+        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
 
         poseStack.pushPose();
         poseStack.scale(1/size, 1/size, 1/size);
