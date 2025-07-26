@@ -16,7 +16,13 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     protected static final RawAnimation BASH = RawAnimation.begin().thenPlay("pachycephalosaurus.bash");
+    protected static final RawAnimation UPPER_BASH = RawAnimation.begin().thenPlay("pachycephalosaurus.upper_bash");
 
+    protected static final RawAnimation REST_IN = RawAnimation.begin().thenPlay("pachycephalosaurus.resting_in");
+    protected static final RawAnimation REST_LOOP = RawAnimation.begin().thenPlay("pachycephalosaurus.resting");
+    protected static final RawAnimation REST_OUT = RawAnimation.begin().thenPlay("pachycephalosaurus.resting_out");
+
+    protected static final RawAnimation KNOCKED_DOWN = RawAnimation.begin().thenLoop("pachycephalosaurus.knocked_down");
 
     protected static final RawAnimation CHARGE_ANIM = RawAnimation.begin().thenLoop("pachycephalosaurus.charge");
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("pachycephalosaurus.run");
@@ -36,6 +42,10 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "movement", 5, this::movementController));
         controllers.add(new AnimationController<>(this, "attack", 0, this::attackController)
+                .triggerableAnim("upper_bash", UPPER_BASH)
+                .triggerableAnim("rest_in", REST_IN)
+                .triggerableAnim("rest_out", REST_OUT)
+                .triggerableAnim("rest_loop", REST_LOOP)
                 .triggerableAnim("bash", BASH));
 
     }
@@ -60,6 +70,9 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
             Player player = getPlayer();
             DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+            if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return state.setAndContinue(KNOCKED_DOWN);
+
 
             if (data.isMoving() && data.isSprinting() && data.isCharging()) return state.setAndContinue(CHARGE_ANIM);
             if (data.isMoving() && data.isSprinting()) return state.setAndContinue(RUN_ANIM);

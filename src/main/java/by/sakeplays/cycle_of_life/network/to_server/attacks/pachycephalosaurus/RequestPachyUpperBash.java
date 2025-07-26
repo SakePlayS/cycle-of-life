@@ -3,11 +3,9 @@ package by.sakeplays.cycle_of_life.network.to_server.attacks.pachycephalosaurus;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncKnockdownTime;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncPairingWith;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_client.ApplyKnockback;
 import by.sakeplays.cycle_of_life.network.to_client.SyncAttackCooldown;
@@ -24,24 +22,24 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestPachyBash(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestPachyUpperBash(int target, HitboxType hbType) implements CustomPacketPayload {
 
-    public static final Type<RequestPachyBash> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_pachy_bash"));
+    public static final Type<RequestPachyUpperBash> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_pachy_upper_bash"));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public static final StreamCodec<FriendlyByteBuf, RequestPachyBash> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.INT, RequestPachyBash::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestPachyBash::hbType,
-            RequestPachyBash::new
+    public static final StreamCodec<FriendlyByteBuf, RequestPachyUpperBash> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, RequestPachyUpperBash::target,
+            ModCodecs.enumCodec(HitboxType.class), RequestPachyUpperBash::hbType,
+            RequestPachyUpperBash::new
     );
 
 
-    public static void handleServer(final RequestPachyBash packet, final IPayloadContext context) {
+    public static void handleServer(final RequestPachyUpperBash packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             DinoData dataSource = context.player().getData(DataAttachments.DINO_DATA);
 
@@ -59,26 +57,24 @@ public record RequestPachyBash(int target, HitboxType hbType) implements CustomP
                 DinoData dataTarget = targetPlayer.getData(DataAttachments.DINO_DATA);
 
                 if (context.player().getData(DataAttachments.ATTACK_COOLDOWN) > 0) return;
-                context.player().setData(DataAttachments.ATTACK_COOLDOWN, 20);
-                PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(context.player().getId(), 20));
-
-
+                context.player().setData(DataAttachments.ATTACK_COOLDOWN, 12);
+                PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(context.player().getId(), 12));
 
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
                 float dx = (float) -Math.sin(context.player().getData(DataAttachments.PLAYER_ROTATION));
                 float dz = (float) Math.cos(context.player().getData(DataAttachments.PLAYER_ROTATION));
 
-                Util.attemptToHitPlayer(targetPlayer, 50f, 0f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 25f, 0f, true, HitboxType.fromString(packet.hbType().toString()));
 
-                if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() * 1.5f > dataTarget.getWeight()) {
+                if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() > dataTarget.getWeight()) {
                     targetPlayer.setData(DataAttachments.KNOCKDOWN_TIME, 35);
                     PacketDistributor.sendToAllPlayers(new SyncKnockdownTime(targetPlayer.getId(), 35));
-                    PacketDistributor.sendToPlayer((ServerPlayer) targetPlayer, new ApplyKnockback(targetPlayer.getId(), dx, 0.2f, dz, 0.41f));
+                    PacketDistributor.sendToPlayer((ServerPlayer) targetPlayer, new ApplyKnockback(targetPlayer.getId(), dx, 0.2f, dz, 0.15f));
                 }
 
                 targetPlayer.level().playSound(null, targetPlayer.getX(), targetPlayer.getY(), targetPlayer.getZ(),
-                        SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.PLAYERS, 1f ,1.4f +
+                        SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.PLAYERS, 1f ,1f +
                                 (float) ((Math.random() - 0.5) / 4));
             }
         });

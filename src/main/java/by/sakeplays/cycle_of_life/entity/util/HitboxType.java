@@ -2,6 +2,7 @@ package by.sakeplays.cycle_of_life.entity.util;
 
 public enum HitboxType {
 
+    NONE,
     HEAD,
     BODY1,
     BODY2,
@@ -10,6 +11,8 @@ public enum HitboxType {
 
 
     public static HitboxType fromString(String s) {
+        if (s.equalsIgnoreCase("NONE")) return NONE;
+
         if (s.equalsIgnoreCase("HEAD")) return HEAD;
         if (s.equalsIgnoreCase("BODY1")) return BODY1;
         if (s.equalsIgnoreCase("BODY2")) return BODY2;

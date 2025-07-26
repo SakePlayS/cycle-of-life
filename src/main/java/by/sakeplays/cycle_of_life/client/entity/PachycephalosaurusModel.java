@@ -37,9 +37,16 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
 
         if (!animatable.isBody()) {
 
-            if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) {
-                animatable.triggerAnim("attack", "bash");
-            }
+            if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) animatable.triggerAnim("attack", "bash");
+            if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND)) animatable.triggerAnim("attack", "upper_bash");
+
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 1)
+                animatable.triggerAnim("attack", "rest_in");
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 2)
+                animatable.triggerAnim("attack", "rest_loop");
+            if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 3)
+                animatable.triggerAnim("attack", "rest_out");
+
         }
 
         float partialTick = animationState.getPartialTick();

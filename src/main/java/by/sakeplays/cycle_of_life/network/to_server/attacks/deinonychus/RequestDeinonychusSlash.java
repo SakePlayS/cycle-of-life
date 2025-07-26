@@ -2,6 +2,7 @@ package by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
+import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.to_client.SyncAttackCooldown;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
@@ -24,7 +25,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 
-public record RequestDeinonychusSlash(int target, String hbType) implements CustomPacketPayload {
+public record RequestDeinonychusSlash(int target, HitboxType hbType) implements CustomPacketPayload {
 
     public static final Type<RequestDeinonychusSlash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_deinonychus_slash"));
@@ -36,33 +37,31 @@ public record RequestDeinonychusSlash(int target, String hbType) implements Cust
 
     public static final StreamCodec<FriendlyByteBuf, RequestDeinonychusSlash> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestDeinonychusSlash::target,
-            ByteBufCodecs.STRING_UTF8, RequestDeinonychusSlash::hbType,
+            ModCodecs.enumCodec(HitboxType.class), RequestDeinonychusSlash::hbType,
             RequestDeinonychusSlash::new
     );
     public static void handleServer(final RequestDeinonychusSlash packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
-            if (packet.hbType == null) {
-                CycleOfLife.LOGGER.warn("Suspicious attack with null hitbox type from "
-                        + context.player().getUUID().toString() + " (" + context.player().getName().getString() + ")");
+            DinoData data = context.player().getData(DataAttachments.DINO_DATA);
+
+            float newStam = Math.max(0, data.getStamina() - 15);
+
+            data.setStamina(newStam);
+            PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
+
+            if (packet.hbType == HitboxType.NONE) {
                 return;
             }
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 
-                DinoData data = context.player().getData(DataAttachments.DINO_DATA);
-
                 if (context.player().getData(DataAttachments.ATTACK_COOLDOWN) > 0) return;
                 context.player().setData(DataAttachments.ATTACK_COOLDOWN, 15);
                 PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(context.player().getId(), 15));
 
-                float newStam = Math.max(0, data.getStamina() - 15);
-
-                data.setStamina(newStam);
-                PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
-
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
-                Util.attemptToHitPlayer(targetPlayer, 7f, 0.11f, true, HitboxType.fromString(packet.hbType()));
+                Util.attemptToHitPlayer(targetPlayer, 7f, 0.11f, true, HitboxType.fromString(packet.hbType().toString()));
             }
         });
     }

@@ -6,11 +6,11 @@ public enum Dinosaurs {
             0f, 0f, 0f, 0f, 1f, 0, 0f,
             0f, 0, Diet.HERBIVORE, false, 0f,0f ,0),
 
-    PACHYCEPHALOSAURUS(0.12f,0.58f, 5f, 425f, 3f, 4f,
+    PACHYCEPHALOSAURUS(0.12f,0.55f, 5f, 425f, 3f, 4f,
             12f, 0.32f, 0.005f, 1.5f, 1750f, 350, 0.035f,
             0.00065f, 0.00045f, Diet.HERBIVORE, false, 0.49f,0.00045f ,1),
 
-    DEINONYCHUS(0.17f,0.65f,5f,75f, 5f, 12f,
+    DEINONYCHUS(0.17f,0.67f,5f,75f, 5f, 12f,
             17f, 0.28f, 0.007f, 0.8f, 3800f, 200, 0.05f,
             0.00031f, 0.00037f, Diet.CARNIVORE, false, 0.56f, 0.0005f,2),
 

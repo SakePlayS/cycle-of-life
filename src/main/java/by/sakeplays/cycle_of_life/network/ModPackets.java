@@ -7,6 +7,7 @@ import by.sakeplays.cycle_of_life.network.bidirectional.SyncYHistory;
 import by.sakeplays.cycle_of_life.network.to_server.*;
 import by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus.*;
 import by.sakeplays.cycle_of_life.network.to_server.attacks.pachycephalosaurus.RequestPachyBash;
+import by.sakeplays.cycle_of_life.network.to_server.attacks.pachycephalosaurus.RequestPachyUpperBash;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -47,6 +48,7 @@ public class ModPackets {
         registrar.playToServer(RequestDeinonychusSlash.TYPE, RequestDeinonychusSlash.STREAM_CODEC, RequestDeinonychusSlash::handleServer);
         registrar.playToServer(RequestGrabFood.TYPE, RequestGrabFood.STREAM_CODEC, RequestGrabFood::handleServer);
         registrar.playToServer(RequestPachyBash.TYPE, RequestPachyBash.STREAM_CODEC, RequestPachyBash::handleServer);
+        registrar.playToServer(RequestPachyUpperBash.TYPE, RequestPachyUpperBash.STREAM_CODEC, RequestPachyUpperBash::handleServer);
 
 
         registrar.playBidirectional(SyncDinoSprint.TYPE, SyncDinoSprint.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoSprint::handleClient, SyncDinoSprint::handleServer));
