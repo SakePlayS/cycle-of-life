@@ -2,14 +2,27 @@ package by.sakeplays.cycle_of_life.entity.util;
 
 public enum Dinosaurs {
 
+    NONE(0f,0f, 0f, 1f, 0f, 0f,
+            0f, 0f, 0f, 0f, 1f, 0, 0f,
+            0f, 0, Diet.HERBIVORE, false, 0f,0f ,0),
 
-    PACHYCEPHALOSAURUS(0.12f,0.58f, 0.08f, 425f, 3f, 4f,
-            11f, 0.32f, 0.005f, 0.65f, 1750f, 350, 0.02f,
-            0.00065f, 0.00045f, Diet.HERBIVORE, false, 5.12f,0.0006f ,1),
+    PACHYCEPHALOSAURUS(0.12f,0.58f, 5f, 425f, 3f, 4f,
+            12f, 0.32f, 0.005f, 1.5f, 1750f, 350, 0.035f,
+            0.00065f, 0.00045f, Diet.HERBIVORE, false, 0.49f,0.00045f ,1),
 
-    DEINONYCHUS(0.17f,0.65f,0.08f,75f, 5f, 12f,
-            17f, 0.28f, 0.007f, 0.55f, 2800f, 200, 0.03f,
-            0.00031f, 0.00037f, Diet.CARNIVORE, false, 1.45f, 0.0005f,2);
+    DEINONYCHUS(0.17f,0.65f,5f,75f, 5f, 12f,
+            17f, 0.28f, 0.007f, 0.8f, 3800f, 200, 0.05f,
+            0.00031f, 0.00037f, Diet.CARNIVORE, false, 0.56f, 0.0005f,2),
+
+    QUETZALCOATLUS(0.07f,0.25f, 0.08f, 225f, 3f, 4f,
+            8f, 0.15f, 0.002f, 0.8f, 1150f, 650, 0.01f,
+            0.00045f, 0.0008f, Diet.CARNIVORE, false, 0.65f,0.00027f ,3),
+
+    UTAHRAPTOR(0.18f,0.61f, 0.08f, 225f, 3f, 4f,
+            8f, 0.15f, 0.002f, 0.4f, 1150f, 650, 0.01f,
+            0.00045f, 0.0008f, Diet.CARNIVORE, false, 0.45f,0.00039f ,4);
+
+
 
     private final float weight;
     private final float heatResistance;
@@ -113,7 +126,12 @@ public enum Dinosaurs {
 
     public static Dinosaurs getById (int ID) {
         if (ID == 1) return PACHYCEPHALOSAURUS;
-        return DEINONYCHUS;
+        if (ID == 2) return DEINONYCHUS;
+        if (ID == 3) return QUETZALCOATLUS;
+        if (ID == 4) return UTAHRAPTOR;
+
+        return NONE;
+
     }
 
     public float getSwimSpeed() {

@@ -4,12 +4,15 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
+import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
+
+import java.util.ArrayList;
 
 public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
     @Override
@@ -43,6 +46,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
 
         handleBodyRotation(this, animatable, partialTick);
         handleNeckRotation(this, animatable, partialTick);
+        handleTailPhysics(this, animatable, partialTick);
 
     }
 
@@ -54,7 +58,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
 
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
         }
 
         float currentRotY = Mth.lerp(partialTick, animatable.prevRotY, playerRot);
@@ -77,7 +81,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
         float rot = animatable.headRot;
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
             playerYaw = animatable.getPlayer().getYRot();
             additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
             targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
@@ -95,7 +99,66 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
         neck_tilt.setRotY(rot * 1.15f);
         head_tilt.setRotY(rot * 1.5f);
 
+
         animatable.headRot = rot;
+
+    }
+
+
+    private void handleTailPhysics(GeoModel<Pachycephalosaurus> model, Pachycephalosaurus animatable, float partialTick) {
+
+        GeoBone tail_1_rot = getAnimationProcessor().getBone("tail_1_rot");
+        GeoBone tail_2_rot = getAnimationProcessor().getBone("tail_2_rot");
+        GeoBone tail_3_rot = getAnimationProcessor().getBone("tail_3_rot");
+        GeoBone leaningHandler = getAnimationProcessor().getBone("leaning_handler");
+
+        float currentRotY1 = 0;
+        float currentRotY2 = 0;
+        float currentRotY3 = 0;
+
+        float currentRotX = 0;
+        float speed = 1;
+
+        if (animatable.playerId != null && !animatable.isBody()) {
+
+            speed += animatable.getPlayer().getData(DataAttachments.SPEED);
+
+            ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
+            ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
+
+            if (yHistory.size() < 6 || turnDegreeHistory.size() < 7) return;
+
+            float tailRotX = 35 * Util.calculateTailXRot(yHistory);
+            float tailRotY1 = (20 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 0, 2)) / speed;
+
+            float tailRotY2 = (30 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2, 4)) / speed;
+            float tailRotY3 = (40 * Util.calculateTailYRot(turnDegreeHistory,
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 4, 6)) / speed;
+
+            currentRotY1 = Mth.lerp(partialTick, animatable.prevTailRotY1, tailRotY1);
+            currentRotY2 = Mth.lerp(partialTick, animatable.prevTailRotY2, tailRotY2);
+            currentRotY3 = Mth.lerp(partialTick, animatable.prevTailRotY3, tailRotY3);
+
+            currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
+
+        }
+
+        leaningHandler.setRotZ(currentRotY1 / -1.75f);
+
+        tail_1_rot.setRotX(currentRotX);
+        tail_2_rot.setRotX(currentRotX);
+        tail_3_rot.setRotX(currentRotX);
+
+        tail_1_rot.setRotY(currentRotY1);
+        tail_2_rot.setRotY(currentRotY2);
+        tail_3_rot.setRotY(currentRotY3);
+
+        animatable.prevTailRotX = currentRotX;
+        animatable.prevTailRotY1 = currentRotY1;
+        animatable.prevTailRotY2 = currentRotY2;
+        animatable.prevTailRotY3 = currentRotY3;
 
     }
 }

@@ -1,14 +1,13 @@
 package by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.MeatChunkEntity;
 import by.sakeplays.cycle_of_life.entity.util.Diet;
-import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

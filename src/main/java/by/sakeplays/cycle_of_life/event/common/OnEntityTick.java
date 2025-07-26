@@ -1,19 +1,16 @@
 package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
-import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
@@ -40,9 +37,13 @@ public class OnEntityTick {
 
             if (!player.level().isClientSide) {
                 int newCD = player.getData(DataAttachments.ATTACK_COOLDOWN) - 1;
-
                 player.setData(DataAttachments.ATTACK_COOLDOWN, newCD);
                 PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(player.getId(), newCD));
+
+                int newKT = (player.onGround() || player.isInWater()) ? player.getData(DataAttachments.KNOCKDOWN_TIME) - 1 : player.getData(DataAttachments.KNOCKDOWN_TIME);
+                player.setData(DataAttachments.KNOCKDOWN_TIME, newKT);
+                PacketDistributor.sendToAllPlayers(new SyncKnockdownTime(player.getId(), newKT));
+
             }
 
             if ((player.getData(DataAttachments.DINO_DATA).getBloodLevel() <= 0f ||
@@ -63,7 +64,7 @@ public class OnEntityTick {
                 body.setMaleDisplayColor(skinData.getMaleDisplayColor());
 
                 body.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
-                body.setBodyRot(player.getData(DataAttachments.PLAYER_TURN));
+                body.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
                 body.playerId = player.getId();
                 body.setOldPlayer(player.getId());
                 body.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
@@ -293,7 +294,7 @@ public class OnEntityTick {
         if (!player.getData(DataAttachments.DINO_DATA).isSprinting() || !player.getData(DataAttachments.DINO_DATA).isMoving()) {
 
             float additionalStam = Util.getStamRegen(player)
-                    * player.getData(DataAttachments.REST_FACTOR);
+                    * (player.getData(DataAttachments.REST_FACTOR) * 0.5f + 0.5f);
             float newStam = Math.min(Util.getStaminaUpgraded(player),
                     player.getData(DataAttachments.DINO_DATA).getStamina() + additionalStam);
 
@@ -315,7 +316,7 @@ public class OnEntityTick {
             if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
 
                 float newStam = Math.max(0, player.getData(DataAttachments.DINO_DATA).getStamina()
-                        - 1.75f);
+                        - 5f);
 
                 player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
                 PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));

@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
 
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.AdaptationData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;

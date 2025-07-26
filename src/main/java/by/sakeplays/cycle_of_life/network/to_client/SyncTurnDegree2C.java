@@ -31,7 +31,7 @@ public record SyncTurnDegree2C(int playerId, float turnDegree) implements Custom
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerId()) instanceof Player player) {
 
-                player.setData(DataAttachments.PLAYER_TURN, packet.turnDegree());
+                player.setData(DataAttachments.PLAYER_ROTATION, packet.turnDegree());
 
             }
         });

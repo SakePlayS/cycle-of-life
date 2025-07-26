@@ -1,23 +1,17 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.Position;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DeinonychusModel extends GeoModel<Deinonychus> {
 
@@ -108,7 +102,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
         }
 
         float currentRotY = Mth.lerp(partialTick, animatable.prevRotY, playerRot);
@@ -133,7 +127,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         float rot = animatable.headRot;
 
         if (animatable.playerId != null && !animatable.isBody()) {
-            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_TURN);
+            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
             playerYaw = animatable.getPlayer().getYRot();
             additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
             targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
@@ -180,12 +174,12 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
             float tailRotX = 35 * Util.calculateTailXRot(yHistory);
             float tailRotY1 = (20 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 0, 2)) / speed;
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 0, 2)) / speed;
 
             float tailRotY2 = (30 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 2, 4)) / speed;
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2, 4)) / speed;
             float tailRotY3 = (40 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_TURN), 4, 6)) / speed;
+                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 4, 6)) / speed;
 
             currentRotY1 = Mth.lerp(partialTick, animatable.prevTailRotY1, tailRotY1);
             currentRotY2 = Mth.lerp(partialTick, animatable.prevTailRotY2, tailRotY2);

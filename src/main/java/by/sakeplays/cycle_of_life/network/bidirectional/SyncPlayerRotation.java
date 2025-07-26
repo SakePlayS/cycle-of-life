@@ -11,34 +11,34 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SyncTurnDegree(float turnDegree, int playerID) implements CustomPacketPayload {
+public record SyncPlayerRotation(float turnDegree, int playerID) implements CustomPacketPayload {
 
-    public static final Type<SyncTurnDegree> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_turn_degree"));
+    public static final Type<SyncPlayerRotation> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_player_rotation"));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public static final StreamCodec<FriendlyByteBuf, SyncTurnDegree> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, SyncTurnDegree::turnDegree,
-            ByteBufCodecs.INT, SyncTurnDegree::playerID,
-            SyncTurnDegree::new
+    public static final StreamCodec<FriendlyByteBuf, SyncPlayerRotation> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.FLOAT, SyncPlayerRotation::turnDegree,
+            ByteBufCodecs.INT, SyncPlayerRotation::playerID,
+            SyncPlayerRotation::new
     );
 
-    public static void handleClient(final SyncTurnDegree packet, final IPayloadContext context) {
+    public static void handleClient(final SyncPlayerRotation packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.setData(DataAttachments.PLAYER_TURN, packet.turnDegree);
+                player.setData(DataAttachments.PLAYER_ROTATION, packet.turnDegree);
             }
         });
     }
 
-    public static void handleServer(final SyncTurnDegree packet, final IPayloadContext context) {
+    public static void handleServer(final SyncPlayerRotation packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             Player player = context.player();
-            player.setData(DataAttachments.PLAYER_TURN, packet.turnDegree);
+            player.setData(DataAttachments.PLAYER_ROTATION, packet.turnDegree);
         }).thenRun(() -> PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet));
     }
 }

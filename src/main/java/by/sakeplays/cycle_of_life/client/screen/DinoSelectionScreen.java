@@ -20,19 +20,20 @@ public class DinoSelectionScreen extends Screen {
     private Button CONFIRM_BUTTON;
 
     // herbivores
-    private Button PACHY_BUTTON;
-    private Button DRYO_BUTTON;
+    private Button PACHYCEPHALOSAURUS_BUTTON;
+    private Button DRYOSAURUS_BUTTON;
     private Button GALLIMIMUS_BUTTON;
-    private Button PARKOSAURUS_BUTTON;
+    private Button PARKSOSAURUS_BUTTON;
 
     // omnivores
-    private Button LATENIVENATRIX;
+    private Button LATENIVENATRIX_BUTTON;
 
     // carnivores
-    private Button DEINO_BUTTON;
-    private Button AUSTRORAPTOR;
-    private Button UTAHRAPTOR;
+    private Button DEINONYCHUS_BUTTON;
+    private Button AUSTRORAPTOR_BUTTON;
+    private Button UTAHRAPTOR_BUTTON;
     private Button ORNITHOLESTES_BUTTON;
+    private Button QUETZALCOATLUS_BUTTON;
 
     private Button HERBIVORES_BUTTON;
     private Button CARNIVORES_BUTTON;
@@ -50,13 +51,14 @@ public class DinoSelectionScreen extends Screen {
             CONFIRM_BUTTON.active = (desiredDinosaurID != 0);
         }
 
-        LATENIVENATRIX.active = false;
-        DRYO_BUTTON.active = false;
-        UTAHRAPTOR.active = false;
-        AUSTRORAPTOR.active = false;
+        LATENIVENATRIX_BUTTON.active = false;
+        DRYOSAURUS_BUTTON.active = false;
+        UTAHRAPTOR_BUTTON.active = false;
+        AUSTRORAPTOR_BUTTON.active = false;
         GALLIMIMUS_BUTTON.active = false;
-        PARKOSAURUS_BUTTON.active = false;
+        PARKSOSAURUS_BUTTON.active = false;
         ORNITHOLESTES_BUTTON.active = false;
+        QUETZALCOATLUS_BUTTON.active = false;
 
         tickButtons();
     }
@@ -104,56 +106,59 @@ public class DinoSelectionScreen extends Screen {
 
 
 
-        PACHY_BUTTON =  new Button.Builder(Component.literal("Pachycephalosaurus"),button -> {
+        PACHYCEPHALOSAURUS_BUTTON =  new Button.Builder(Component.literal("Pachycephalosaurus"), button -> {
             desiredDinosaurID = Dinosaurs.PACHYCEPHALOSAURUS.getID();
-        }).size(150, 18).pos(width/2 - 75, height/2)
+        }).size(150, 18).pos(width/2 - 75, height/2 - 40)
                 .tooltip(Tooltip.create(Component.literal("Pachy desc"))).build();
 
         GALLIMIMUS_BUTTON = new Button.Builder(Component.literal("Gallimimus"),button -> {
             desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2 + 20)
+        }).size(150, 18).pos(width/2 - 75, height/2 - 20)
                 .tooltip(Tooltip.create(Component.literal("galli desc"))).build();
 
-        DRYO_BUTTON = new Button.Builder(Component.literal("Dryosaurus"),button -> {
+        DRYOSAURUS_BUTTON = new Button.Builder(Component.literal("Dryosaurus"), button -> {
             desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2 + 40)
+        }).size(150, 18).pos(width/2 - 75, height/2)
                 .tooltip(Tooltip.create(Component.literal("dryo desc"))).build();
 
-        PARKOSAURUS_BUTTON = new Button.Builder(Component.literal("Parkosaurus"),button -> {
-            desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2 + 60)
-                .tooltip(Tooltip.create(Component.literal("parko desc"))).build();
-
-
-
-
-        DEINO_BUTTON = new Button.Builder(Component.literal("Deinonychus"),button -> {
-            desiredDinosaurID = Dinosaurs.DEINONYCHUS.getID();
-        }).size(150, 18).pos(width/2 - 75, height/2)
-                .tooltip(Tooltip.create(Component.literal("This small dromaeosaurid is incredibly fragile, but its outstanding stamina and agility more than make up for it. A very effective pack hunter."))).build();
-
-        UTAHRAPTOR = new Button.Builder(Component.literal("Utahraptor"),button -> {
+        PARKSOSAURUS_BUTTON = new Button.Builder(Component.literal("Parksosaurus"), button -> {
             desiredDinosaurID = 0;
         }).size(150, 18).pos(width/2 - 75, height/2 + 20)
+                .tooltip(Tooltip.create(Component.literal("parkso desc"))).build();
+
+
+
+
+        DEINONYCHUS_BUTTON = new Button.Builder(Component.literal("Deinonychus"), button -> {
+            desiredDinosaurID = Dinosaurs.DEINONYCHUS.getID();
+        }).size(150, 18).pos(width/2 - 75, height/2 - 40)
+                .tooltip(Tooltip.create(Component.literal("This small dromaeosaurid is incredibly fragile, but its outstanding stamina and agility more than make up for it. A very effective pack hunter."))).build();
+
+        UTAHRAPTOR_BUTTON = new Button.Builder(Component.literal("Utahraptor"), button -> {
+            desiredDinosaurID = 0;
+        }).size(150, 18).pos(width/2 - 75, height/2 - 20)
                 .tooltip(Tooltip.create(Component.literal("Utah desc"))).build();
 
-        AUSTRORAPTOR = new Button.Builder(Component.literal("Austroraptor"),button -> {
+        AUSTRORAPTOR_BUTTON = new Button.Builder(Component.literal("Austroraptor"), button -> {
             desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2 + 40)
+        }).size(150, 18).pos(width/2 - 75, height/2)
                 .tooltip(Tooltip.create(Component.literal("Austro desc"))).build();
 
         ORNITHOLESTES_BUTTON = new Button.Builder(Component.literal("Ornitholestes"), button -> {
             desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2 + 60)
+        }).size(150, 18).pos(width/2 - 75, height/2 + 20)
                 .tooltip(Tooltip.create(Component.literal("Orni desc"))).build();
 
-
-
-
-
-        LATENIVENATRIX = new Button.Builder(Component.literal("Latenivenatrix"),button -> {
+        QUETZALCOATLUS_BUTTON = new Button.Builder(Component.literal("Quetzalcoatlus"), button -> {
             desiredDinosaurID = 0;
-        }).size(150, 18).pos(width/2 - 75, height/2)
+        }).size(150, 18).pos(width/2 - 75, height/2 + 40)
+                .tooltip(Tooltip.create(Component.literal("Quetz desc"))).build();
+
+
+
+        LATENIVENATRIX_BUTTON = new Button.Builder(Component.literal("Latenivenatrix"), button -> {
+            desiredDinosaurID = 0;
+        }).size(150, 18).pos(width/2 - 75, height/2 - 40)
                 .tooltip(Tooltip.create(Component.literal("lateni desc"))).build();
 
 
@@ -165,17 +170,18 @@ public class DinoSelectionScreen extends Screen {
         addRenderableWidget(OMNIVORES_BUTTON);
 
 
-        addRenderableWidget(PACHY_BUTTON);
-        addRenderableWidget(DRYO_BUTTON);
+        addRenderableWidget(PACHYCEPHALOSAURUS_BUTTON);
+        addRenderableWidget(DRYOSAURUS_BUTTON);
         addRenderableWidget(GALLIMIMUS_BUTTON);
-        addRenderableWidget(PARKOSAURUS_BUTTON);
+        addRenderableWidget(PARKSOSAURUS_BUTTON);
 
-        addRenderableWidget(DEINO_BUTTON);
-        addRenderableWidget(UTAHRAPTOR);
-        addRenderableWidget(AUSTRORAPTOR);
+        addRenderableWidget(DEINONYCHUS_BUTTON);
+        addRenderableWidget(UTAHRAPTOR_BUTTON);
+        addRenderableWidget(AUSTRORAPTOR_BUTTON);
         addRenderableWidget(ORNITHOLESTES_BUTTON);
+        addRenderableWidget(QUETZALCOATLUS_BUTTON);
 
-        addRenderableWidget(LATENIVENATRIX);
+        addRenderableWidget(LATENIVENATRIX_BUTTON);
 
         HERBIVORES_BUTTON.active = false;
 
@@ -197,17 +203,18 @@ public class DinoSelectionScreen extends Screen {
     }
 
     private void tickButtons() {
-        DEINO_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
-        UTAHRAPTOR.visible = selectedDiet == Diet.CARNIVORE;
-        AUSTRORAPTOR.visible = selectedDiet == Diet.CARNIVORE;
+        DEINONYCHUS_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
+        UTAHRAPTOR_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
+        AUSTRORAPTOR_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
         ORNITHOLESTES_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
+        QUETZALCOATLUS_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
 
-        PACHY_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
-        DRYO_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
+        PACHYCEPHALOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
+        DRYOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
         GALLIMIMUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
-        PARKOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
+        PARKSOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
 
-        LATENIVENATRIX.visible = selectedDiet == Diet.OMNIVORE;
+        LATENIVENATRIX_BUTTON.visible = selectedDiet == Diet.OMNIVORE;
 
     }
 

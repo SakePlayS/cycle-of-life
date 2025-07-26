@@ -41,8 +41,8 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<ArrayList<Float>>> TURN_HISTORY = ATTACHMENT_TYPES.register(
             "turn_history", () -> AttachmentType.builder(() -> new ArrayList<Float>()).build());
 
-    public static final Supplier<AttachmentType<Float>> PLAYER_TURN = ATTACHMENT_TYPES.register(
-            "player_turn", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
+    public static final Supplier<AttachmentType<Float>> PLAYER_ROTATION = ATTACHMENT_TYPES.register(
+            "player_rotation", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
 
     public static final Supplier<AttachmentType<Float>> SPEED = ATTACHMENT_TYPES.register(
             "speed", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
@@ -71,8 +71,8 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<Integer>> ATTACK_COOLDOWN = ATTACHMENT_TYPES.register(
             "attack_cooldown", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
-    public static final Supplier<AttachmentType<Integer>> ATTACK_TIMER = ATTACHMENT_TYPES.register(
-            "attack_timer", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+    public static final Supplier<AttachmentType<Integer>> KNOCKDOWN_TIME = ATTACHMENT_TYPES.register(
+            "knockdown_time", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
     public static final Supplier<AttachmentType<Float>> DESIRED_ATTACK_ANGLE = ATTACHMENT_TYPES.register(
             "desired_attack_angle", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());

@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
 import net.minecraft.client.Minecraft;
@@ -14,7 +14,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.HexFormat;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = CycleOfLife.MODID, value = Dist.CLIENT)

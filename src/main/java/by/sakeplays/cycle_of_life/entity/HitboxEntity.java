@@ -79,22 +79,22 @@ public class HitboxEntity extends Entity {
             case "HEAD" -> {
                 this.setDamageFactor(1.75f);
                 setHitboxSize(0.5f * growth, 0.35f * growth);
-                if (!this.level().isClientSide()) this.setPos(data.getHeadHitboxPos().toVec3());
+                this.setPos(data.getHeadHitboxPos().toVec3());
             }
             case "BODY1" -> {
                 this.setDamageFactor(1f);
                 setHitboxSize(0.6f * growth, 1.3f * growth);
-                if (!this.level().isClientSide()) this.setPos(data.getBody1Pos().toVec3());
+                this.setPos(data.getBody1Pos().toVec3());
             }
             case "BODY2" -> {
                 this.setDamageFactor(0.8f);
                 setHitboxSize(0.6f * growth, 1.3f * growth);
-                if (!this.level().isClientSide()) this.setPos(data.getBody2Pos().toVec3());
+                this.setPos(data.getBody2Pos().toVec3());
             }
             case "TAIL1" -> {
                 this.setDamageFactor(0.5f);
                 setHitboxSize(0.5f * growth, 0.5f * growth);
-                if (!this.level().isClientSide()) this.setPos(data.getTail1Pos().toVec3());
+                this.setPos(data.getTail1Pos().toVec3());
             }
             case "TAIL2" -> {
                 this.setDamageFactor(0.25f);

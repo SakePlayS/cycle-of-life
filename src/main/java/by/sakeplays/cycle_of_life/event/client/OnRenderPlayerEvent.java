@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class OnRenderPlayerEvent {
 
-    private static final Map<Integer, DinosaurEntity> PLAYER_DINOS = new ConcurrentHashMap<>();
+    public static final Map<Integer, DinosaurEntity> PLAYER_DINOS = new ConcurrentHashMap<>();
 
 
     // Suppress the  player model rendering and replace it

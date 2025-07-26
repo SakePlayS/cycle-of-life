@@ -1,5 +1,6 @@
-package by.sakeplays.cycle_of_life;
+package by.sakeplays.cycle_of_life.util;
 
+import by.sakeplays.cycle_of_life.ModSounds;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.HitboxData;
@@ -9,6 +10,7 @@ import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.HitboxEntity;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
@@ -18,6 +20,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -63,9 +67,7 @@ public class Util {
     public static Dinosaurs getDino(Player player) {
         int ID = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
 
-        if (ID == 1) return  Dinosaurs.PACHYCEPHALOSAURUS;
-        return  Dinosaurs.DEINONYCHUS;
-
+        return Dinosaurs.getById(ID);
     }
 
 
@@ -227,34 +229,31 @@ public class Util {
         return speed;
     }
 
-    public static boolean attemptToHitPlayer(Player target, AABB attackHitbox, float damage, float bleed, boolean makeNoise) {
+    public static boolean isAttackValid(Player source, Player target) {
 
-        float damageModifier = 0;
-        HitboxData data = target.getData(DataAttachments.HITBOX_DATA);
+        /// the hitbox may vary in size. if the dino player is big they have higher attack distance.
+        if (source.distanceTo(target) > 7 * (source.getBoundingBox().getXsize() + 0.5)) return false;
 
-        if (target.level().getEntity(data.getTail2Id()) instanceof HitboxEntity hitbox) {
-            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
-        }
+        return true;
+    }
 
-        if (target.level().getEntity(data.getTail1Id()) instanceof HitboxEntity hitbox) {
-            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
-        }
+    public static float calculateDamageFactor(HitboxType type, Player target) {
 
-        if (target.level().getEntity(data.getBody2Id()) instanceof HitboxEntity hitbox) {
-            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
-        }
+        if (Util.getDino(target).getID() == Dinosaurs.PACHYCEPHALOSAURUS.getID() && type == HitboxType.HEAD) return 0.5f;
 
-        if (target.level().getEntity(data.getBody1Id()) instanceof HitboxEntity hitbox) {
-            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
-        }
+        if (type == HitboxType.HEAD) return 1.66f;
+        if (type == HitboxType.BODY1) return 1f;
+        if (type == HitboxType.BODY2) return 0.75f;
+        if (type == HitboxType.TAIL1) return 0.5f;
+        if (type == HitboxType.TAIL2) return 0.25f;
 
-        if (target.level().getEntity(data.getHeadId()) instanceof HitboxEntity hitbox) {
-            if (hitbox.getBoundingBox().intersects(attackHitbox)) damageModifier = hitbox.getDamageFactor();
-        }
+        return 0f;
+    }
 
 
+    public static boolean attemptToHitPlayer(Player target, float damage, float bleed, boolean makeNoise, HitboxType type) {
 
-        if (damageModifier == 0) return false;
+        float damageModifier = calculateDamageFactor(type, target);
 
         dealDamage(target, damage * damageModifier, bleed * damageModifier, makeNoise);
         return true;

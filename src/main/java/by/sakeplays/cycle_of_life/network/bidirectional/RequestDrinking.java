@@ -1,7 +1,6 @@
 package by.sakeplays.cycle_of_life.network.bidirectional;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

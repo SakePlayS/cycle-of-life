@@ -1,19 +1,15 @@
 package by.sakeplays.cycle_of_life.entity;
 
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.util.GeckoLibUtil;
-
-import java.util.*;
 
 public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
@@ -44,12 +40,6 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
     protected static final RawAnimation TURNAROUND_SLASH = RawAnimation.begin().thenPlay("deinonychus.turnaround_slash");
 
-    public float prevRotY = 0;
-    public float prevTailRotY1 = 0;
-    public float prevTailRotY2 = 0;
-    public float prevTailRotY3 = 0;
-
-    public float prevTailRotX = 0;
 
 
 
@@ -116,6 +106,8 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
             if (isForScreenRendering) return state.setAndContinue(IDLE);
 
+            if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return state.setAndContinue(DEAD);
+
             if (player.getData(DataAttachments.DINO_DATA).isDrinking()) {
                 state.getController().transitionLength(0);
                 return state.setAndContinue(DRINK);
@@ -125,16 +117,16 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
                 return state.setAndContinue(SWIM_SLOW);
             }
 
+            if (player.getData(DataAttachments.DINO_DATA).isSliding()) {
+                return state.setAndContinue(SLIDE);
+            }
+
             if (player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving()) {
                 return state.setAndContinue(RUN_ANIM);
             }
 
             if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
                 return state.setAndContinue(WALK_ANIM);
-            }
-
-            if (player.getData(DataAttachments.DINO_DATA).isSliding()) {
-                return state.setAndContinue(SLIDE);
             }
 
             return state.setAndContinue(IDLE);

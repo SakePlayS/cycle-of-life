@@ -1,27 +1,20 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
+import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.common.data.Position;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.MeatChunkEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3d;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -70,14 +63,17 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
 
         if (animatable.isBody()) return;
 
+        GeoBone head = model.getBone("head_center").get();
+        GeoBone body2 = model.getBone("body2_center").get();
+        GeoBone body1 = model.getBone("body1_center").get();
+        GeoBone tail1 = model.getBone("tail1_center").get();
+        GeoBone tail2 = model.getBone("tail2_center").get();
+
         Player player = animatable.getPlayer();
-        DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
 
-        Vec3 interpolatedPos = new Vec3(Mth.lerp(partialTick, player.xOld, player.getX()),
-        Mth.lerp(partialTick, player.yOld, player.getY()),
-                Mth.lerp(partialTick, player.zOld, player.getZ()));
+        ClientHitboxData.updateHitboxes(head, body1, body2, tail1, tail2, player, partialTick);
 
-        if (tick != animatable.getPlayer().tickCount) tick(animatable, model, interpolatedPos);
+
 
         if (true) {
             GeoBone mouthBone = this.getGeoModel().getAnimationProcessor().getBone("grab_handler");
@@ -96,54 +92,8 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
                 poseStack.popPose();
             }
         }
-
     }
 
-
-    private void tick(Deinonychus animatable, BakedGeoModel model, Vec3 interpolatedPos ) {
-
-        if (animatable.isBody()) return;
-        if (animatable.isForScreenRendering) return;
-
-        tick = animatable.getPlayer().tickCount;
-
-
-        if (animatable.getPlayer() == Minecraft.getInstance().player) {
-
-            Vector3d headPos = model.getBone("head_center").get().getWorldPosition();
-            Vector3d body2Pos = model.getBone("body2_center").get().getWorldPosition();
-            Vector3d body1Pos = model.getBone("body1_center").get().getWorldPosition();
-            Vector3d tail1Pos = model.getBone("tail1_center").get().getWorldPosition();
-            Vector3d tail2Pos = model.getBone("tail2_center").get().getWorldPosition();
-            Vector3d grabHandlerPos = model.getBone("grab_handler").get().getWorldPosition();
-
-            Vec3 headWorldPos = interpolatedPos.add(headPos.x, headPos.y, headPos.z);
-            Vec3 body1WorldPos = interpolatedPos.add(body1Pos.x, body1Pos.y, body1Pos.z);
-            Vec3 body2WorldPos = interpolatedPos.add(body2Pos.x, body2Pos.y, body2Pos.z);
-            Vec3 tail1WorldPos = interpolatedPos.add(tail1Pos.x, tail1Pos.y, tail1Pos.z);
-            Vec3 tail2WorldPos = interpolatedPos.add(tail2Pos.x, tail2Pos.y, tail2Pos.z);
-            Vec3 grabHandlerWorldPos = interpolatedPos.add(grabHandlerPos.x, grabHandlerPos.y, grabHandlerPos.z);
-
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setHeadHitboxPos(new Position(headWorldPos.x, headWorldPos.y, headWorldPos.z));
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setBody1Pos(new Position(body1WorldPos.x, body1WorldPos.y, body1WorldPos.z));
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setBody2Pos(new Position(body2WorldPos.x, body2WorldPos.y, body2WorldPos.z));
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setTail1Pos(new Position(tail1WorldPos.x, tail1WorldPos.y, tail1WorldPos.z));
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setTail2Pos(new Position(tail2WorldPos.x, tail2WorldPos.y, tail2WorldPos.z));
-
-            animatable.getPlayer().getData(DataAttachments.HITBOX_DATA)
-                    .setGrabHandlerPos(new Position(grabHandlerWorldPos.x, grabHandlerWorldPos.y, grabHandlerWorldPos.z));
-        }
-    }
 
     @Override
     protected void renderNameTag(Deinonychus entity, Component displayName, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {

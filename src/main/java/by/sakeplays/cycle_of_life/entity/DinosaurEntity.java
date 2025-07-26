@@ -1,6 +1,6 @@
 package by.sakeplays.cycle_of_life.entity;
 
-import by.sakeplays.cycle_of_life.Util;
+import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -27,9 +27,13 @@ public abstract class DinosaurEntity extends LivingEntity {
         super(entityType, level);
     }
 
-    public double headXOld = 0;
-    public double headYOld = 0;
-    public double headZOld = 0;
+    public float prevRotY = 0;
+    public float prevTailRotY1 = 0;
+    public float prevTailRotY2 = 0;
+    public float prevTailRotY3 = 0;
+
+    public float prevTailRotX = 0;
+
     public List<Position> tailBonePositionHistory = new ArrayList<>();
 
     public float headRot = 0;

@@ -1,14 +1,14 @@
-package by.sakeplays.cycle_of_life.network.to_server;
+package by.sakeplays.cycle_of_life.network.bidirectional;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SyncHitboxes(double headX, double headY, double headZ,
@@ -16,14 +16,27 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                            double body2X, double body2Y, double body2Z,
                            double tail1X, double tail1Y, double tail1Z,
                            double tail2X, double tail2Y, double tail2Z,
-                           double grabX, double grabY, double grabZ) implements CustomPacketPayload {
+                           double grabX, double grabY, double grabZ, int playerId) implements CustomPacketPayload {
 
     public static final Type<SyncHitboxes> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_head_pos"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_hitboxes"));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
+    }
+
+    public static void handleClient(final SyncHitboxes packet, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player().level().getEntity(packet.playerId()) instanceof Player player) {
+                player.getData(DataAttachments.HITBOX_DATA).setHeadHitboxPos(new Position(packet.headX(), packet.headY() ,packet.headZ()));
+                player.getData(DataAttachments.HITBOX_DATA).setBody1Pos(new Position(packet.body1X(), packet.body1Y() ,packet.body1Z()));
+                player.getData(DataAttachments.HITBOX_DATA).setBody2Pos(new Position(packet.body2X(), packet.body2Y() ,packet.body2Z()));
+                player.getData(DataAttachments.HITBOX_DATA).setTail1Pos(new Position(packet.tail1X(), packet.tail1Y() ,packet.tail1Z()));
+                player.getData(DataAttachments.HITBOX_DATA).setTail2Pos(new Position(packet.tail2X(), packet.tail2Y() ,packet.tail2Z()));
+                player.getData(DataAttachments.HITBOX_DATA).setGrabHandlerPos(new Position(packet.grabX, packet.grabY ,packet.grabZ));
+            }
+        });
     }
 
     public static void handleServer(final SyncHitboxes packet, final IPayloadContext context) {
@@ -35,7 +48,7 @@ public record SyncHitboxes(double headX, double headY, double headZ,
             player.getData(DataAttachments.HITBOX_DATA).setTail1Pos(new Position(packet.tail1X(), packet.tail1Y() ,packet.tail1Z()));
             player.getData(DataAttachments.HITBOX_DATA).setTail2Pos(new Position(packet.tail2X(), packet.tail2Y() ,packet.tail2Z()));
             player.getData(DataAttachments.HITBOX_DATA).setGrabHandlerPos(new Position(packet.grabX, packet.grabY ,packet.grabZ));
-
+            PacketDistributor.sendToPlayersTrackingEntity(player, packet);
         });
     }
 
@@ -49,7 +62,8 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
                             buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                            buf.readDouble(), buf.readDouble(), buf.readDouble()
+                            buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                            buf.readInt()
                     );
                 }
 
@@ -78,6 +92,9 @@ public record SyncHitboxes(double headX, double headY, double headZ,
                     buf.writeDouble(val.grabX);
                     buf.writeDouble(val.grabY());
                     buf.writeDouble(val.grabZ());
+
+                    buf.writeInt(val.playerId);
+
                 }
             };
 }
