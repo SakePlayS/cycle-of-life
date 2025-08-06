@@ -1,6 +1,7 @@
-package by.sakeplays.cycle_of_life.client.entity;
+package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
+import by.sakeplays.cycle_of_life.client.entity.deinonychus.*;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -19,6 +20,12 @@ public class PachycephalosaurusRenderer extends GeoEntityRenderer<Pachycephalosa
 
     public PachycephalosaurusRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new PachycephalosaurusModel());
+        this.addRenderLayer(new PachycephalosaurusBellyLayer<>(this));
+        this.addRenderLayer(new PachycephalosaurusBodyLayer<>(this));
+        this.addRenderLayer(new PachycephalosaurusEyesLayer<>(this));
+        this.addRenderLayer(new PachycephalosaurusFlankLayer<>(this));
+        this.addRenderLayer(new PachycephalosaurusMaleDisplayLayer<>(this));
+        this.addRenderLayer(new PachycephalosaurusMarkingsLayer<>(this));
     }
 
     @Override
@@ -30,9 +37,9 @@ public class PachycephalosaurusRenderer extends GeoEntityRenderer<Pachycephalosa
     public void preRender(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        float size = Util.calculateGrowth(animatable, 0.05f, 0.97f);
+        animatable.scale = Util.calculateGrowth(animatable, 0.05f, 1.015f);
 
-        poseStack.scale(size, size, size);
+        poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
     }
 
     @Override

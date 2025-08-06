@@ -31,6 +31,7 @@ public abstract class DinosaurEntity extends LivingEntity {
     public float prevTailRotY1 = 0;
     public float prevTailRotY2 = 0;
     public float prevTailRotY3 = 0;
+    public float scale = 1;
 
     public float prevTailRotX = 0;
 

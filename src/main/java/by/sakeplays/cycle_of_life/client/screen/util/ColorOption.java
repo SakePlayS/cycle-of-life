@@ -1,6 +1,6 @@
 package by.sakeplays.cycle_of_life.client.screen.util;
 
-public record ColorOption(int r, int g, int b, float a) {
+public record ColorOption(int r, int g, int b, float a, float minBrigthness) {
     public int toInt() {
         int ri = (int) (r);
         int gi = (int) (g);

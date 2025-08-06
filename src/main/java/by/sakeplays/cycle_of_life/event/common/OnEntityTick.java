@@ -46,39 +46,11 @@ public class OnEntityTick {
 
             }
 
-            if ((player.getData(DataAttachments.DINO_DATA).getBloodLevel() <= 0f ||
-                    player.getData(DataAttachments.DINO_DATA).getHealth() <= 0f) &&
-                    !player.level().isClientSide()) {
+            handleDeath(player);
 
-                DinosaurEntity body = Util.getBody(player);
-                body.setBody(true);
-                body.setPos(player.getX(), player.getY(), player.getZ());
+            if (!player.getData(DataAttachments.DINO_DATA).isInitialized())
+                initialize(player, player.getData(DataAttachments.DINO_DATA));
 
-                SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
-
-                body.setBodyColor(skinData.getBodyColor());
-                body.setBellyColor(skinData.getBellyColor());
-                body.setEyesColor(skinData.getEyesColor());
-                body.setMarkingsColor(skinData.getMarkingsColor());
-                body.setFlankColor(skinData.getFlankColor());
-                body.setMaleDisplayColor(skinData.getMaleDisplayColor());
-
-                body.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
-                body.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
-                body.playerId = player.getId();
-                body.setOldPlayer(player.getId());
-                body.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
-
-                player.level().addFreshEntity(body);
-
-
-                player.getData(DataAttachments.DINO_DATA).fullReset();
-                PacketDistributor.sendToAllPlayers(new SyncFullReset(player.getId()));
-            }
-
-            if (! player.getData(DataAttachments.DINO_DATA).isInitialized()) {
-                initialize(player,  player.getData(DataAttachments.DINO_DATA));
-            }
 
 
             tick++;
@@ -94,106 +66,12 @@ public class OnEntityTick {
                     PacketDistributor.sendToAllPlayers(new SyncIsMale(player.getId(),
                             player.getData(DataAttachments.DINO_DATA).isMale()));
 
-                    // sync skin data
-
-                    SkinData data = player.getData(DataAttachments.SKIN_DATA);
-
-                    PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), data.getEyesColor(),
-                            data.getMarkingsColor(), data.getBodyColor(), data.getFlankColor(),
-                            data.getBellyColor(), data.getMaleDisplayColor()));
-
-                    // update resting factor
-
-                    if (player.getData(DataAttachments.RESTING_STATE) == 2) {
-                        player.setData(DataAttachments.REST_FACTOR, player.getData(DataAttachments.REST_FACTOR) + 0.03f);
-                    } else {
-                        player.setData(DataAttachments.REST_FACTOR, 1f);
-                    }
-
-                    // Growth tick
-
-                    float newGrowth =  player.getData(DataAttachments.DINO_DATA).getGrowth()
-                            + Util.getDino(player).getGrowthPerMin() / 120f;
-                    newGrowth = Math.min(1f, newGrowth);
-
-                    float cubicGrowth = (float) Math.pow(newGrowth, 3);
-
-
-                    if (player.getData(DataAttachments.DINO_DATA).isInitialized()) {
-                        player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
-                        PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));
-                        player.refreshDimensions();
-                    }
-
-                    // tick i, health and blood level
-
-                    float bleedRegen = 0.02f;
-
-                    if (player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.02f;
-                    }
-
-                    if (!player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.10f;
-                    }
-
-                    if (!player.getData(DataAttachments.DINO_DATA).isMoving() ) {
-                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.25f;
-                    }
-
-                    if (player.getData(DataAttachments.RESTING_STATE) == 2) {
-                        bleedRegen = Util.getDino(player).getBleedResistance() * 0.7f;
-                        bleedRegen = (float) (bleedRegen * Math.pow(player.getData(DataAttachments.REST_FACTOR), 0.2d));
-                    }
-
-
-                    float newWeight = Mth.lerp(cubicGrowth, Util.getDino(player).getStartWeight(), Util.getDino(player).getWeight());
-
-                    float healthWeightRatio =  player.getData(DataAttachments.DINO_DATA).getHealth() /
-                            player.getData(DataAttachments.DINO_DATA).getWeight();
-
-                    float bloodWeightRatio =  player.getData(DataAttachments.DINO_DATA).getBloodLevel() /
-                            player.getData(DataAttachments.DINO_DATA).getWeight();
-
-                    float newHealth = (newWeight * healthWeightRatio);
-                    float newBloodLevel = (newWeight * bloodWeightRatio);
-
-                    newHealth = newHealth + (Util.getDino(player).getHealthRegen() * newWeight * player.getData(DataAttachments.REST_FACTOR));
-
-                    if (!(player.getData(DataAttachments.DINO_DATA).getBleed() > 0)) {
-                        newBloodLevel = newBloodLevel + (Util.getDino(player).getHealthRegen() * newWeight);
-                    } else {
-                        newBloodLevel = newBloodLevel - (player.getData(DataAttachments.DINO_DATA).getBleed());
-                        float newBleed = player.getData(DataAttachments.DINO_DATA).getBleed() - bleedRegen;
-
-                        player.getData(DataAttachments.DINO_DATA).setBleed(newBleed);
-                        PacketDistributor.sendToAllPlayers(new SyncBleed(player.getId(), newBleed));
-                    }
-
-                    if (newHealth > newWeight) newHealth = newWeight;
-                    if (newBloodLevel > newWeight) newBloodLevel = newWeight;
-
-                    player.getData(DataAttachments.DINO_DATA).setHealth(newHealth);
-                    PacketDistributor.sendToAllPlayers(new SyncHealth(player.getId(), newHealth));
-
-                    player.getData(DataAttachments.DINO_DATA).setBloodLevel(newBloodLevel);
-                    PacketDistributor.sendToAllPlayers(new SyncBloodLevel(player.getId(), newBloodLevel));
-
-                    player.getData(DataAttachments.DINO_DATA).setWeight(newWeight);
-                    PacketDistributor.sendToAllPlayers(new SyncWeight(player.getId(), newWeight));  // sync i to other clients
-
-
-                    // tick food and water
-
+                    syncSkinData(player);
+                    updateRestingFactor(player);
+                    handleGrowth(player);
+                    handleRegenerationAndUpdateWeight(player);
                     handleWaterTick(player);
-
-                    float newFoodLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getFoodLevel()
-                            - Util.getDino(player).getStarvationPerSec() * 0.5f));
-
-
-                    player.getData(DataAttachments.DINO_DATA).setFoodLevel(newFoodLevel);
-                    PacketDistributor.sendToAllPlayers(new SyncFoodLevel(player.getId(), newFoodLevel));
-
+                    foodTick(player);
                     handleStaminaTick(player);
 
                     if (player.getData(DataAttachments.PAIRING_STATE) > 0 && player.getData(DataAttachments.PAIRING_STATE) < 3) {
@@ -206,6 +84,141 @@ public class OnEntityTick {
                 }
             }
         }
+    }
+
+    private static void foodTick(Player player) {
+
+        float newFoodLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getFoodLevel()
+                - Util.getDino(player).getStarvationPerSec() * 0.5f));
+
+
+        player.getData(DataAttachments.DINO_DATA).setFoodLevel(newFoodLevel);
+        PacketDistributor.sendToAllPlayers(new SyncFoodLevel(player.getId(), newFoodLevel));
+
+    }
+
+    private static void updateRestingFactor(Player player) {
+
+        if (player.getData(DataAttachments.RESTING_STATE) == 2) {
+            player.setData(DataAttachments.REST_FACTOR, player.getData(DataAttachments.REST_FACTOR) + 0.03f);
+        } else {
+            player.setData(DataAttachments.REST_FACTOR, 1f);
+        }
+    }
+
+    private static void syncSkinData(Player player) {
+
+        SkinData data = player.getData(DataAttachments.SKIN_DATA);
+
+        PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), data.getEyesColor(),
+                data.getMarkingsColor(), data.getBodyColor(), data.getFlankColor(),
+                data.getBellyColor(), data.getMaleDisplayColor()));
+    }
+
+
+    private static void handleDeath(Player player) {
+        if ((player.getData(DataAttachments.DINO_DATA).getBloodLevel() <= 0f ||
+                player.getData(DataAttachments.DINO_DATA).getHealth() <= 0f) &&
+                !player.level().isClientSide()) {
+
+            DinosaurEntity body = Util.getBody(player);
+            body.setBody(true);
+            body.setPos(player.getX(), player.getY(), player.getZ());
+
+            SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
+
+            body.setBodyColor(skinData.getBodyColor());
+            body.setBellyColor(skinData.getBellyColor());
+            body.setEyesColor(skinData.getEyesColor());
+            body.setMarkingsColor(skinData.getMarkingsColor());
+            body.setFlankColor(skinData.getFlankColor());
+            body.setMaleDisplayColor(skinData.getMaleDisplayColor());
+
+            body.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
+            body.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
+            body.playerId = player.getId();
+            body.setOldPlayer(player.getId());
+            body.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
+
+            player.level().addFreshEntity(body);
+
+
+            player.getData(DataAttachments.DINO_DATA).fullReset();
+            PacketDistributor.sendToAllPlayers(new SyncFullReset(player.getId()));
+        }
+    }
+
+    private static void handleGrowth(Player player) {
+        float newGrowth = player.getData(DataAttachments.DINO_DATA).getGrowth()
+                + Util.getDino(player).getGrowthPerMin() / 120f;
+        newGrowth = Math.min(1f, newGrowth);
+
+        if (player.getData(DataAttachments.DINO_DATA).isInitialized()) {
+            player.getData(DataAttachments.DINO_DATA).setGrowth(newGrowth);
+            PacketDistributor.sendToAllPlayers(new SyncGrowth(newGrowth, player.getId()));
+            player.refreshDimensions();
+        }
+    }
+
+    private static void handleRegenerationAndUpdateWeight(Player player) {
+
+        float cubicGrowth = (float) Math.pow(player.getData(DataAttachments.DINO_DATA).getGrowth(), 3);
+        float bleedRegen = 0.02f;
+
+        if (player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
+            bleedRegen = Util.getDino(player).getBleedResistance() * 0.02f;
+        }
+
+        if (!player.getData(DataAttachments.DINO_DATA).isSprinting() && player.getData(DataAttachments.DINO_DATA).isMoving() ) {
+            bleedRegen = Util.getDino(player).getBleedResistance() * 0.10f;
+        }
+
+        if (!player.getData(DataAttachments.DINO_DATA).isMoving() ) {
+            bleedRegen = Util.getDino(player).getBleedResistance() * 0.25f;
+        }
+
+        if (player.getData(DataAttachments.RESTING_STATE) == 2) {
+            bleedRegen = Util.getDino(player).getBleedResistance() * 0.7f;
+            bleedRegen = (float) (bleedRegen * Math.pow(player.getData(DataAttachments.REST_FACTOR), 0.2d));
+        }
+
+
+        float newWeight = Mth.lerp(cubicGrowth, Util.getDino(player).getStartWeight(), Util.getDino(player).getWeight());
+
+        float healthWeightRatio =  player.getData(DataAttachments.DINO_DATA).getHealth() /
+                player.getData(DataAttachments.DINO_DATA).getWeight();
+
+        float bloodWeightRatio =  player.getData(DataAttachments.DINO_DATA).getBloodLevel() /
+                player.getData(DataAttachments.DINO_DATA).getWeight();
+
+        float newHealth = (newWeight * healthWeightRatio);
+        float newBloodLevel = (newWeight * bloodWeightRatio);
+        float healthRegen = player.getData(DataAttachments.RESTING_STATE) == 2 ? Util.getDino(player).getHealthRegen() : 0;
+
+        newHealth = newHealth + (healthRegen * newWeight * player.getData(DataAttachments.REST_FACTOR));
+
+        if (!(player.getData(DataAttachments.DINO_DATA).getBleed() > 0)) {
+            newBloodLevel = newBloodLevel + (Util.getDino(player).getHealthRegen() * newWeight);
+        } else {
+            newBloodLevel = newBloodLevel - (player.getData(DataAttachments.DINO_DATA).getBleed());
+            float newBleed = player.getData(DataAttachments.DINO_DATA).getBleed() - bleedRegen;
+
+            player.getData(DataAttachments.DINO_DATA).setBleed(newBleed);
+            PacketDistributor.sendToAllPlayers(new SyncBleed(player.getId(), newBleed));
+        }
+
+        if (newHealth > newWeight) newHealth = newWeight;
+        if (newBloodLevel > newWeight) newBloodLevel = newWeight;
+
+        player.getData(DataAttachments.DINO_DATA).setHealth(newHealth);
+        PacketDistributor.sendToAllPlayers(new SyncHealth(player.getId(), newHealth));
+
+        player.getData(DataAttachments.DINO_DATA).setBloodLevel(newBloodLevel);
+        PacketDistributor.sendToAllPlayers(new SyncBloodLevel(player.getId(), newBloodLevel));
+
+        player.getData(DataAttachments.DINO_DATA).setWeight(newWeight);
+        PacketDistributor.sendToAllPlayers(new SyncWeight(player.getId(), newWeight));
+
     }
 
 
@@ -233,7 +246,7 @@ public class OnEntityTick {
 
             if (newWaterLevel >= 0.999f) {
                 player.getData(DataAttachments.DINO_DATA).setDrinking(false);
-                PacketDistributor.sendToAllPlayers(new RequestDrinking(false, player.getId()));
+                PacketDistributor.sendToAllPlayers(new RequestDrinking(false, player.getId(), 0, 0));
             }
         } else {
             newWaterLevel = (Math.max(0f,  player.getData(DataAttachments.DINO_DATA).getWaterLevel()

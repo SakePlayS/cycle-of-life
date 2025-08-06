@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestDrinking(boolean isDrinking, int playerID) implements CustomPacketPayload {
+public record RequestDrinking(boolean isDrinking, int playerID, double x, double z) implements CustomPacketPayload {
 
     public static final Type<RequestDrinking> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_drinking"));
@@ -28,6 +28,8 @@ public record RequestDrinking(boolean isDrinking, int playerID) implements Custo
     public static final StreamCodec<FriendlyByteBuf, RequestDrinking> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL, RequestDrinking::isDrinking,
             ByteBufCodecs.INT, RequestDrinking::playerID,
+            ByteBufCodecs.DOUBLE, RequestDrinking::x,
+            ByteBufCodecs.DOUBLE, RequestDrinking::z,
             RequestDrinking::new
     );
 
@@ -41,9 +43,9 @@ public record RequestDrinking(boolean isDrinking, int playerID) implements Custo
 
     public static void handleServer(final RequestDrinking packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
-            double x = context.player().getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().x();
+            double x = packet.x();
             double y = context.player().getY() - 0.5;
-            double z = context.player().getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().z();
+            double z = packet.z();
             int id = context.player().getId();
 
             if (context.player().getData(DataAttachments.DINO_DATA).getWaterLevel() > 0.985f) return;
@@ -51,19 +53,19 @@ public record RequestDrinking(boolean isDrinking, int playerID) implements Custo
             if (packet.isDrinking()) {
                 if (context.player().level().getBlockState(BlockPos.containing(x, y, z)).is(Blocks.WATER)) {
                     context.player().getData(DataAttachments.DINO_DATA).setDrinking(true);
-                    PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(true, id));
-                    PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(true, id));
+                    PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(true, id, x, z));
+                    PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(true, id, x, z));
 
                 } else {
                     context.player().getData(DataAttachments.DINO_DATA).setDrinking(false);
-                    PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(false, id));
-                    PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(false, id));
+                    PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(false, id, x, z));
+                    PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(false, id, x, z));
 
                 }
             } else {
                 context.player().getData(DataAttachments.DINO_DATA).setDrinking(false);
-                PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(false, id));
-                PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(false, id));
+                PacketDistributor.sendToPlayersTrackingEntity(context.player(), new RequestDrinking(false, id, x, z));
+                PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new RequestDrinking(false, id, x, z));
             }
         });
     }

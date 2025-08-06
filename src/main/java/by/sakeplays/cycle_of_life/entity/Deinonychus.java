@@ -2,6 +2,7 @@ package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -97,7 +98,6 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     protected PlayState movementController(final AnimationState<Deinonychus> state) {
 
         if (isBody()) return state.setAndContinue(DEAD);
-
 
         if (getPlayer() != null) {
             Player player = getPlayer();

@@ -1,10 +1,11 @@
-package by.sakeplays.cycle_of_life.client.entity.deinonychus;
+package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 
-import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
+import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
+import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,25 +18,25 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
-public class DeinonychusMarkingsLayer<T extends Entity & GeoAnimatable> extends GeoRenderLayer<Deinonychus> {
+public class PachycephalosaurusFlankLayer<T extends Entity & GeoAnimatable> extends GeoRenderLayer<Pachycephalosaurus> {
 
-    public DeinonychusMarkingsLayer(GeoRenderer<Deinonychus> renderer) {
+    public PachycephalosaurusFlankLayer(GeoRenderer<Pachycephalosaurus> renderer) {
         super(renderer);
     }
 
-    ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("cycle_of_life", "textures/entity/deinonychus/markings.png");
+    ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("cycle_of_life", "textures/entity/pachycephalosaurus/flank.png");
 
     @Override
-    public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
+    public void render(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
 
         int color;
         SkinData data;
         if (!animatable.isBody()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
-            color = animatable.isForScreenRendering ? animatable.markingsColor : data.getMarkingsColor();
+            color = animatable.isForScreenRendering ? animatable.flankColor : data.getFlankColor();
 
         } else {
-            color = animatable.getMarkingsColor();
+            color = animatable.getFlankColor();
         }
 
         poseStack.pushPose();

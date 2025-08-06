@@ -32,6 +32,7 @@ public class MeatChunkEntity extends Entity implements GeoEntity {
         super(entityType, level);
     }
 
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(CARRIER_ID, 0);

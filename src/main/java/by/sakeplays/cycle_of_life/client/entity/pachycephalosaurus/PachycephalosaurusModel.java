@@ -1,8 +1,7 @@
-package by.sakeplays.cycle_of_life.client.entity;
+package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.Minecraft;

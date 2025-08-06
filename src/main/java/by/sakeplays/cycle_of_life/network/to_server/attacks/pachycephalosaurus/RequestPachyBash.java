@@ -74,7 +74,7 @@ public record RequestPachyBash(int target, HitboxType hbType) implements CustomP
                 if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() * 1.5f > dataTarget.getWeight()) {
                     targetPlayer.setData(DataAttachments.KNOCKDOWN_TIME, 35);
                     PacketDistributor.sendToAllPlayers(new SyncKnockdownTime(targetPlayer.getId(), 35));
-                    PacketDistributor.sendToPlayer((ServerPlayer) targetPlayer, new ApplyKnockback(targetPlayer.getId(), dx, 0.2f, dz, 0.41f));
+                    PacketDistributor.sendToPlayer((ServerPlayer) targetPlayer, new ApplyKnockback(targetPlayer.getId(), dx, 0.2f, dz, 0.65f));
                 }
 
                 targetPlayer.level().playSound(null, targetPlayer.getX(), targetPlayer.getY(), targetPlayer.getZ(),

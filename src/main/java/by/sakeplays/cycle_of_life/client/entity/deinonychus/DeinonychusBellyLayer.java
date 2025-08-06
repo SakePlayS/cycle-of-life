@@ -33,15 +33,12 @@ public class DeinonychusBellyLayer<T extends Entity & GeoAnimatable> extends Geo
         if (!animatable.isBody()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
             color = animatable.isForScreenRendering ? animatable.bellyColor : data.getBellyColor();
-
         } else {
             color = animatable.getBellyColor();
         }
 
-
-        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
         poseStack.pushPose();
-        poseStack.scale(1/size, 1/size, 1/size);
+        poseStack.scale(1/animatable.scale, 1/animatable.scale, 1/animatable.scale);
 
         getRenderer().reRender(
                 bakedModel,

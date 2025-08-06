@@ -3,7 +3,7 @@ package by.sakeplays.cycle_of_life;
 import by.sakeplays.cycle_of_life.client.entity.MeatChunkRenderer;
 import by.sakeplays.cycle_of_life.client.entity.deinonychus.DeinonychusRenderer;
 import by.sakeplays.cycle_of_life.client.entity.HitboxRenderer;
-import by.sakeplays.cycle_of_life.client.entity.PachycephalosaurusRenderer;
+import by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus.PachycephalosaurusRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
 import net.minecraft.client.renderer.entity.EntityRenderers;

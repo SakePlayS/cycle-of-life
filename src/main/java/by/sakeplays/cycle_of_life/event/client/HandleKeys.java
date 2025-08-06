@@ -1,6 +1,9 @@
 package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.client.ClientHitboxData;
+import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.util.AssociatedAABB;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.screen.StatsScreen;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
@@ -40,13 +43,13 @@ public class HandleKeys {
     protected static int pairingTimeOut = 0;
     protected static boolean pairingLocked = false;
     protected static boolean drinkingLocked = false;
-    public static float directionalAttackDesiredAngle = 0;
     protected static boolean isGrabbing = false;
     protected static int lastGrabTick = 0;
     protected static float additionalSpeed = 1;
     public static float dz = 0;
     public static float dx = 0;
-    private static boolean hardTurning = false;
+    private static boolean inertiaLocked = false;
+    protected static float angleDiff = 0;
 
 
 
@@ -117,7 +120,7 @@ public class HandleKeys {
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
         float acceleration = Util.getAcceleration(player);
-        float drag = (float) Math.pow(dinoData.getWeight() + 1, 0.2d);
+        float drag = 0.1f / (float) Math.pow(dinoData.getWeight() + 1, 0.2d);
         float yRot = player.getYRot() * Mth.DEG_TO_RAD;
         float maxSpeed = Util.calculateSpeed(player) * additionalSpeed;
 
@@ -155,7 +158,6 @@ public class HandleKeys {
         player.setData(DataAttachments.ADDITIONAL_TURN, additionalTurn);
         PacketDistributor.sendToServer(new SyncAdditionalTurn(player.getId(), additionalTurn));
 
-        float angleDiff = 0;
         float newTurnDegree = turnDegree;
         float turnTransitionSpeed = Math.min(turnSpeed/35 * Mth.RAD_TO_DEG, 1);
 
@@ -163,36 +165,29 @@ public class HandleKeys {
         angleDiff = Mth.wrapDegrees((float) Math.toDegrees(targetYaw - turnDegree)) * Mth.DEG_TO_RAD;
         float delta = Mth.clamp(angleDiff, -turnSpeed, turnSpeed);
 
+        player.sendSystemMessage(Component.literal("" + angleDiff));
+
         if (angleDiff > -0.01) turnMultiplier = Math.min(1, turnMultiplier + turnTransitionSpeed);
         if (angleDiff < 0.01) turnMultiplier = Math.max(-1, turnMultiplier - turnTransitionSpeed);
 
-        if (KeyMappings.FORWARD_MAPPING.isDown() || KeyMappings.BACKWARD_MAPPING.isDown() ||
-                KeyMappings.RIGHT_MAPPING.isDown() || KeyMappings.LEFT_MAPPING.isDown()) {
+        if (movementKeyDown()) {
 
-            newTurnDegree = turnDegree + (delta * Math.abs(turnMultiplier));
-
-            if (!(turningLocked || !canMove || KeyMappings.DIRECTIONAL_ATTACK.isDown() || player.getData(DataAttachments.KNOCKDOWN_TIME) > 0)) {
-                player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
-                PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
+            if (shouldMove(player)) {
+                handleForwardMovement(maxSpeed, acceleration, drag);
             } else {
-                newTurnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
+                handleDrag(drag);
             }
 
             dinoData.setMoving(true);
             PacketDistributor.sendToServer(new SyncDinoWalking(true, player.getId()));
 
-            if (speed < maxSpeed && !(!player.onGround() && !player.isInWater())
-                    && !(turningLocked || !canMove || player.getData(DataAttachments.KNOCKDOWN_TIME) > 0)) {
-                speed += acceleration;
-            }
+            newTurnDegree = handlePlayerRotation(turnDegree, delta, player);
 
         } else {
+            handleDrag(drag);
 
             dinoData.setMoving(false);
             PacketDistributor.sendToServer(new SyncDinoWalking(false, player.getId()));
-
-            if (!(!player.onGround() && !player.isInWater())) speed = Math.max(0, speed - Util.calculateMaxSpeed(player)/110f / drag);
-
         }
 
         if (angleDiff < 0.01 && angleDiff > -0.01) {
@@ -204,20 +199,10 @@ public class HandleKeys {
         PacketDistributor.sendToServer(new SyncTurnProgress(turnMultiplier, player.getId()));
 
 
-        if (speed > maxSpeed && !(!player.onGround() && !player.isInWater())) {
-
-            speed = Math.max(0, speed - Util.calculateMaxSpeed(player)/110f / drag);
-
-        }
-
-
-        if (!(!player.onGround() && !player.isInWater()) && player.getData(DataAttachments.KNOCKDOWN_TIME) < 1) {
-
+        if (!(isAirborne(player)) && player.getData(DataAttachments.KNOCKDOWN_TIME) < 1) {
             dx = (float) -Math.sin(newTurnDegree);
             dz = (float) Math.cos(newTurnDegree);
-
         }
-
 
         player.setDeltaMovement(dx * speed, player.getDeltaMovement().y, dz * speed);
 
@@ -230,6 +215,50 @@ public class HandleKeys {
         additionalSpeed = 1;
     }
 
+    private static boolean isAirborne(Player player) {
+        return (!player.onGround() && !player.isInWater());
+    }
+
+
+    private static boolean shouldMove(Player player) {
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) <= 0 && canMove) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void handleForwardMovement(float maxSpeed, float acceleration, float drag) {
+        if (speed <= maxSpeed) {
+            speed = Math.min(maxSpeed, speed + acceleration);
+        } else {
+            handleDrag(drag);
+        }
+    }
+
+    private static void handleDrag(float drag) {
+        speed = Math.max(0, speed - drag);
+    }
+
+    private static float handlePlayerRotation(float turnDegree, float delta, Player player) {
+
+        float newTurnDegree = turnDegree + (delta * Math.abs(turnMultiplier));
+
+        if (!(turningLocked || !canMove || KeyMappings.DIRECTIONAL_ATTACK.isDown() || player.getData(DataAttachments.KNOCKDOWN_TIME) > 0)) {
+            player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
+            PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
+        } else {
+            newTurnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
+        }
+
+        return newTurnDegree;
+    }
+
+
+    private static boolean movementKeyDown() {
+        return (KeyMappings.FORWARD_MAPPING.isDown() || KeyMappings.BACKWARD_MAPPING.isDown() ||
+                KeyMappings.RIGHT_MAPPING.isDown() || KeyMappings.LEFT_MAPPING.isDown());
+    }
 
 
     private static void handleAttacks(Player player) {
@@ -382,15 +411,21 @@ public class HandleKeys {
 
 
     private static void requestDrinking(Player player) {
+
+        if (ClientHitboxData.getOwnHitboxes().isEmpty()) return;
+
+        AssociatedAABB head = ClientHitboxData.getOwnHitboxes().getFirst();
+        Position headPos = ClientHitboxData.getPos(head, true);
+
         if (KeyMappings.EAT_MAPPING.isDown()) {
             if (!drinkingLocked) {
                 drinkingLocked = true;
-                PacketDistributor.sendToServer(new RequestDrinking(true, player.getId()));
+                PacketDistributor.sendToServer(new RequestDrinking(true, player.getId(), headPos.x(), headPos.z()));
             }
         } else {
             if (drinkingLocked) {
                 drinkingLocked = false;
-                PacketDistributor.sendToServer(new RequestDrinking(false, player.getId()));
+                PacketDistributor.sendToServer(new RequestDrinking(false, player.getId(), headPos.x(), headPos.z()));
             }
         }
     }

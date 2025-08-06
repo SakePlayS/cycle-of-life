@@ -34,12 +34,14 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
-
+    
     public static final StreamCodec<FriendlyByteBuf, RequestDeinonychusBite> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestDeinonychusBite::target,
             ModCodecs.enumCodec(HitboxType.class), RequestDeinonychusBite::hbType,
             RequestDeinonychusBite::new
     );
+
+
     public static void handleServer(final RequestDeinonychusBite packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             DinoData data = context.player().getData(DataAttachments.DINO_DATA);
@@ -51,6 +53,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
             if (packet.hbType == HitboxType.NONE) {
                 return;
             }
+
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 

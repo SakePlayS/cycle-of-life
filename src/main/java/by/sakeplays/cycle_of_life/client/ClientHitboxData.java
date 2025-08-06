@@ -2,10 +2,9 @@ package by.sakeplays.cycle_of_life.client;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.Position;
-import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.util.AssociatedAABB;
-import by.sakeplays.cycle_of_life.util.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.cache.object.GeoCube;
@@ -18,6 +17,16 @@ public class ClientHitboxData {
 
     public static Map<Integer, ArrayList<AssociatedAABB>> hitboxMap = new HashMap<>();
     public static ArrayList<AssociatedAABB> HITBOXES = new ArrayList<>();
+
+
+    public static Position getPos(AssociatedAABB hb, boolean min) {
+
+        double x = (hb.minX + hb.maxX) / 2;
+        double y = min ? hb.minY : (hb.minY + hb.maxY) / 2;
+        double z = (hb.minZ + hb.maxZ) / 2;
+
+        return new Position(x, y, z);
+    }
 
 
     public static void updateHitboxes(GeoBone head, GeoBone body1, GeoBone body2, GeoBone tail1, GeoBone tail2,
@@ -47,6 +56,17 @@ public class ClientHitboxData {
 
         hitboxMap.put(player.getId(), list);
 
+    }
+
+    public static ArrayList<AssociatedAABB> getOwnHitboxes() {
+        ArrayList<AssociatedAABB> list = new ArrayList<>();
+        int playerId = Minecraft.getInstance().player.getId();
+
+        for (AssociatedAABB hitbox : HITBOXES) {
+            if (hitbox.getPlayer().getId() == playerId) list.add(hitbox);
+        }
+
+        return list;
     }
 
     private static AssociatedAABB createAABB(GeoBone bone, Player player, float growth, float partialTick) {

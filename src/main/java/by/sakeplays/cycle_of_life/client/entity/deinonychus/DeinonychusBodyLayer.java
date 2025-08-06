@@ -26,8 +26,8 @@ public class DeinonychusBodyLayer<T extends Entity & GeoAnimatable> extends GeoR
     ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("cycle_of_life", "textures/entity/deinonychus/body.png");
 
     @Override
-    public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-
+    public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType,
+                       MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
 
         int color;
         SkinData data;
@@ -38,10 +38,9 @@ public class DeinonychusBodyLayer<T extends Entity & GeoAnimatable> extends GeoR
         } else {
             color = animatable.getBodyColor();
         }
-        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
 
         poseStack.pushPose();
-        poseStack.scale(1/size, 1/size, 1/size);
+        poseStack.scale(1/animatable.scale, 1/animatable.scale, 1/animatable.scale);
 
         getRenderer().reRender(
                 bakedModel,

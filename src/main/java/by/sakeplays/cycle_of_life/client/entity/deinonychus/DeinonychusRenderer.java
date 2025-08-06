@@ -39,9 +39,9 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
     public void preRender(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
+        animatable.scale = Util.calculateGrowth(animatable, 0.04f, 0.8f);
 
-        poseStack.scale(size, size, size);
+        poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
 
 
         boolean isMale = !animatable.isBody() ? animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale() : animatable.isMale();

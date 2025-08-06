@@ -7,8 +7,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModBlockEntities {
 
-    public static final DeferredRegister<BlockEntityType<?>> BLOCKS =
+    public static final DeferredRegister<BlockEntityType<?>> BLOCKS_ENTITIES =
             DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, CycleOfLife.MODID);
+
 
 
 }
