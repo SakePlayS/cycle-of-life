@@ -1,12 +1,17 @@
 package by.sakeplays.cycle_of_life;
 
+import by.sakeplays.cycle_of_life.block.ModBlockEntities;
+import by.sakeplays.cycle_of_life.block.ModBlocks;
+import by.sakeplays.cycle_of_life.client.block.deinonychus_nest.DeinonychusNestRenderer;
 import by.sakeplays.cycle_of_life.client.entity.MeatChunkRenderer;
 import by.sakeplays.cycle_of_life.client.entity.deinonychus.DeinonychusRenderer;
 import by.sakeplays.cycle_of_life.client.entity.HitboxRenderer;
 import by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus.PachycephalosaurusRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.COLEntities;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -71,6 +76,8 @@ public class CycleOfLife
         COLEntities.register(modEventBus);
         DataAttachments.register(modEventBus);
         ModSounds.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModBlocks.register(modEventBus);
 
 
         NeoForge.EVENT_BUS.register(this);
@@ -103,6 +110,11 @@ public class CycleOfLife
             EntityRenderers.register(COLEntities.HITBOX.get(), HitboxRenderer::new);
             EntityRenderers.register(COLEntities.MEAT_CHUNK.get(), MeatChunkRenderer::new);
 
+        }
+
+        @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(ModBlockEntities.DEINONYCHUS_NEST_BLOCK_ENTITY.get(), DeinonychusNestRenderer::new);
         }
     }
 }

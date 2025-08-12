@@ -67,10 +67,11 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     @Override
     public double getTick(Object object) {
-        if (playerId != null) {
+        if (playerId != null && !isBody()) {
             return level().getEntity(playerId).tickCount;
         }
-        return 0;
+
+        return GeoEntity.super.getTick(object);
     }
 
 

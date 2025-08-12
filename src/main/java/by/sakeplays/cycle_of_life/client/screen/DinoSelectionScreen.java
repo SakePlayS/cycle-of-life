@@ -38,6 +38,7 @@ public class DinoSelectionScreen extends Screen {
     private Button HERBIVORES_BUTTON;
     private Button CARNIVORES_BUTTON;
     private Button OMNIVORES_BUTTON;
+    private Button NESTS_BUTTON;
 
     public DinoSelectionScreen(Component title) {
         super(title);
@@ -85,6 +86,7 @@ public class DinoSelectionScreen extends Screen {
 
         OMNIVORES_BUTTON = new Button.Builder(Component.literal("Omnivores"), button -> {
             selectedDiet = Diet.OMNIVORE;
+            NESTS_BUTTON.active = true;
             OMNIVORES_BUTTON.active = false;
             HERBIVORES_BUTTON.active = true;
             CARNIVORES_BUTTON.active = true;
@@ -92,13 +94,19 @@ public class DinoSelectionScreen extends Screen {
 
         HERBIVORES_BUTTON = new Button.Builder(Component.literal("Herbivores"), button -> {
             selectedDiet = Diet.HERBIVORE;
+            NESTS_BUTTON.active = true;
             HERBIVORES_BUTTON.active = false;
             CARNIVORES_BUTTON.active = true;
             OMNIVORES_BUTTON.active = true;
         }).size(70, 18).pos(width/2 - 105,  40).build();
 
+        NESTS_BUTTON = new Button.Builder(Component.literal("Nests"), button -> {
+            Minecraft.getInstance().setScreen(new NestListScreen(Component.literal("Nests")));
+        }).size(70, 18).pos(width/2 - 35,  22).build();
+
         CARNIVORES_BUTTON = new Button.Builder(Component.literal("Carnivores"), button -> {
             selectedDiet = Diet.CARNIVORE;
+            NESTS_BUTTON.active = true;
             CARNIVORES_BUTTON.active = false;
             OMNIVORES_BUTTON.active = true;
             HERBIVORES_BUTTON.active = true;
@@ -125,9 +133,6 @@ public class DinoSelectionScreen extends Screen {
             desiredDinosaurID = 0;
         }).size(150, 18).pos(width/2 - 75, height/2 + 20)
                 .tooltip(Tooltip.create(Component.literal("parkso desc"))).build();
-
-
-
 
         DEINONYCHUS_BUTTON = new Button.Builder(Component.literal("Deinonychus"), button -> {
             desiredDinosaurID = Dinosaurs.DEINONYCHUS.getID();
@@ -168,6 +173,7 @@ public class DinoSelectionScreen extends Screen {
         addRenderableWidget(HERBIVORES_BUTTON);
         addRenderableWidget(CARNIVORES_BUTTON);
         addRenderableWidget(OMNIVORES_BUTTON);
+        addRenderableWidget(NESTS_BUTTON);
 
 
         addRenderableWidget(PACHYCEPHALOSAURUS_BUTTON);

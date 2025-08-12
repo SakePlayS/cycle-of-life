@@ -30,16 +30,8 @@ public record SyncIsPaired(boolean v, int playerID) implements CustomPacketPaylo
     public static void handleClient(final SyncIsPaired packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.getData(DataAttachments.DINO_DATA).setPaired(packet.v());
+                player.getData(DataAttachments.PAIRING_DATA).setPaired(packet.v());
             }
         });
-    }
-
-    public static void handleServer(final SyncIsPaired packet, final IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.getData(DataAttachments.DINO_DATA).setPaired(packet.v());
-            }
-        }).thenRun(() -> PacketDistributor.sendToPlayersTrackingEntity(context.player(), packet));
     }
 }

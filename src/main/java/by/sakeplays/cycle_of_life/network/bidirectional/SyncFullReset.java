@@ -31,6 +31,7 @@ public record SyncFullReset(int playerID) implements CustomPacketPayload {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
                 player.getData(DataAttachments.DINO_DATA).fullReset();
+                player.getData(DataAttachments.PAIRING_DATA).reset(true);
                 if (OnRenderPlayerEvent.PLAYER_DINOS.containsKey(packet.playerID)) OnRenderPlayerEvent.PLAYER_DINOS.remove(packet.playerID);
             }
         });
@@ -40,6 +41,7 @@ public record SyncFullReset(int playerID) implements CustomPacketPayload {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
                 player.getData(DataAttachments.DINO_DATA).fullReset();
+                player.getData(DataAttachments.PAIRING_DATA).reset(true);
             }
         }).thenRun(() -> PacketDistributor.sendToAllPlayers( packet));
     }

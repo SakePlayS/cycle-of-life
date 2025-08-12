@@ -45,6 +45,7 @@ public record RequestDeinonychusSlash(int target, HitboxType hbType) implements 
             DinoData data = context.player().getData(DataAttachments.DINO_DATA);
 
             float newStam = Math.max(0, data.getStamina() - 15);
+            float damageModifier = data.getWeight() / Dinosaurs.DEINONYCHUS.getWeight();
 
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
@@ -61,7 +62,7 @@ public record RequestDeinonychusSlash(int target, HitboxType hbType) implements 
 
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
-                Util.attemptToHitPlayer(targetPlayer, 7f, 0.11f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 7f * damageModifier, 0.11f * damageModifier, true, HitboxType.fromString(packet.hbType().toString()));
             }
         });
     }

@@ -114,7 +114,9 @@ public class SkinCreatorScreen extends Screen {
             }
         }
 
-        dummyDino.maleDisplayColor = (processColor(bodyPartColors.getMaleDisplay(), maleDisplayBrightness));
+        dummyDino.maleDisplayColor = player.getData(DataAttachments.DINO_DATA).isMale() ?
+                (processColor(bodyPartColors.getMaleDisplay(), maleDisplayBrightness)) :
+                (processColor(bodyPartColors.getMarkings(), markingsBrightness));
         dummyDino.markingsColor = (processColor(bodyPartColors.getMarkings(), markingsBrightness));
         dummyDino.bodyColor = (processColor(bodyPartColors.getBody(), bodyBrightness));
         dummyDino.flankColor = (processColor(bodyPartColors.getFlank(), flankBrightness));

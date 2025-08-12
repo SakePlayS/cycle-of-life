@@ -3,6 +3,7 @@ package by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
@@ -38,6 +39,7 @@ public record RequestDeinonychusDoubleSlash(int target, HitboxType hbType) imple
         context.enqueueWork(() -> {
             DinoData data = context.player().getData(DataAttachments.DINO_DATA);
             float newStam = Math.max(0, data.getStamina() - 35);
+            float damageModifier = data.getWeight() / Dinosaurs.DEINONYCHUS.getWeight();
 
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
@@ -54,7 +56,7 @@ public record RequestDeinonychusDoubleSlash(int target, HitboxType hbType) imple
 
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
-                Util.attemptToHitPlayer(targetPlayer, 25f, 0.2f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 25f * damageModifier, 0.2f * damageModifier, true, HitboxType.fromString(packet.hbType().toString()));
             }
         });
     }

@@ -1,31 +1,37 @@
 package by.sakeplays.cycle_of_life.common.data;
 
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
+
+import java.util.UUID;
 
 public class Nest {
 
-    private final int MATRIARCH;
-    private final int PATRIARCH;
+    private final UUID MATRIARCH;
+    private final UUID PATRIARCH;
     private final int MAX_EGGS_COUNT;
     private int eggsCount;
     private final BlockPos POSITION;
     private boolean isPublic;
+    private final int type;
 
-    public Nest(int matriarch, int patriarch, int maxEggsCount, BlockPos pos, boolean isPublic) {
+    public Nest(UUID matriarch, UUID patriarch, int maxEggsCount, BlockPos pos, boolean isPublic, int type) {
         this.MATRIARCH = matriarch;
         this.PATRIARCH = patriarch;
         this.MAX_EGGS_COUNT = maxEggsCount;
         this.eggsCount = 0;
         this.POSITION = pos;
         this.isPublic = isPublic;
+        this.type = type;
     }
 
-    public int getMatriarch() {
+    public UUID getMatriarch() {
         return MATRIARCH;
     }
 
-    public int getPatriarch() {
+    public UUID getPatriarch() {
         return PATRIARCH;
     }
 
@@ -41,7 +47,7 @@ public class Nest {
         return eggsCount;
     }
 
-    public void setEggsCount(int eggsCount) {
+    protected void setEggsCount(int eggsCount) {
         this.eggsCount = eggsCount;
     }
 
@@ -49,30 +55,36 @@ public class Nest {
         return isPublic;
     }
 
-    public void setPublic(boolean isPublic) {
+    protected void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public int getType() {
+        return type;
     }
 
     public CompoundTag saveToNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("Matriarch", getMatriarch());
-        tag.putInt("Patriarch", getPatriarch());
+        tag.putUUID("Matriarch", getMatriarch());
+        tag.putUUID("Patriarch", getPatriarch());
         tag.putInt("MaxEggs", getMaxEggsCount());
         tag.putInt("Eggs", eggsCount);
+        tag.putInt("Type", type);
         tag.putBoolean("Public", isPublic);
         tag.putLong("Pos", getPos().asLong());
         return tag;
     }
 
     public static Nest loadFromNBT(CompoundTag tag) {
-        int matriarch = tag.getInt("Matriarch");
-        int patriarch = tag.getInt("Patriarch");
+        UUID matriarch = tag.getUUID("Matriarch");
+        UUID patriarch = tag.getUUID("Patriarch");
         int maxEggs = tag.getInt("MaxEggs");
         int eggs = tag.getInt("Eggs");
+        int type = tag.getInt("Type");
         boolean isPublic = tag.getBoolean("Public");
         BlockPos pos = BlockPos.of(tag.getLong("Pos"));
 
-        Nest nest = new Nest(matriarch, patriarch, maxEggs, pos, isPublic);
+        Nest nest = new Nest(matriarch, patriarch, maxEggs, pos, isPublic, type);
         nest.setEggsCount(eggs);
         return nest;
     }

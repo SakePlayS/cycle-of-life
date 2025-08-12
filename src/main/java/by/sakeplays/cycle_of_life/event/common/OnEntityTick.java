@@ -1,17 +1,19 @@
 package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.common.data.*;
+import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptations;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
-import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -24,6 +26,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.UUID;
+
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class OnEntityTick {
 
@@ -34,6 +38,8 @@ public class OnEntityTick {
         Entity entity = event.getEntity();
 
         if (entity instanceof Player player) {
+
+
 
             if (!player.level().isClientSide) {
                 int newCD = player.getData(DataAttachments.ATTACK_COOLDOWN) - 1;
@@ -73,6 +79,7 @@ public class OnEntityTick {
                     handleWaterTick(player);
                     foodTick(player);
                     handleStaminaTick(player);
+                    updatePairs(player);
 
                     if (player.getData(DataAttachments.PAIRING_STATE) > 0 && player.getData(DataAttachments.PAIRING_STATE) < 3) {
                         int newPairingState = player.getData(DataAttachments.PAIRING_STATE) + 1;
@@ -121,29 +128,30 @@ public class OnEntityTick {
                 player.getData(DataAttachments.DINO_DATA).getHealth() <= 0f) &&
                 !player.level().isClientSide()) {
 
-            DinosaurEntity body = Util.getBody(player);
-            body.setBody(true);
-            body.setPos(player.getX(), player.getY(), player.getZ());
+            DinosaurEntity corpse = Util.getBody(player);
+            corpse.setBody(true);
+            corpse.setPos(player.getX(), player.getY(), player.getZ());
 
             SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
 
-            body.setBodyColor(skinData.getBodyColor());
-            body.setBellyColor(skinData.getBellyColor());
-            body.setEyesColor(skinData.getEyesColor());
-            body.setMarkingsColor(skinData.getMarkingsColor());
-            body.setFlankColor(skinData.getFlankColor());
-            body.setMaleDisplayColor(skinData.getMaleDisplayColor());
+            corpse.setBodyColor(skinData.getBodyColor());
+            corpse.setBellyColor(skinData.getBellyColor());
+            corpse.setEyesColor(skinData.getEyesColor());
+            corpse.setMarkingsColor(skinData.getMarkingsColor());
+            corpse.setFlankColor(skinData.getFlankColor());
+            corpse.setMaleDisplayColor(skinData.getMaleDisplayColor());
 
-            body.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
-            body.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
-            body.playerId = player.getId();
-            body.setOldPlayer(player.getId());
-            body.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
+            corpse.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
+            corpse.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
+            corpse.playerId = player.getId();
+            corpse.setOldPlayer(player.getId());
+            corpse.setMale(player.getData(DataAttachments.DINO_DATA).isMale());
 
-            player.level().addFreshEntity(body);
+            player.level().addFreshEntity(corpse);
 
 
             player.getData(DataAttachments.DINO_DATA).fullReset();
+            player.getData(DataAttachments.PAIRING_DATA).reset(true);
             PacketDistributor.sendToAllPlayers(new SyncFullReset(player.getId()));
         }
     }
@@ -227,9 +235,9 @@ public class OnEntityTick {
 
         if (player.getData(DataAttachments.DINO_DATA).isDrinking()) {
 
-            double x = player.getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().x();
-            double y = player.getY() - 0.5;
-            double z = player.getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos().z();
+            double x = player.getX();
+            double y = player.getY();
+            double z = player.getZ();
 
             if (player.level().getBiome(BlockPos.containing(x, y, z)).is(BiomeTags.IS_OCEAN)) {
                 Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).SALTWATER_TOLERANCE;
@@ -238,7 +246,7 @@ public class OnEntityTick {
 
                 newWaterLevel = Math.min(1f, newWaterLevel + 0.0075f);
                 data.setProgress(progress);
-                PacketDistributor.sendToAllPlayers(new SyncAdaptation("SALTWATER_TOLERANCE", progress, data.getLevel(), player.getId(), data.isUpgraded()));
+                PacketDistributor.sendToAllPlayers(new SyncAdaptation(Adaptations.SALTWATER_TOLERANCE, progress, data.getLevel(), player.getId(), data.isUpgraded()));
 
             } else {
                 newWaterLevel = Math.min(1f, newWaterLevel + 0.015f);
@@ -344,8 +352,33 @@ public class OnEntityTick {
         float newProgress = enhancedStamina.getProgress() + additionalStam / (2 * Util.getStaminaUpgraded(player));
         player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.setProgress(newProgress);
 
-        PacketDistributor.sendToAllPlayers(new SyncAdaptation("ENHANCED_STAMINA", newProgress,
+        PacketDistributor.sendToAllPlayers(new SyncAdaptation(Adaptations.ENHANCED_STAMINA, newProgress,
                 player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.getLevel(), player.getId(),
                 player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.isUpgraded()));
+    }
+
+    private static void updatePairs(Player player) {
+        ServerLevel level = (ServerLevel) player.level();
+
+        LifeData data = LifeData.get(level);
+        data.updateFor(player);
+
+        UUID mateUUID = player.getData(DataAttachments.PAIRING_DATA).getMateUUID();
+        if (mateUUID.equals(PairData.NO_MATE)) return;
+
+
+        UUID mateLifeUUID = player.getData(DataAttachments.PAIRING_DATA).getMateLifeUUID();
+        if (mateLifeUUID.equals(PairData.NO_MATE)) return;
+
+
+        UUID actualMateLifeUUID = data.getLifeOf(mateUUID);
+        if (actualMateLifeUUID == null) return;
+
+
+        if (!mateLifeUUID.equals(actualMateLifeUUID)) {
+            player.getData(DataAttachments.PAIRING_DATA).reset(false);
+            PacketDistributor.sendToPlayer((ServerPlayer) player, new SyncPairingReset(player.getId()));
+            player.sendSystemMessage(Component.literal("Your mate died so you have been unpaired."));
+        }
     }
 }

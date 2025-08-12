@@ -4,15 +4,14 @@ import by.sakeplays.cycle_of_life.ModSounds;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.HitboxData;
+import by.sakeplays.cycle_of_life.common.data.NestData;
 import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
-import by.sakeplays.cycle_of_life.entity.Deinonychus;
-import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
-import by.sakeplays.cycle_of_life.entity.HitboxEntity;
+import by.sakeplays.cycle_of_life.entity.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
+import by.sakeplays.cycle_of_life.network.bidirectional.SyncPairingReset;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_server.RequestPlayHurtSound;
 import net.minecraft.sounds.SoundEvents;
@@ -188,6 +187,12 @@ public class Util {
     }
 
     public static DinosaurEntity getBody(Player player) {
+        int dinoId = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+
+        if (dinoId == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return new Pachycephalosaurus(COLEntities.PACHYCEPHALOSAURUS.get(), player.level());
+        if (dinoId == Dinosaurs.DEINONYCHUS.getID()) return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
+
+        // fallback
         return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
     }
 
@@ -257,5 +262,7 @@ public class Util {
 
         dealDamage(target, damage * damageModifier, bleed * damageModifier, makeNoise);
         return true;
+
     }
+
 }

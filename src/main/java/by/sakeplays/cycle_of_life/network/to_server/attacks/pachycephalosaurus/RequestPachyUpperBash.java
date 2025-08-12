@@ -3,6 +3,7 @@ package by.sakeplays.cycle_of_life.network.to_server.attacks.pachycephalosaurus;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncKnockdownTime;
@@ -43,7 +44,8 @@ public record RequestPachyUpperBash(int target, HitboxType hbType) implements Cu
         context.enqueueWork(() -> {
             DinoData dataSource = context.player().getData(DataAttachments.DINO_DATA);
 
-            float newStam = Math.max(0, dataSource.getStamina() - 35);
+            float newStam = Math.max(0, dataSource.getStamina() - 25);
+            float damageModifier = dataSource.getWeight() / Dinosaurs.PACHYCEPHALOSAURUS.getWeight();
 
             dataSource.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
@@ -65,7 +67,7 @@ public record RequestPachyUpperBash(int target, HitboxType hbType) implements Cu
                 float dx = (float) -Math.sin(context.player().getData(DataAttachments.PLAYER_ROTATION));
                 float dz = (float) Math.cos(context.player().getData(DataAttachments.PLAYER_ROTATION));
 
-                Util.attemptToHitPlayer(targetPlayer, 32f, 0f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 32f * damageModifier, 0f, true, HitboxType.fromString(packet.hbType().toString()));
 
                 if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() > dataTarget.getWeight()) {
                     targetPlayer.setData(DataAttachments.KNOCKDOWN_TIME, 35);

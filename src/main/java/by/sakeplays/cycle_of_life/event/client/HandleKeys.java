@@ -2,7 +2,10 @@ package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
+import by.sakeplays.cycle_of_life.common.data.PairData;
 import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.network.to_server.RequestNestCreation;
+import by.sakeplays.cycle_of_life.network.to_server.SyncPairing;
 import by.sakeplays.cycle_of_life.util.AssociatedAABB;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.screen.StatsScreen;
@@ -25,6 +28,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = CycleOfLife.MODID, value = Dist.CLIENT)
@@ -49,6 +53,7 @@ public class HandleKeys {
     public static float dz = 0;
     public static float dx = 0;
     private static boolean inertiaLocked = false;
+    private static boolean pairMovementLocked = false;
     protected static float angleDiff = 0;
 
 
@@ -120,7 +125,7 @@ public class HandleKeys {
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
         float acceleration = Util.getAcceleration(player);
-        float drag = 0.1f / (float) Math.pow(dinoData.getWeight() + 1, 0.2d);
+        float drag = 0.15f / (float) Math.pow(dinoData.getWeight() + 1, 0.17d);
         float yRot = player.getYRot() * Mth.DEG_TO_RAD;
         float maxSpeed = Util.calculateSpeed(player) * additionalSpeed;
 
@@ -164,8 +169,6 @@ public class HandleKeys {
         float targetYaw = yRot + additionalTurn;
         angleDiff = Mth.wrapDegrees((float) Math.toDegrees(targetYaw - turnDegree)) * Mth.DEG_TO_RAD;
         float delta = Mth.clamp(angleDiff, -turnSpeed, turnSpeed);
-
-        player.sendSystemMessage(Component.literal("" + angleDiff));
 
         if (angleDiff > -0.01) turnMultiplier = Math.min(1, turnMultiplier + turnTransitionSpeed);
         if (angleDiff < 0.01) turnMultiplier = Math.max(-1, turnMultiplier - turnTransitionSpeed);
@@ -329,17 +332,30 @@ public class HandleKeys {
 
         pairingTimeOut--;
 
+        if (player.getData(DataAttachments.PAIRING_DATA).isPaired()) {
+            if (KeyMappings.PLACE_NEST_MAPPING.isDown() && !pairingLocked) {
+                pairingLocked = true;
+                PacketDistributor.sendToServer(new RequestNestCreation());
+                return;
+            } else if (!KeyMappings.PLACE_NEST_MAPPING.isDown() && pairingLocked) {
+                pairingLocked = false;
+                return;
+            }
+        }
+
         if (player.getData(DataAttachments.PAIRING_STATE) == 1) pairingTimeOut = 55;
         if (pairingTimeOut > 0) {
             canMove = false;
             turningLocked = true;
-        } else if (pairingTimeOut == 0) {
+            pairMovementLocked = true;
+        } else if (pairingTimeOut == 0 && pairMovementLocked) {
             canMove = true;
             turningLocked = false;
+            pairMovementLocked = false;
         }
 
-        if (player.getData(DataAttachments.DINO_DATA).getGrowth() <= 0.99f) return;
-        if (player.getData(DataAttachments.DINO_DATA).isPaired()) return;
+        if (player.getData(DataAttachments.DINO_DATA).getGrowth() <= 0.999f) return;
+
 
         if (KeyMappings.PAIR_MAPPING.isDown()) {
             isPairing = true;
@@ -349,7 +365,7 @@ public class HandleKeys {
             player.setData(DataAttachments.ATTEMPTING_PAIRING, true);
             PacketDistributor.sendToServer(new SyncAttemptingPairing(true, player.getId()));
 
-        } else if (isPairing){
+        } else if (isPairing) {
             isPairing = false;
             turningLocked = false;
             canMove = true;
@@ -358,13 +374,14 @@ public class HandleKeys {
             player.setData(DataAttachments.ATTEMPTING_PAIRING, false);
             PacketDistributor.sendToServer(new SyncAttemptingPairing(false, player.getId()));
 
-            player.getData(DataAttachments.DINO_DATA).setPairingWith(0);
-            PacketDistributor.sendToServer(new SyncPairingWith(0, player.getId()));
+            player.getData(DataAttachments.DINO_DATA).setPairingWith(UUID.randomUUID());
+            PacketDistributor.sendToServer(new SyncPairing(-1, player.getId()));
         }
 
         if (isPairing && !pairingLocked) {
             pairingLocked = true; // make sure we check for targets only 1 time when the player holds down the key
 
+            if (player.getData(DataAttachments.PAIRING_DATA).isPaired()) return;
 
             float dirX = (float) -Math.sin(player.getData(DataAttachments.PLAYER_ROTATION));
             float dirZ = (float) Math.cos(player.getData(DataAttachments.PLAYER_ROTATION));
@@ -388,26 +405,17 @@ public class HandleKeys {
 
                 if (target != player && iterations <= 0) {
 
-                    if (target.getData(DataAttachments.DINO_DATA).getGrowth() > 0.99f &&
-                            (target.getData(DataAttachments.DINO_DATA).isMale() != player.getData(DataAttachments.DINO_DATA).isMale())) {
-
-
                         int targetID = target.getId();
+                        UUID targetUUID = target.getUUID();
 
-                        player.getData(DataAttachments.DINO_DATA).setPairingWith(targetID);
-                        PacketDistributor.sendToServer(new SyncPairingWith(targetID, player.getId()));
-
+                        player.getData(DataAttachments.DINO_DATA).setPairingWith(targetUUID);
+                        PacketDistributor.sendToServer(new SyncPairing(targetID, player.getId()));
                         iterations++;
-                    }
+
                 }
             }
         }
     }
-
-    private static void attemptToPlaceNest(Player player) {
-
-    }
-
 
 
     private static void requestDrinking(Player player) {

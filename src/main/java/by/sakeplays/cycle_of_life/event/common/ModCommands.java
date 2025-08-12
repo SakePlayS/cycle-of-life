@@ -3,10 +3,8 @@ package by.sakeplays.cycle_of_life.event.common;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncFullReset;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncGrowth;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
+import by.sakeplays.cycle_of_life.common.data.PairData;
+import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.SyncBloodLevel;
 import by.sakeplays.cycle_of_life.network.to_client.SyncWaterLevel;
 import by.sakeplays.cycle_of_life.util.Util;
@@ -126,8 +124,12 @@ public class ModCommands {
                                 .executes(ctx -> {
                                     ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
                                     DinoData data = target.getData(DataAttachments.DINO_DATA);
+                                    PairData pairData = target.getData(DataAttachments.PAIRING_DATA);
+                                    pairData.reset(true);
                                     data.fullReset();
                                     PacketDistributor.sendToAllPlayers(new SyncFullReset(target.getId()));
+                                    PacketDistributor.sendToAllPlayers(new SyncPairingReset(target.getId()));
+
                                     ctx.getSource().sendSuccess(() -> Component.literal("Reset dino data for " + target.getName().getString()), false);
                                     return Command.SINGLE_SUCCESS;
                                 })

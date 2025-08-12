@@ -46,6 +46,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
         context.enqueueWork(() -> {
             DinoData data = context.player().getData(DataAttachments.DINO_DATA);
             float newStam = Math.max(0, data.getStamina() - 7);
+            float damageModifier = data.getWeight() / Dinosaurs.DEINONYCHUS.getWeight();
 
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
@@ -64,7 +65,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
 
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
-                Util.attemptToHitPlayer(targetPlayer, 15f, 0.01f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 15f * damageModifier, 0.01f * damageModifier, true, HitboxType.fromString(packet.hbType().toString()));
             }
         });
     }

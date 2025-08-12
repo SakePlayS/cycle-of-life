@@ -23,8 +23,14 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<SkinData>> SKIN_DATA = ATTACHMENT_TYPES.register(
             "skin_data", () -> AttachmentType.serializable(SkinData::new).build());
 
+    public static final Supplier<AttachmentType<PairData>> PAIRING_DATA = ATTACHMENT_TYPES.register(
+            "pairing_data", () -> AttachmentType.serializable(PairData::new).build());
+
     public static final Supplier<AttachmentType<AdaptationData>> ADAPTATION_DATA = ATTACHMENT_TYPES.register(
             "adaptations_data", () -> AttachmentType.serializable(AdaptationData::new).build());
+
+    public static final Supplier<AttachmentType<StatusData>> STATUS_DATA = ATTACHMENT_TYPES.register(
+            "status_data", () -> AttachmentType.serializable(StatusData::new).build());
 
     public static final Supplier<AttachmentType<HitboxData>> HITBOX_DATA = ATTACHMENT_TYPES.register(
             "hitbox_data", () -> AttachmentType.serializable(() -> new HitboxData(

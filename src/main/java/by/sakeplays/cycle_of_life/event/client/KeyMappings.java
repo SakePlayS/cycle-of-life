@@ -52,6 +52,10 @@ public class KeyMappings {
             new KeyMapping("key.cycle_of_life.pair", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_P,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping PLACE_NEST_MAPPING =
+            new KeyMapping("key.cycle_of_life.place_nest", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N,
+                    "key.categories.cycle_of_life");
+
     public static final KeyMapping GRAB_MAPPING =
             new KeyMapping("key.cycle_of_life.grab", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G,
                     "key.categories.cycle_of_life");
@@ -79,6 +83,7 @@ public class KeyMappings {
         event.register(GRAB_MAPPING);
         event.register(CHARACTER_MAPPING);
         event.register(BACKWARD_MAPPING);
+        event.register(PLACE_NEST_MAPPING);
 
     }
 }
