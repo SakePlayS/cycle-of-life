@@ -21,8 +21,8 @@ public class DeinonychusNestBlockEntity extends BlockEntity implements GeoBlockE
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    private int eggsCount;
-    private int oldEggsCount;
+    private int eggsCount = 0;
+    private int oldEggsCount = 0;
 
 
     public DeinonychusNestBlockEntity(BlockPos pos, BlockState blockState) {
@@ -56,10 +56,6 @@ public class DeinonychusNestBlockEntity extends BlockEntity implements GeoBlockE
         List<ServerPlayer> players = ((ServerLevel) level).players();
 
 
-        for (ServerPlayer player : players) {
-            player.sendSystemMessage(Component.literal("Ticker works yay, now i can get to the fun stuff."));
-        }
-
         if (oldEggsCount != eggsCount) updateNearbyPlayers(level);
 
         oldEggsCount = eggsCount;
@@ -68,8 +64,7 @@ public class DeinonychusNestBlockEntity extends BlockEntity implements GeoBlockE
 
     private void updateNearbyPlayers(Level level) {
         List<ServerPlayer> players = ((ServerLevel) level).players();
-
-
-
     }
+
+
 }

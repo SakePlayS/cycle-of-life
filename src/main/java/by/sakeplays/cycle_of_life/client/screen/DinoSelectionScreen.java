@@ -3,6 +3,7 @@ package by.sakeplays.cycle_of_life.client.screen;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.entity.util.Diet;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.network.to_server.RequestNestData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class DinoSelectionScreen extends Screen {
 
@@ -102,6 +104,7 @@ public class DinoSelectionScreen extends Screen {
 
         NESTS_BUTTON = new Button.Builder(Component.literal("Nests"), button -> {
             Minecraft.getInstance().setScreen(new NestListScreen(Component.literal("Nests")));
+            PacketDistributor.sendToServer(new RequestNestData());
         }).size(70, 18).pos(width/2 - 35,  22).build();
 
         CARNIVORES_BUTTON = new Button.Builder(Component.literal("Carnivores"), button -> {

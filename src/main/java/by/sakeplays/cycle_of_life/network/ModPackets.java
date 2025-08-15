@@ -44,7 +44,10 @@ public class ModPackets {
         registrar.playToClient(SyncPairingReset.TYPE, SyncPairingReset.STREAM_CODEC, SyncPairingReset::handleClient);
         registrar.playToClient(SyncNestUUID.TYPE, SyncNestUUID.STREAM_CODEC, SyncNestUUID::handleClient);
         registrar.playToClient(SyncNestPos.TYPE, SyncNestPos.STREAM_CODEC, SyncNestPos::handleClient);
-        registrar.playToClient(SyncFullNestData.TYPE, SyncFullNestData.STREAM_CODEC, SyncFullNestData::handleClient);
+        registrar.playToClient(SyncOwnNest.TYPE, SyncOwnNest.STREAM_CODEC, SyncOwnNest::handleClient);
+        registrar.playToClient(SendNestsData.TYPE, SendNestsData.STREAM_CODEC, SendNestsData::handleClient);
+        registrar.playToClient(SendNestFeedback.TYPE, SendNestFeedback.STREAM_CODEC, SendNestFeedback::handleClient);
+        registrar.playToClient(FinishNestJoining.TYPE, FinishNestJoining.STREAM_CODEC, FinishNestJoining::handleClient);
 
 
         registrar.playToServer(RequestSelectDinosaur.TYPE, RequestSelectDinosaur.STREAM_CODEC, RequestSelectDinosaur::handleServer);
@@ -59,6 +62,11 @@ public class ModPackets {
         registrar.playToServer(RequestPachyUpperBash.TYPE, RequestPachyUpperBash.STREAM_CODEC, RequestPachyUpperBash::handleServer);
         registrar.playToServer(SyncPairing.TYPE, SyncPairing.STREAM_CODEC, SyncPairing::handleServer);
         registrar.playToServer(RequestNestCreation.TYPE, RequestNestCreation.STREAM_CODEC, RequestNestCreation::handleServer);
+        registrar.playToServer(RequestNestData.TYPE, RequestNestData.STREAM_CODEC, RequestNestData::handleServer);
+        registrar.playToServer(SyncNestPrivacy.TYPE, SyncNestPrivacy.STREAM_CODEC, SyncNestPrivacy::handleServer);
+        registrar.playToServer(RequestNestJoinByType.TYPE, RequestNestJoinByType.STREAM_CODEC, RequestNestJoinByType::handleServer);
+        registrar.playToServer(RequestNestJoinByUUID.TYPE, RequestNestJoinByUUID.STREAM_CODEC, RequestNestJoinByUUID::handleServer);
+        registrar.playToServer(AcceptOrDeclineJoinRequest.TYPE, AcceptOrDeclineJoinRequest.STREAM_CODEC, AcceptOrDeclineJoinRequest::handleServer);
 
 
         registrar.playBidirectional(SyncDinoSprint.TYPE, SyncDinoSprint.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoSprint::handleClient, SyncDinoSprint::handleServer));

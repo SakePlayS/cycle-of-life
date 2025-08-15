@@ -67,7 +67,7 @@ public record RequestPachyUpperBash(int target, HitboxType hbType) implements Cu
                 float dx = (float) -Math.sin(context.player().getData(DataAttachments.PLAYER_ROTATION));
                 float dz = (float) Math.cos(context.player().getData(DataAttachments.PLAYER_ROTATION));
 
-                Util.attemptToHitPlayer(targetPlayer, 32f * damageModifier, 0f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 42f * damageModifier, 0f, true, HitboxType.fromString(packet.hbType().toString()));
 
                 if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() > dataTarget.getWeight()) {
                     targetPlayer.setData(DataAttachments.KNOCKDOWN_TIME, 35);

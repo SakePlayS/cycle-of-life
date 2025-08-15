@@ -37,18 +37,18 @@ public class PairData implements INBTSerializable<CompoundTag> {
     private List<UUID> bloodlineUUIDs = new ArrayList<>();
 
 
-    public static final UUID NO_MATE = UUID.fromString("fc93a82d-6096-4510-ba96-5229fe5b6b56");
+    public static final UUID UNSET = UUID.fromString("fc93a82d-6096-4510-ba96-5229fe5b6b56");
 
 
     public PairData() {
-        mateUUID = NO_MATE;
+        mateUUID = UNSET;
         isPaired = false;
         lifeUUID = UUID.randomUUID();
         mateName = "";
-        mateLifeUUID = NO_MATE;
+        mateLifeUUID = UNSET;
         bloodlineUUIDs.add(lifeUUID);
         storedEggs = 0;
-        nestUUID = NO_MATE;
+        nestUUID = UNSET;
         nestPos = BlockPos.ZERO;
     }
 
@@ -139,17 +139,15 @@ public class PairData implements INBTSerializable<CompoundTag> {
         if (!bloodlineUUIDs.contains(uuid)) bloodlineUUIDs.add(uuid);
     }
 
-
-    public void reset(boolean resetEggs) {
-        mateUUID = NO_MATE;
+    public void reset(boolean fullReset) {
+        mateUUID = UNSET;
         isPaired = false;
-        lifeUUID = UUID.randomUUID();
+        if (fullReset) lifeUUID = UUID.randomUUID();
         mateName = "";
-        mateLifeUUID = NO_MATE;
-        bloodlineUUIDs.clear();
-        bloodlineUUIDs.add(lifeUUID);
-
-        if (resetEggs) storedEggs = 0;
+        mateLifeUUID = UNSET;
+        if (fullReset) bloodlineUUIDs.clear();
+        if (fullReset) bloodlineUUIDs.add(lifeUUID);
+        if (fullReset) storedEggs = 0;
     }
 
     public int getStoredEggs() {

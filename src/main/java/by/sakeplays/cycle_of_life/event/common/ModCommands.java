@@ -32,10 +32,10 @@ public class ModCommands {
         dispatcher.register(Commands.literal("cycle-of-life").requires(source -> source.hasPermission(2)) // only ops
                 .then(Commands.literal("set")
                         .then(Commands.literal("growth")
-                                        .then(Commands.argument("target", EntityArgument.player())
+                                        .then(Commands.argument("nestType", EntityArgument.player())
                                                 .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                         .executes(ctx -> {
-                                                            ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                                            ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                                             float value = FloatArgumentType.getFloat(ctx, "value");
                                                             DinoData data = target.getData(DataAttachments.DINO_DATA);
                                                             data.setGrowth(value);
@@ -47,10 +47,10 @@ public class ModCommands {
                                         )
                                 )
                                 .then(Commands.literal("water")
-                                        .then(Commands.argument("target", EntityArgument.player())
+                                        .then(Commands.argument("nestType", EntityArgument.player())
                                                 .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                         .executes(ctx -> {
-                                                            ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                                            ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                                             float value = FloatArgumentType.getFloat(ctx, "value");
                                                             DinoData data = target.getData(DataAttachments.DINO_DATA);
                                                             data.setWaterLevel(value);
@@ -62,10 +62,10 @@ public class ModCommands {
                                         )
                                 )
                         .then(Commands.literal("stamina")
-                                .then(Commands.argument("target", EntityArgument.player())
+                                .then(Commands.argument("nestType", EntityArgument.player())
                                         .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                 .executes(ctx -> {
-                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                                     float value = FloatArgumentType.getFloat(ctx, "value");
                                                     float maxStam = Util.getStaminaUpgraded(target);
                                                     float stam = maxStam * value;
@@ -81,10 +81,10 @@ public class ModCommands {
                                 )
                         )
                         .then(Commands.literal("health")
-                                .then(Commands.argument("target", EntityArgument.player())
+                                .then(Commands.argument("nestType", EntityArgument.player())
                                         .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                 .executes(ctx -> {
-                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                                     float value = FloatArgumentType.getFloat(ctx, "value");
                                                     float maxHealth = target.getData(DataAttachments.DINO_DATA).getWeight();
                                                     float health = maxHealth * value;
@@ -100,10 +100,10 @@ public class ModCommands {
                                 )
                         )
                         .then(Commands.literal("blood")
-                                .then(Commands.argument("target", EntityArgument.player())
+                                .then(Commands.argument("nestType", EntityArgument.player())
                                         .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                 .executes(ctx -> {
-                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                                     float value = FloatArgumentType.getFloat(ctx, "value");
                                                     float maxBlood = target.getData(DataAttachments.DINO_DATA).getWeight();
                                                     float blood = maxBlood * value;
@@ -120,9 +120,9 @@ public class ModCommands {
                         )
                 )
                 .then(Commands.literal("reset")
-                        .then(Commands.argument("target", EntityArgument.player())
+                        .then(Commands.argument("nestType", EntityArgument.player())
                                 .executes(ctx -> {
-                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
+                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "nestType");
                                     DinoData data = target.getData(DataAttachments.DINO_DATA);
                                     PairData pairData = target.getData(DataAttachments.PAIRING_DATA);
                                     pairData.reset(true);

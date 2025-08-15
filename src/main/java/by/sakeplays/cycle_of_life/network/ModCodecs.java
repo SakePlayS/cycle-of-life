@@ -1,5 +1,6 @@
 package by.sakeplays.cycle_of_life.network;
 
+import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.common.data.Nest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -25,23 +26,14 @@ public class ModCodecs {
     }
 
 
-    public static final StreamCodec<FriendlyByteBuf, Nest> NEST_CODEC =
-            StreamCodec.composite(
-                    ModCodecs.UUID_CODEC, Nest::getMatriarch,
-                    ModCodecs.UUID_CODEC, Nest::getPatriarch,
-                    ByteBufCodecs.INT, Nest::getMaxEggsCount,
-                    BlockPos.STREAM_CODEC, Nest::getPos,
-                    ByteBufCodecs.BOOL, Nest::isPublic,
-                    ByteBufCodecs.INT, Nest::getType,
-                    Nest::new
-            );
-
     public static final StreamCodec<FriendlyByteBuf, UUID> UUID_CODEC =
             StreamCodec.composite(
                     ModCodecs.LONG, UUID::getMostSignificantBits,
                     ModCodecs.LONG, UUID::getLeastSignificantBits,
                     UUID::new
             );
+
+
 
     public static final StreamCodec<FriendlyByteBuf, Long> LONG =
             StreamCodec.of(

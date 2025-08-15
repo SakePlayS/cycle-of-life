@@ -176,9 +176,9 @@ public class HandleKeys {
         if (movementKeyDown()) {
 
             if (shouldMove(player)) {
-                handleForwardMovement(maxSpeed, acceleration, drag);
+                handleForwardMovement(maxSpeed, acceleration, drag, player);
             } else {
-                handleDrag(drag);
+                handleDrag(drag, player);
             }
 
             dinoData.setMoving(true);
@@ -187,7 +187,7 @@ public class HandleKeys {
             newTurnDegree = handlePlayerRotation(turnDegree, delta, player);
 
         } else {
-            handleDrag(drag);
+            handleDrag(drag, player);
 
             dinoData.setMoving(false);
             PacketDistributor.sendToServer(new SyncDinoWalking(false, player.getId()));
@@ -231,16 +231,24 @@ public class HandleKeys {
         return false;
     }
 
-    private static void handleForwardMovement(float maxSpeed, float acceleration, float drag) {
+    private static void handleForwardMovement(float maxSpeed, float acceleration, float drag, Player player) {
         if (speed <= maxSpeed) {
-            speed = Math.min(maxSpeed, speed + acceleration);
+            if (isAirborne(player)) {
+                speed = speed * 0.985f;
+            } else {
+                speed = Math.min(maxSpeed, speed + acceleration);
+            }
         } else {
-            handleDrag(drag);
+            handleDrag(drag, player);
         }
     }
 
-    private static void handleDrag(float drag) {
-        speed = Math.max(0, speed - drag);
+    private static void handleDrag(float drag, Player player) {
+        if (isAirborne(player)) {
+            speed = speed * 0.985f;
+        } else {
+            speed = Math.max(0, speed - drag);
+        }
     }
 
     private static float handlePlayerRotation(float turnDegree, float delta, Player player) {

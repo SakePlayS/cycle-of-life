@@ -12,6 +12,7 @@ import by.sakeplays.cycle_of_life.network.to_client.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
@@ -358,17 +359,16 @@ public class OnEntityTick {
     }
 
     private static void updatePairs(Player player) {
-        ServerLevel level = (ServerLevel) player.level();
-
-        LifeData data = LifeData.get(level);
+        MinecraftServer server = player.getServer();
+        LifeData data = LifeData.get(server);
         data.updateFor(player);
 
         UUID mateUUID = player.getData(DataAttachments.PAIRING_DATA).getMateUUID();
-        if (mateUUID.equals(PairData.NO_MATE)) return;
+        if (mateUUID.equals(PairData.UNSET)) return;
 
 
         UUID mateLifeUUID = player.getData(DataAttachments.PAIRING_DATA).getMateLifeUUID();
-        if (mateLifeUUID.equals(PairData.NO_MATE)) return;
+        if (mateLifeUUID.equals(PairData.UNSET)) return;
 
 
         UUID actualMateLifeUUID = data.getLifeOf(mateUUID);
@@ -380,5 +380,7 @@ public class OnEntityTick {
             PacketDistributor.sendToPlayer((ServerPlayer) player, new SyncPairingReset(player.getId()));
             player.sendSystemMessage(Component.literal("Your mate died so you have been unpaired."));
         }
+
+        player.sendSystemMessage(Component.literal("Nests: " + NestData.get(player.getServer()).getAllNests().size()));
     }
 }

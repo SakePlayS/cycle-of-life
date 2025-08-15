@@ -4,6 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -19,8 +20,8 @@ public class LifeData extends SavedData {
     private static final Factory<LifeData> FACTORY =
             new Factory<>(LifeData::new, LifeData::load);
 
-    public static LifeData get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(FACTORY, "life_data");
+    public static LifeData get(MinecraftServer level) {
+        return level.overworld().getDataStorage().computeIfAbsent(FACTORY, "life_data");
     }
 
     @Override

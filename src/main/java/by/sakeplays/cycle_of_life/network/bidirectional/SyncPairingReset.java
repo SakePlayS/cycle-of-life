@@ -32,7 +32,6 @@ public record SyncPairingReset(int playerID) implements CustomPacketPayload {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
                 player.getData(DataAttachments.PAIRING_DATA).reset(false);
-                ClientNestData.ownNest = null;
             }
         });
     }

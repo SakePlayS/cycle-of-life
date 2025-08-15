@@ -10,7 +10,6 @@ import by.sakeplays.cycle_of_life.network.to_client.SyncMateUUID;
 import by.sakeplays.cycle_of_life.network.to_client.SyncNestUUID;
 import by.sakeplays.cycle_of_life.network.to_client.SyncPairingState;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -45,13 +44,8 @@ public record SyncPairing(int target, int source) implements CustomPacketPayload
             Entity entityTarget = context.player().level().getEntity(packet.target);
 
 
-            if (entitySource instanceof Player player) {
-                player.getData(DataAttachments.PAIRING_DATA).setMateUUID(context.player().level().getEntity(packet.target).getUUID());
-            }
-
-            if (entityTarget instanceof Player targetPlayer) {
-
-                Player sourcePlayer = context.player();
+            if (entitySource instanceof Player sourcePlayer && entityTarget instanceof Player targetPlayer) {
+                sourcePlayer.getData(DataAttachments.PAIRING_DATA).setMateUUID(targetPlayer.getUUID());
 
                 if (pairingValid(targetPlayer, sourcePlayer)) {
                     applyPairData(targetPlayer, sourcePlayer);
@@ -98,18 +92,18 @@ public record SyncPairing(int target, int source) implements CustomPacketPayload
         }
 
         if (dinoData1.isMale() == dinoData2.isMale()) {
-            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.NO_MATE);
+            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.UNSET);
             return false;
 
         }
 
         if (dinoData1.getGrowth() < 0.999f || dinoData2.getGrowth() < 0.999f) {
-            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.NO_MATE);
+            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.UNSET);
             return false;
         }
 
         if (!pairData1.getMateUUID().equals(p2.getUUID()) || !pairData2.getMateUUID().equals(p1.getUUID())) {
-            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.NO_MATE);
+            p1.getData(DataAttachments.PAIRING_DATA).setMateUUID(PairData.UNSET);
             return false;
         }
 

@@ -1,8 +1,10 @@
 package by.sakeplays.cycle_of_life.network.bidirectional;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.common.data.ClientNestData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.event.client.OnRenderPlayerEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -33,6 +35,7 @@ public record SyncFullReset(int playerID) implements CustomPacketPayload {
                 player.getData(DataAttachments.DINO_DATA).fullReset();
                 player.getData(DataAttachments.PAIRING_DATA).reset(true);
                 if (OnRenderPlayerEvent.PLAYER_DINOS.containsKey(packet.playerID)) OnRenderPlayerEvent.PLAYER_DINOS.remove(packet.playerID);
+                if (Minecraft.getInstance().player.getUUID().equals(player.getUUID())) ClientNestData.ownNest = null;
             }
         });
     }

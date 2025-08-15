@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
 
+import by.sakeplays.cycle_of_life.common.data.ClientNestData;
 import by.sakeplays.cycle_of_life.common.data.PairData;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
@@ -19,12 +20,9 @@ import java.util.List;
 
 public class StatsScreen extends Screen {
 
-
-
     private Button ADAPTATIONS;
     private Button NEST;
     private Button STATUS;
-
 
     public StatsScreen(Component title) {
         super(title);
@@ -35,9 +33,8 @@ public class StatsScreen extends Screen {
         super.tick();
         Player player = Minecraft.getInstance().player;
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
-        PairData pairData = player.getData(DataAttachments.PAIRING_DATA);
 
-        NEST.active = (dinoData.getGrowth() > 0.999f) && (pairData.isPaired());
+        NEST.active = (dinoData.getGrowth() > 0.999f && ClientNestData.ownNest != null);
     }
 
     @Override

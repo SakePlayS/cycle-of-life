@@ -11,7 +11,7 @@ public class ModBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(CycleOfLife.MODID);
 
-    public static final DeferredBlock<Block> DEINONYCHUS_NEST = BLOCKS.registerBlock("deinonychus_nest", DeinonychusNestBlock::new, BlockBehaviour.Properties.of());
+    public static final DeferredBlock<Block> DEINONYCHUS_NEST = BLOCKS.registerBlock("deinonychus_nest", DeinonychusNestBlock::new, BlockBehaviour.Properties.of().noOcclusion());
 
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);

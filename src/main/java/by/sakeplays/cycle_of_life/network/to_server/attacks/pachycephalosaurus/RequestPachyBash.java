@@ -69,7 +69,7 @@ public record RequestPachyBash(int target, HitboxType hbType) implements CustomP
                 float dx = (float) -Math.sin(context.player().getData(DataAttachments.PLAYER_ROTATION));
                 float dz = (float) Math.cos(context.player().getData(DataAttachments.PLAYER_ROTATION));
 
-                Util.attemptToHitPlayer(targetPlayer, 50f * damageModifier, 0f, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 70f * damageModifier, 0f, true, HitboxType.fromString(packet.hbType().toString()));
 
                 if (targetPlayer.getData(DataAttachments.KNOCKDOWN_TIME) < -10 && dataSource.getWeight() * 1.5f > dataTarget.getWeight()) {
                     targetPlayer.setData(DataAttachments.KNOCKDOWN_TIME, 35);
