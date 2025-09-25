@@ -44,17 +44,13 @@ public class RenderHitboxes {
 
         if (localPlayer == null) return;
 
-        float partialTick = event.getPartialTick().getGameTimeDeltaTicks();
         for (Player player : level.players()) {
 
             poseStack.pushPose();
 
-            float growth = player.getData(DataAttachments.DINO_DATA).getGrowth();
-            Position headPos = player.getData(DataAttachments.HITBOX_DATA).getHeadHitboxPos();
-
             var list = ClientHitboxData.hitboxMap.get(player.getId());
-            if (list == null || list.size() < 5) {
-                poseStack.popPose(); // Avoid stack corruption
+            if (list == null || list.size() < 5 || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+                poseStack.popPose();
                 continue;
             }
 
@@ -74,19 +70,11 @@ public class RenderHitboxes {
     }
 
 
-    private static AABB createHitbox(Position center, float width, float height) {
-        return new AABB(
-                center.x() - width / 2, center.y() - height / 2, center.z() - width / 2,
-                center.x() + width / 2, center.y() + height / 2, center.z() + width / 2
-        );
-    }
-
     public static void renderAABBWireframe(AABB box, PoseStack poseStack, MultiBufferSource bufferSource, Vec3 cameraPos,
                                            float red, float green, float blue, float alpha) {
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
         Matrix4f matrix = poseStack.last().pose();
 
-        // Offset box by camera to render relative to view
         AABB shiftedBox = box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
         Vec3[] corners = {

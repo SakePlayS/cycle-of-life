@@ -2,15 +2,13 @@ package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
-import by.sakeplays.cycle_of_life.common.data.PairData;
-import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.common.data.*;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.to_server.RequestNestCreation;
 import by.sakeplays.cycle_of_life.network.to_server.SyncPairing;
 import by.sakeplays.cycle_of_life.util.AssociatedAABB;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.screen.StatsScreen;
-import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus.RequestGrabFood;
 import net.minecraft.client.Minecraft;
@@ -52,7 +50,6 @@ public class HandleKeys {
     protected static float additionalSpeed = 1;
     public static float dz = 0;
     public static float dx = 0;
-    private static boolean inertiaLocked = false;
     private static boolean pairMovementLocked = false;
     protected static float angleDiff = 0;
 
@@ -62,12 +59,13 @@ public class HandleKeys {
     public static void onClientTick(ClientTickEvent.Post event) {
         LocalPlayer player = Minecraft.getInstance().player;
 
-        if (player == null) {
-            return;
-        }
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+
 
         attackTimer--;
         attackTimeout--;
+
+        handleTakeoff(player);
 
         handleAttacks(player);
 
@@ -99,6 +97,7 @@ public class HandleKeys {
         }
     }
 
+    private static float sprintBonus = 0;
 
 
     private static void handleSprint(Player player) {
@@ -120,7 +119,16 @@ public class HandleKeys {
 
 
     private static void handleMovement(Player player) {
+
+
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
+
+        if (dinoData.getFlightState() != 0) {
+
+            if (dinoData.getFlightState() == 2) handleFlight(player);
+
+            return;
+        }
 
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
@@ -224,7 +232,7 @@ public class HandleKeys {
 
 
     private static boolean shouldMove(Player player) {
-        if (player.getData(DataAttachments.KNOCKDOWN_TIME) <= 0 && canMove) {
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) <= 0 && player.getData(DataAttachments.DINO_DATA).getFlightState() == 0 && canMove) {
             return true;
         }
 
@@ -276,15 +284,120 @@ public class HandleKeys {
         DinoData data = player.getData(DataAttachments.DINO_DATA);
 
         switch (data.getSelectedDinosaur()) {
-            case 1 -> {
-                Attacks.pachycephalosaurus(player);
-                break;
-            }
-            case 2 -> {
-                Attacks.deinonychus(player);
-                break;
-            }
+            case 1 -> Attacks.pachycephalosaurus(player);
+            case 2 -> Attacks.deinonychus(player);
         }
+    }
+
+    public static int takeoffHoldTicks;
+    private static float xzMomentum = 0.15f;
+    private static float yMomentum = 0;
+    private static int flyingFor = 0;
+    private static float turnSpeed = 0;
+    private static boolean airbrakingOld;
+
+    private static void handleFlight(Player player) {
+
+        DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+        flyingFor++;
+
+        if (!isAirborne(player) && flyingFor > 2) {
+
+            flyingFor = 0;
+            data.setFlightState(0);
+            PacketDistributor.sendToServer(new SyncFlightState(0, player.getId()));
+            xzMomentum = 0.15f;
+            return;
+        }
+
+        if (KeyMappings.LEFT_MAPPING.isDown()) {
+            turnSpeed = Math.max(-0.1f, turnSpeed - 0.012f / (0.25f + Math.max(0.75f, xzMomentum)));
+        } else if (KeyMappings.RIGHT_MAPPING.isDown())  {
+            turnSpeed = Math.min(0.1f, turnSpeed + 0.012f / (0.25f + Math.max(0.75f, xzMomentum)));
+        } else {
+            turnSpeed = turnSpeed * 0.91f;
+        }
+
+        player.setData(DataAttachments.PLAYER_ROTATION, player.getData(DataAttachments.PLAYER_ROTATION) + turnSpeed);
+        PacketDistributor.sendToServer(new SyncPlayerRotation(player.getData(DataAttachments.PLAYER_ROTATION), player.getId()));
+
+
+        dx = (float) -Math.sin(player.getData(DataAttachments.PLAYER_ROTATION));
+        dz = (float) Math.cos(player.getData(DataAttachments.PLAYER_ROTATION));
+
+        sprintBonus = data.isSprinting() ? 0.75f : 0f;
+        float xzMomentumCap = 0.75f + sprintBonus;
+
+        airbrakingOld = data.isAirbraking();
+        if (KeyMappings.AIRBRAKE.isDown()) {
+            data.setAirbraking(true);
+
+            xzMomentumCap = 0.25f;
+            if (xzMomentum >= xzMomentumCap) xzMomentum = Math.max(xzMomentumCap, xzMomentum - 0.0075f);
+
+            if (airbrakingOld != data.isAirbraking()) PacketDistributor.sendToServer(new SyncAirbraking(data.isAirbraking(), player.getId()));
+
+        } else {
+            data.setAirbraking(false);
+        }
+
+
+        if (xzMomentum < xzMomentumCap) xzMomentum = xzMomentum + 0.0075f;
+
+        if (KeyMappings.ASCEND.isDown()) {
+            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum + 0.015f : yMomentum + 0.04f ;
+            if (yMomentum >= 0) xzMomentum = Math.max(0.35f, xzMomentum * 0.98f);
+        }
+        if (KeyMappings.DESCEND.isDown()) {
+            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum - 0.01f : yMomentum - 0.043f;
+        }
+
+
+        yMomentum = Math.clamp(yMomentum, -1.5f, 0.55f);
+        yMomentum = (yMomentum * 0.975f) - 0.001f;
+        if (!KeyMappings.DESCEND.isDown() && yMomentum < -0.05f) xzMomentum = Math.min(1.5f, xzMomentum + Math.abs(yMomentum) * 0.0175f);
+
+
+        player.setDeltaMovement(dx * xzMomentum, yMomentum, dz * xzMomentum);
+    }
+
+    private static void handleTakeoff(Player player) {
+        DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+        if (!Util.getDino(player).equals(Dinosaurs.PTERANODON)) return;
+
+
+        if (data.getFlightState() == 0 && KeyMappings.TAKEOFF_MAPPING.isDown() && player.onGround()) {
+            takeoffHoldTicks++;
+
+            if (takeoffHoldTicks > 5) {
+
+                data.setFlightState(2);
+                PacketDistributor.sendToServer(new SyncFlightState(2, player.getId()));
+                dx = (float) -Math.sin(player.getData(DataAttachments.PLAYER_ROTATION));
+                dz = (float) Math.cos(player.getData(DataAttachments.PLAYER_ROTATION));
+
+                yMomentum = 0.5f;
+            }
+        } else {
+            if (takeoffHoldTicks <= 5 && takeoffHoldTicks > 0) {
+                float baseJumpStrength = Util.getDino(player).getJumpStrength();
+
+                float dinoJumpStrength = (float) (baseJumpStrength * Mth.lerp(Math.pow(data.getGrowth(), 0.625), 0.2f, 1f));
+
+                if (dinoJumpStrength > 0.25f && player.getData(DataAttachments.KNOCKDOWN_TIME) < 0 && !data.isLayingEggs()) {
+                    player.setDeltaMovement(
+                            player.getDeltaMovement().x,
+                            player.getDeltaMovement().y + dinoJumpStrength,
+                            player.getDeltaMovement().z
+                    );
+                }
+            }
+
+            takeoffHoldTicks = 0;
+        }
+
     }
 
     private static void handleResting(Player player) {
@@ -336,9 +449,30 @@ public class HandleKeys {
         }
     }
 
+    private static int cantUseNUntil = 0;
+
     private static void handlePairing(Player player) {
 
         pairingTimeOut--;
+        if (player.getData(DataAttachments.PAIRING_STATE) == 1) pairingTimeOut = 55;
+        if (pairingTimeOut > 0) {
+            canMove = false;
+            turningLocked = true;
+            pairMovementLocked = true;
+        } else if (pairingTimeOut == 0 && pairMovementLocked) {
+            canMove = true;
+            turningLocked = false;
+            pairMovementLocked = false;
+        }
+
+        if (ClientNestData.ownNest != null && player.getData(DataAttachments.PAIRING_DATA).isPaired() && player.tickCount > cantUseNUntil) {
+            if (KeyMappings.PLACE_NEST_MAPPING.consumeClick()) {
+                PacketDistributor.sendToServer(new RequestLayEggs());
+                cantUseNUntil = player.tickCount + 30;
+            }
+
+            return;
+        }
 
         if (player.getData(DataAttachments.PAIRING_DATA).isPaired()) {
             if (KeyMappings.PLACE_NEST_MAPPING.isDown() && !pairingLocked) {
@@ -349,17 +483,6 @@ public class HandleKeys {
                 pairingLocked = false;
                 return;
             }
-        }
-
-        if (player.getData(DataAttachments.PAIRING_STATE) == 1) pairingTimeOut = 55;
-        if (pairingTimeOut > 0) {
-            canMove = false;
-            turningLocked = true;
-            pairMovementLocked = true;
-        } else if (pairingTimeOut == 0 && pairMovementLocked) {
-            canMove = true;
-            turningLocked = false;
-            pairMovementLocked = false;
         }
 
         if (player.getData(DataAttachments.DINO_DATA).getGrowth() <= 0.999f) return;
@@ -445,6 +568,7 @@ public class HandleKeys {
             }
         }
     }
+
 
     private static void openCharacterInfo() {
         if (KeyMappings.CHARACTER_MAPPING.isDown()) {

@@ -1,7 +1,6 @@
 package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
-import by.sakeplays.cycle_of_life.client.entity.deinonychus.*;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -37,7 +36,7 @@ public class PachycephalosaurusRenderer extends GeoEntityRenderer<Pachycephalosa
     public void preRender(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        animatable.scale = Util.calculateGrowth(animatable, 0.05f, 1.015f);
+        animatable.scale = Util.calculateScale(animatable, 0.1f, 1.015f);
 
         poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
     }

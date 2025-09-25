@@ -6,52 +6,63 @@ import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AdaptationData implements INBTSerializable<CompoundTag> {
 
+    public List<Adaptation> adaptations = new ArrayList<>();
+
     public AdaptationData() {
-        SALTWATER_TOLERANCE = new SaltwaterTolerance(0, 0, false);
-        ENHANCED_STAMINA = new EnhancedStamina(0, 0, false);
-        BLEED_RESISTANCE = new BleedResistance(0, 0, false);
-        HEAT_RESISTANCE = new HeatResistance(0, 0, false);
-        COLD_RESISTANCE = new ColdResistance(0, 0, false);
+        AdaptationType.initialize(adaptations);
     }
 
-    public SaltwaterTolerance SALTWATER_TOLERANCE;
-    public EnhancedStamina ENHANCED_STAMINA;
-    public BleedResistance BLEED_RESISTANCE;
-    public HeatResistance HEAT_RESISTANCE;
-    public ColdResistance COLD_RESISTANCE;
 
     @Override
     public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag nbt = new CompoundTag();
 
-        nbt.put("SaltwaterTolerance", SALTWATER_TOLERANCE.toNBT());
-        nbt.put("EnhancedStamina",  ENHANCED_STAMINA.toNBT());
-        nbt.put("BleedResistance",  BLEED_RESISTANCE.toNBT());
-        nbt.put("HeatResistance",  HEAT_RESISTANCE.toNBT());
-        nbt.put("ColdResistance",  COLD_RESISTANCE.toNBT());
+        for (Adaptation adaptation : adaptations) {
+            nbt.put(adaptation.getName(), adaptation.toNBT());
+        }
 
         return nbt;
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-
-        this.SALTWATER_TOLERANCE = Adaptation.fromNBT(nbt.getCompound("SaltwaterTolerance"), SaltwaterTolerance::new);
-        this.ENHANCED_STAMINA = Adaptation.fromNBT(nbt.getCompound("EnhancedStamina"), EnhancedStamina::new);
-        this.BLEED_RESISTANCE = Adaptation.fromNBT(nbt.getCompound("BleedResistance"), BleedResistance::new);
-        this.HEAT_RESISTANCE = Adaptation.fromNBT(nbt.getCompound("HeatResistance"), HeatResistance::new);
-        this.COLD_RESISTANCE = Adaptation.fromNBT(nbt.getCompound("ColdResistance"), ColdResistance::new);
+        adaptations.clear();
+        for (String key : nbt.getAllKeys()) {
+            adaptations.add(Adaptation.fromNBT(nbt.getCompound(key)));
+        }
 
     }
 
     public void fullReset() {
-        this.ENHANCED_STAMINA = new EnhancedStamina(0 ,0, false);
-        this.SALTWATER_TOLERANCE = new SaltwaterTolerance(0, 0, false);
-        this.BLEED_RESISTANCE = new BleedResistance(0, 0, false);
-        this.HEAT_RESISTANCE = new HeatResistance(0, 0, false);
-        this.COLD_RESISTANCE = new ColdResistance(0, 0, false);
+        adaptations.clear();
 
+        AdaptationType.initialize(adaptations);
+    }
+
+    public Adaptation getAdaptation(AdaptationType type) {
+        for (Adaptation adaptation : adaptations) {
+            if (adaptation.getType().equals(type)) return adaptation;
+        }
+
+        return null;
+    }
+
+    public AdaptationsHolder toHolder() {
+        AdaptationsHolder holder = new AdaptationsHolder();
+
+        for (Adaptation adaptation : adaptations) {
+            holder.addEntry(adaptation.getName(), adaptation.getLevel());
+        }
+
+        return holder;
+    }
+
+    public List<Adaptation> getAdaptationList() {
+        return adaptations;
     }
 }

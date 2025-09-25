@@ -2,10 +2,9 @@ package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.*;
-import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptations;
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
-import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
@@ -13,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
@@ -32,7 +30,6 @@ import java.util.UUID;
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class OnEntityTick {
 
-    private static int tick;
 
     @SubscribeEvent
     public static void onTick(EntityTickEvent.Post event) {
@@ -40,9 +37,22 @@ public class OnEntityTick {
 
         if (entity instanceof Player player) {
 
+            if (!player.level().isClientSide && player.tickCount % 10 == 0) {
+                PacketDistributor.sendToAllPlayers(new SyncBuildMode(player.getId(), player.getData(DataAttachments.DINO_DATA).isInBuildMode()));
+
+            }
+
+            if (player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+                if (!player.getData(DataAttachments.DINO_DATA).isBuildModeUpdated()) player.refreshDimensions();
+                player.getData(DataAttachments.DINO_DATA).setBuildModeUpdated(true);
+                return;
+            }
+
+            player.getData(DataAttachments.DINO_DATA).setBuildModeUpdated(false);
 
 
             if (!player.level().isClientSide) {
+
                 int newCD = player.getData(DataAttachments.ATTACK_COOLDOWN) - 1;
                 player.setData(DataAttachments.ATTACK_COOLDOWN, newCD);
                 PacketDistributor.sendToAllPlayers(new SyncAttackCooldown(player.getId(), newCD));
@@ -58,11 +68,7 @@ public class OnEntityTick {
             if (!player.getData(DataAttachments.DINO_DATA).isInitialized())
                 initialize(player, player.getData(DataAttachments.DINO_DATA));
 
-
-
-            tick++;
-            if (tick > 10) {
-                tick = 0;
+            if (player.tickCount % 10 == 0) {
 
                 handleAttribute(player);
 
@@ -81,6 +87,8 @@ public class OnEntityTick {
                     foodTick(player);
                     handleStaminaTick(player);
                     updatePairs(player);
+                    eggsGestationTick(player);
+                    layingEggsTick(player);
 
                     if (player.getData(DataAttachments.PAIRING_STATE) > 0 && player.getData(DataAttachments.PAIRING_STATE) < 3) {
                         int newPairingState = player.getData(DataAttachments.PAIRING_STATE) + 1;
@@ -241,13 +249,13 @@ public class OnEntityTick {
             double z = player.getZ();
 
             if (player.level().getBiome(BlockPos.containing(x, y, z)).is(BiomeTags.IS_OCEAN)) {
-                Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).SALTWATER_TOLERANCE;
+                Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.SALTWATER_TOLERANCE);
                 float progress = data.getProgress() + 0.0025f;
 
 
                 newWaterLevel = Math.min(1f, newWaterLevel + 0.0075f);
                 data.setProgress(progress);
-                PacketDistributor.sendToAllPlayers(new SyncAdaptation(Adaptations.SALTWATER_TOLERANCE, progress, data.getLevel(), player.getId(), data.isUpgraded()));
+                PacketDistributor.sendToAllPlayers(new SyncAdaptation(AdaptationType.SALTWATER_TOLERANCE, progress, data.getLevel(), player.getId(), data.isUpgraded()));
 
             } else {
                 newWaterLevel = Math.min(1f, newWaterLevel + 0.015f);
@@ -311,7 +319,7 @@ public class OnEntityTick {
 
     private static void handleStaminaTick(Player player) {
 
-        EnhancedStamina enhancedStamina = player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA;
+        Adaptation enhancedStamina = player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA);
 
         if (!player.getData(DataAttachments.DINO_DATA).isSprinting() || !player.getData(DataAttachments.DINO_DATA).isMoving()) {
 
@@ -346,16 +354,16 @@ public class OnEntityTick {
         }
     }
 
-    private static void belowHalfStamRegenTick(Player player, float newStam, EnhancedStamina enhancedStamina, float additionalStam) {
+    private static void belowHalfStamRegenTick(Player player, float newStam, Adaptation enhancedStamina, float additionalStam) {
         player.getData(DataAttachments.DINO_DATA).setStamina(newStam);
         PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), newStam));
 
         float newProgress = enhancedStamina.getProgress() + additionalStam / (2 * Util.getStaminaUpgraded(player));
-        player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.setProgress(newProgress);
+        player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA).setProgress(newProgress);
 
-        PacketDistributor.sendToAllPlayers(new SyncAdaptation(Adaptations.ENHANCED_STAMINA, newProgress,
-                player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.getLevel(), player.getId(),
-                player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA.isUpgraded()));
+        PacketDistributor.sendToAllPlayers(new SyncAdaptation(AdaptationType.ENHANCED_STAMINA, newProgress,
+                player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA).getLevel(), player.getId(),
+                player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA).isUpgraded()));
     }
 
     private static void updatePairs(Player player) {
@@ -380,7 +388,67 @@ public class OnEntityTick {
             PacketDistributor.sendToPlayer((ServerPlayer) player, new SyncPairingReset(player.getId()));
             player.sendSystemMessage(Component.literal("Your mate died so you have been unpaired."));
         }
+    }
 
-        player.sendSystemMessage(Component.literal("Nests: " + NestData.get(player.getServer()).getAllNests().size()));
+    private static void eggsGestationTick(Player player) {
+
+        PairData pairData = player.getData(DataAttachments.PAIRING_DATA);
+        if (player.tickCount % 200 == 0) player.sendSystemMessage(Component.literal("Egg gestation countdown: " + pairData.getGestationCountdown()));
+
+        if (player.getData(DataAttachments.DINO_DATA).isMale()) return;
+        if (player.tickCount % 10 != 0) return;
+
+
+        if (!player.getData(DataAttachments.PAIRING_DATA).isPaired()) {
+            if (pairData.getGestationCountdown() >= 5400) return;
+        }
+
+        if (pairData.getStoredEggs() > 0) {
+            pairData.setGestationCountdown(5400);
+            PacketDistributor.sendToPlayer((ServerPlayer) player,
+                    new SyncGestationCountdown(pairData.getGestationCountdown(), player.getId()));
+
+            return;
+        }
+
+        pairData.setGestationCountdown(pairData.getGestationCountdown() - 1);
+        PacketDistributor.sendToPlayer((ServerPlayer) player,
+                new SyncGestationCountdown(pairData.getGestationCountdown(), player.getId()));
+
+        if (pairData.getGestationCountdown() <= 0) {
+            pairData.setStoredEggs(Util.getDino(player).getMaxEggs());
+            PacketDistributor.sendToPlayer((ServerPlayer) player, new SyncStoredEggs(pairData.getStoredEggs(), player.getId()));
+        }
+    }
+
+    private static void layingEggsTick(Player player) {
+        PairData pairData = player.getData(DataAttachments.PAIRING_DATA);
+        DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
+        NestData nestData = NestData.get(player.level().getServer());
+
+        if (dinoData.isMale()) return;
+        if (player.tickCount % 100 != 0) return;
+
+        if (!pairData.isPaired() && dinoData.isLayingEggs()) {
+            dinoData.setLayingEggs(false);
+            PacketDistributor.sendToAllPlayers(new SyncLayingEggs(false, player.getId()));
+            return;
+        }
+
+        if (!pairData.isPaired()) return;
+
+        Nest nest = nestData.getNestByPlayer(player);
+
+        if (nest == null) return;
+
+        if (pairData.getStoredEggs() <= 0 || nest.getEggsCount() >= nest.getMaxEggsCount()) {
+            dinoData.setLayingEggs(false);
+            PacketDistributor.sendToAllPlayers(new SyncLayingEggs(false, player.getId()));
+            return;
+        }
+
+        if (dinoData.isLayingEggs()) {
+            nestData.addEgg(nest, (ServerPlayer) player);
+        }
     }
 }

@@ -5,6 +5,7 @@ import by.sakeplays.cycle_of_life.common.data.Nest;
 import by.sakeplays.cycle_of_life.common.data.NestData;
 import by.sakeplays.cycle_of_life.network.to_client.SendNestFeedback;
 import by.sakeplays.cycle_of_life.network.to_client.SyncOwnNest;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -79,8 +80,14 @@ public record RequestNestJoinByUUID(String uuid) implements CustomPacketPayload 
 
             PacketDistributor.sendToPlayer((ServerPlayer) context.player(), new SendNestFeedback("Request sent!"));
 
-            if (matriarch != null) PacketDistributor.sendToPlayer(matriarch, new SyncOwnNest(nest));
-            if (patriarch != null) PacketDistributor.sendToPlayer(patriarch, new SyncOwnNest(nest));
+            if (matriarch != null) {
+                PacketDistributor.sendToPlayer(matriarch, new SyncOwnNest(nest));
+                matriarch.sendSystemMessage(Component.literal("A player would like to join your nest!").withStyle(ChatFormatting.GREEN));
+            }
+            if (patriarch != null) {
+                PacketDistributor.sendToPlayer(patriarch, new SyncOwnNest(nest));
+                patriarch.sendSystemMessage(Component.literal("A player would like to join your nest!").withStyle(ChatFormatting.GREEN));
+            }
         });
     }
 }

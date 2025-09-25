@@ -76,6 +76,7 @@ public class Attacks {
 
         if (!HandleKeys.canMove) return;
         if (KeyMappings.PAIR_MAPPING.isDown()) return;
+        if (player.getData(DataAttachments.DINO_DATA).isLayingEggs()) return;
 
         if ((KeyMappings.MAIN_ATTACK_MAPPING.isDown() && KeyMappings.DIRECTIONAL_ATTACK.isDown() // ALT ATTACK (DOUBLE SLASH) (good to prevent "tail riding")
                 && player.getData(DataAttachments.ATTACK_COOLDOWN) <= 0) || attackTimer > 0)  {
@@ -187,6 +188,7 @@ public class Attacks {
 
         if (!HandleKeys.canMove) return;
         if (KeyMappings.PAIR_MAPPING.isDown()) return;
+        if (player.getData(DataAttachments.DINO_DATA).isLayingEggs()) return;
 
 
 

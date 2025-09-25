@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
 
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.AdaptationData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
@@ -11,6 +12,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 
@@ -42,27 +44,29 @@ public class AdaptationsScreen extends Screen {
         AdaptationData data = player.getData(DataAttachments.ADAPTATION_DATA);
 
         if (SALTWATER_TOLERANCE_BUTTON.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.SALTWATER_TOLERANCE, "Saltwater Tolerance", "Decreases your likelihood to get",
+            renderAdaptationDescription(guiGraphics, data.getAdaptation(AdaptationType.SALTWATER_TOLERANCE), "Saltwater Tolerance",
+                    "Decreases your likelihood to get",
                     "saltwater sickness.", "", "");
         }
 
         if (ENHANCED_STAMINA.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.ENHANCED_STAMINA, "Enhanced Stamina", "Increases your stamina pool.",
+            renderAdaptationDescription(guiGraphics, data.getAdaptation(AdaptationType.ENHANCED_STAMINA), "Enhanced Stamina",
+                    "Increases your stamina pool.",
                     "", "", "");
         }
 
         if (BLEED_RESISTANCE.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.BLEED_RESISTANCE, "Bleed Resistance", "Increases your V resistance.",
+            renderAdaptationDescription(guiGraphics, data.getAdaptation(AdaptationType.BLEED_RESISTANCE), "Bleed Resistance", "Increases your bleed resistance.",
                     "", "", "");
         }
 
         if (HEAT_RESISTANCE.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.HEAT_RESISTANCE, "Heat Resistance", "Increases your heat resistance.",
+            renderAdaptationDescription(guiGraphics, data.getAdaptation(AdaptationType.HEAT_RESISTANCE), "Heat Resistance", "Increases your heat resistance.",
                     "", "", "");
         }
 
         if (COLD_RESISTANCE.isFocused()) {
-            renderAdaptationDescription(guiGraphics, data.COLD_RESISTANCE, "Cold Resistance", "Increases your cold resistance.",
+            renderAdaptationDescription(guiGraphics, data.getAdaptation(AdaptationType.COLD_RESISTANCE), "Cold Resistance", "Increases your cold resistance.",
                     "", "", "");
         }
 
@@ -141,17 +145,22 @@ public class AdaptationsScreen extends Screen {
                 "Level: " + adaptation.getLevel(), width / 2 + 60, height / 2 + 45,
                 Util.rgbaToInt(255, 255, 255, 1));
 
+        String valueInfo = getUpgradeInfo(adaptation);
+
+        guiGraphics.drawString(Minecraft.getInstance().font,
+                "Value: " + valueInfo, width / 2 + 60, height / 2 + 55,
+                Util.rgbaToInt(255, 255, 255, 1));
+    }
+
+    private static @NotNull String getUpgradeInfo(Adaptation adaptation) {
         DecimalFormat decimalFormat = new DecimalFormat("##.##");
         int level = adaptation.getLevel();
         String value = !adaptation.isUpgraded() ?
-                decimalFormat.format(adaptation.getValue(level) * 100) + "% -> " +
-                decimalFormat.format(adaptation.getValue(level + 1) * 100) + "%"
-                : decimalFormat.format(adaptation.getValue(level) * 100) + "%";
+                decimalFormat.format(adaptation.getType().getValue(level) * 100) + "% -> " +
+                decimalFormat.format(adaptation.getType().getValue(level + 1) * 100) + "%"
+                : decimalFormat.format(adaptation.getType().getValue(level) * 100) + "%";
 
-        if (level == 5) value = " " + adaptation.getValue(level) * 100 + "%";
-
-        guiGraphics.drawString(Minecraft.getInstance().font,
-                "Value: " + value, width / 2 + 60, height / 2 + 55,
-                Util.rgbaToInt(255, 255, 255, 1));
+        if (level == 5) value = " " + adaptation.getType().getValue(level) * 100 + "%";
+        return value;
     }
 }

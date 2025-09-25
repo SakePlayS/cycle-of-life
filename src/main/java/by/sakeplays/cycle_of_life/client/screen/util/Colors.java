@@ -28,6 +28,7 @@ public class Colors {
 
         if (dinoID == Dinosaurs.DEINONYCHUS.getID()) return DeinonychusColors.MARKINGS;
         if (dinoID == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return PachycephalosaurusColors.MARKINGS;
+        if (dinoID == Dinosaurs.PTERANODON.getID()) return PteranodonColors.MARKINGS;
 
         return DeinonychusColors.MARKINGS;
     }
@@ -36,6 +37,7 @@ public class Colors {
 
         if (dinoID == Dinosaurs.DEINONYCHUS.getID()) return DeinonychusColors.FLANK;
         if (dinoID == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return PachycephalosaurusColors.FLANK;
+        if (dinoID == Dinosaurs.PTERANODON.getID()) return PteranodonColors.FLANK;
 
         return DeinonychusColors.FLANK;
     }
@@ -44,6 +46,7 @@ public class Colors {
 
         if (dinoID == Dinosaurs.DEINONYCHUS.getID()) return DeinonychusColors.BODY;
         if (dinoID == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return PachycephalosaurusColors.BODY;
+        if (dinoID == Dinosaurs.PTERANODON.getID()) return PteranodonColors.BODY;
 
         return DeinonychusColors.BODY;
     }
@@ -52,6 +55,7 @@ public class Colors {
 
         if (dinoID == Dinosaurs.DEINONYCHUS.getID()) return DeinonychusColors.BELLY;
         if (dinoID == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return PachycephalosaurusColors.BELLY;
+        if (dinoID == Dinosaurs.PTERANODON.getID()) return PteranodonColors.BELLY;
 
         return DeinonychusColors.BELLY;
     }
@@ -60,6 +64,7 @@ public class Colors {
 
         if (dinoID == Dinosaurs.DEINONYCHUS.getID()) return DeinonychusColors.MALE_DISPLAY;
         if (dinoID == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return PachycephalosaurusColors.MALE_DISPLAY;
+        if (dinoID == Dinosaurs.PTERANODON.getID()) return PteranodonColors.MALE_DISPLAY;
 
         return DeinonychusColors.MALE_DISPLAY;
     }

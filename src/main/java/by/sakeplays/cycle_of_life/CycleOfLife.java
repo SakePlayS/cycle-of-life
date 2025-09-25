@@ -7,9 +7,10 @@ import by.sakeplays.cycle_of_life.client.entity.MeatChunkRenderer;
 import by.sakeplays.cycle_of_life.client.entity.deinonychus.DeinonychusRenderer;
 import by.sakeplays.cycle_of_life.client.entity.HitboxRenderer;
 import by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus.PachycephalosaurusRenderer;
+import by.sakeplays.cycle_of_life.client.entity.pteranodon.PteranodonRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import by.sakeplays.cycle_of_life.entity.ModEntities;
+import by.sakeplays.cycle_of_life.entity.Pteranodon;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
@@ -73,7 +74,7 @@ public class CycleOfLife
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
-        COLEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
         DataAttachments.register(modEventBus);
         ModSounds.register(modEventBus);
         ModBlockEntities.register(modEventBus);
@@ -105,10 +106,11 @@ public class CycleOfLife
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
 
-            EntityRenderers.register(COLEntities.PACHYCEPHALOSAURUS.get(), PachycephalosaurusRenderer::new);
-            EntityRenderers.register(COLEntities.DEINONYCHUS.get(), DeinonychusRenderer::new);
-            EntityRenderers.register(COLEntities.HITBOX.get(), HitboxRenderer::new);
-            EntityRenderers.register(COLEntities.MEAT_CHUNK.get(), MeatChunkRenderer::new);
+            EntityRenderers.register(ModEntities.PACHYCEPHALOSAURUS.get(), PachycephalosaurusRenderer::new);
+            EntityRenderers.register(ModEntities.DEINONYCHUS.get(), DeinonychusRenderer::new);
+            EntityRenderers.register(ModEntities.HITBOX.get(), HitboxRenderer::new);
+            EntityRenderers.register(ModEntities.MEAT_CHUNK.get(), MeatChunkRenderer::new);
+            EntityRenderers.register(ModEntities.PTERANODON.get(), PteranodonRenderer::new);
 
         }
 

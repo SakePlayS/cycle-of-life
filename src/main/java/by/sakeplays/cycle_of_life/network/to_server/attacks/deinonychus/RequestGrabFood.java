@@ -4,7 +4,7 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
+import by.sakeplays.cycle_of_life.entity.ModEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.MeatChunkEntity;
 import by.sakeplays.cycle_of_life.entity.util.Diet;
@@ -61,7 +61,7 @@ public record RequestGrabFood() implements CustomPacketPayload {
 
 
         for (DinosaurEntity corpse : corpses) {
-            MeatChunkEntity chunk = new MeatChunkEntity(COLEntities.MEAT_CHUNK.get(), player.level());
+            MeatChunkEntity chunk = new MeatChunkEntity(ModEntities.MEAT_CHUNK.get(), player.level());
             float chunkWeight = Math.min(corpse.getRemainingWeight(), player.getData(DataAttachments.DINO_DATA).getWeight() / 50f);
 
             chunk.setSize(chunkWeight);
@@ -83,7 +83,7 @@ public record RequestGrabFood() implements CustomPacketPayload {
             float maxWeight = player.getData(DataAttachments.DINO_DATA).getWeight() / 50f;
 
             if (meatChunk.getSize() > maxWeight) {
-                MeatChunkEntity newChunk = new MeatChunkEntity(COLEntities.MEAT_CHUNK.get(), player.level());
+                MeatChunkEntity newChunk = new MeatChunkEntity(ModEntities.MEAT_CHUNK.get(), player.level());
 
                 newChunk.setSize(maxWeight);
                 newChunk.setCarrier(player.getId());

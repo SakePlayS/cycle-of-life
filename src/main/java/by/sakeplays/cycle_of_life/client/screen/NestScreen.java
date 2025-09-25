@@ -71,16 +71,21 @@ public class NestScreen extends Screen {
         if (ClientNestData.ownNest == null) return;
 
         if (!dinoData.isMale()) {
+
             if (pairData.getStoredEggs() <= 0) {
-                stats.add(Pair.of("Eggs: Gestating", Util.rgbaToInt(255, 255, 60, 1)));
+                if (pairData.isPaired()) {
+                    int percentage = (5400 - pairData.getGestationCountdown()) / 54;
+                    stats.add(Pair.of("Eggs: Gestating (" + percentage + "%)", Util.rgbaToInt(255, 255, 60, 1)));
+                } else {
+                    stats.add(Pair.of("Cannot gestate eggs!", Util.rgbaToInt(255, 205, 60, 1)));
+                }
             } else {
                 stats.add(Pair.of("Eggs: Ready " + "(" + pairData.getStoredEggs() + "/" + Util.getDino(player).getMaxEggs() + ")"
                         , Util.rgbaToInt(60, 255, 60, 1)));
             }
         }
 
-        stats.add(Pair.of("Coordinates: " + ClientNestData.ownNest.getPos().toString(), Util.rgbaToInt(150, 255, 200, 1)));
-        stats.add(Pair.of("Eggs: " + ClientNestData.ownNest.getEggsCount(), Util.rgbaToInt(150, 255, 200, 1)));
+        stats.add(Pair.of("Coordinates: " + ClientNestData.ownNest.getPos().toShortString(), Util.rgbaToInt(150, 255, 200, 1)));
         stats.add(Pair.of("Patriarch: " + ClientNestData.ownNest.getPatriarchName(), Util.rgbaToInt(150, 255, 200, 1)));
         stats.add(Pair.of("Matriarch: " + ClientNestData.ownNest.getMatriarchName(), Util.rgbaToInt(150, 255, 200, 1)));
 

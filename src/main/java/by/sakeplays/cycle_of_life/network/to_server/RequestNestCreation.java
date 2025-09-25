@@ -4,6 +4,7 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.block.ModBlocks;
 import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.common.data.*;
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationsHolder;
 import by.sakeplays.cycle_of_life.network.to_client.SyncOwnNest;
 import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.core.BlockPos;
@@ -62,6 +63,9 @@ public record RequestNestCreation() implements CustomPacketPayload {
             ColorHolder patriarchColors = ColorHolder.fromSkinData(male.getData(DataAttachments.SKIN_DATA));
             ColorHolder matriarchColors = ColorHolder.fromSkinData(female.getData(DataAttachments.SKIN_DATA));
 
+            AdaptationsHolder patriarchAdaptations = male.getData(DataAttachments.ADAPTATION_DATA).toHolder();
+            AdaptationsHolder matriarchAdaptations = female.getData(DataAttachments.ADAPTATION_DATA).toHolder();
+
             BlockPos pos = new BlockPos(player.getOnPos().getX(), player.getOnPos().getY() + 1, player.getOnPos().getZ());
 
             if (NestData.get(minecraftServer).containsNestID(patriarchUUID)) return;
@@ -74,8 +78,10 @@ public record RequestNestCreation() implements CustomPacketPayload {
             nest.setPatriarchName(male.getName().getString());
             nest.setMatriarchName(female.getName().getString());
 
+            nest.setMatriarchAdaptations(matriarchAdaptations);
+            nest.setPatriarchAdaptations(patriarchAdaptations);
+
             NestData.get(minecraftServer).addNest(nest);
-            NestData.get(minecraftServer).forceSetEggs(nest, 5);
 
             context.player().level().setBlock(nest.getPos(), ModBlocks.DEINONYCHUS_NEST.get().defaultBlockState(), Block.UPDATE_ALL);
 

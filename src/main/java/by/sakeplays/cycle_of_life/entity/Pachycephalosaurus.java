@@ -77,6 +77,9 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     protected PlayState movementController(final AnimationState<Pachycephalosaurus> state) {
 
+        if (isBody()) return state.setAndContinue(KNOCKED_DOWN);
+
+
         if (getPlayer() != null) {
 
             Player player = getPlayer();

@@ -1,14 +1,13 @@
 package by.sakeplays.cycle_of_life.common.data;
 
 import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationsHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Nest {
 
@@ -26,6 +25,9 @@ public class Nest {
     private String matriarchName = "";
     private String patriarchName = "";
     private List<UUID> queuedPlayers = new ArrayList<>();
+
+    private AdaptationsHolder patriarchAdaptations;
+    private AdaptationsHolder matriarchAdaptations;
 
     public Nest(UUID matriarch, UUID patriarch, int maxEggsCount, BlockPos pos, boolean isPublic, int type,
                 ColorHolder patriarchColors, ColorHolder matriarchColors) {
@@ -137,8 +139,14 @@ public class Nest {
         tag.putBoolean("Public", isPublic);
         tag.putLong("Pos", getPos().asLong());
 
+        tag.putString("MatriarchName", matriarchName);
+        tag.putString("PatriarchName", patriarchName);
+
         tag.put("PatriarchColors", patriarchColors.saveToNBT());
         tag.put("MatriarchColors", matriarchColors.saveToNBT());
+
+        tag.put("PatriarchAdaptations", patriarchAdaptations.toNBT());
+        tag.put("MatriarchAdaptations", matriarchAdaptations.toNBT());
 
         return tag;
     }
@@ -156,10 +164,16 @@ public class Nest {
         ColorHolder patriarchColors = ColorHolder.loadFromNBT(tag.getCompound("PatriarchColors"));
         ColorHolder matriarchColors = ColorHolder.loadFromNBT(tag.getCompound("MatriarchColors"));
 
+
         Nest nest = new Nest(matriarch, patriarch, maxEggs, pos, isPublic, type, patriarchColors, matriarchColors);
         nest.setEggsCount(eggs);
         nest.setMatriarchLifeUUID(matriarchLifeUUID);
         nest.setPatriarchLifeUUID(patriarchLifeUUID);
+        nest.setPatriarchName(tag.getString("PatriarchName"));
+        nest.setMatriarchName(tag.getString("MatriarchName"));
+        nest.setMatriarchAdaptations(AdaptationsHolder.fromNBT(tag.getCompound("MatriarchAdaptations")));
+        nest.setPatriarchAdaptations(AdaptationsHolder.fromNBT(tag.getCompound("PatriarchAdaptations")));
+
         return nest;
     }
 
@@ -267,6 +281,22 @@ public class Nest {
 
     public void addToQueue(UUID uuid) {
         this.queuedPlayers.add(uuid);
+    }
+
+    public void setPatriarchAdaptations(AdaptationsHolder holder) {
+        patriarchAdaptations = holder;
+    }
+
+    public void setMatriarchAdaptations(AdaptationsHolder holder) {
+        matriarchAdaptations = holder;
+    }
+
+    public AdaptationsHolder getPatriarchAdaptations() {
+        return patriarchAdaptations;
+    }
+
+    public AdaptationsHolder getMatriarchAdaptations() {
+        return matriarchAdaptations;
     }
 }
 

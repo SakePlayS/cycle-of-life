@@ -3,24 +3,19 @@ package by.sakeplays.cycle_of_life.util;
 import by.sakeplays.cycle_of_life.ModSounds;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
-import by.sakeplays.cycle_of_life.common.data.HitboxData;
-import by.sakeplays.cycle_of_life.common.data.NestData;
-import by.sakeplays.cycle_of_life.common.data.adaptations.EnhancedStamina;
+import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.entity.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
-import by.sakeplays.cycle_of_life.network.bidirectional.SyncPairingReset;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_server.RequestPlayHurtSound;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -180,23 +175,23 @@ public class Util {
     }
 
     public static float getStaminaUpgraded(Player player) {
-        EnhancedStamina data = player.getData(DataAttachments.ADAPTATION_DATA).ENHANCED_STAMINA;
+        Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA);
 
 
-        return getDino(player).getStaminaPool() * (1 + data.getValue(data.getLevel()));
+        return getDino(player).getStaminaPool() * (1 + data.getType().getValue(data.getLevel()));
     }
 
     public static DinosaurEntity getBody(Player player) {
         int dinoId = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
 
-        if (dinoId == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return new Pachycephalosaurus(COLEntities.PACHYCEPHALOSAURUS.get(), player.level());
-        if (dinoId == Dinosaurs.DEINONYCHUS.getID()) return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
+        if (dinoId == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return new Pachycephalosaurus(ModEntities.PACHYCEPHALOSAURUS.get(), player.level());
+        if (dinoId == Dinosaurs.DEINONYCHUS.getID()) return new Deinonychus(ModEntities.DEINONYCHUS.get(), player.level());
 
         // fallback
-        return new Deinonychus(COLEntities.DEINONYCHUS.get(), player.level());
+        return new Deinonychus(ModEntities.DEINONYCHUS.get(), player.level());
     }
 
-    public static float calculateGrowth(DinosaurEntity entity, float lowerBound, float upperBound) {
+    public static float calculateScale(DinosaurEntity entity, float lowerBound, float upperBound) {
 
         if (entity.isBody()) return Mth.lerp(entity.getBodyGrowth(), lowerBound, upperBound);
         if (entity.isForScreenRendering) return 1;

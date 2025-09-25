@@ -48,6 +48,10 @@ public class ModPackets {
         registrar.playToClient(SendNestsData.TYPE, SendNestsData.STREAM_CODEC, SendNestsData::handleClient);
         registrar.playToClient(SendNestFeedback.TYPE, SendNestFeedback.STREAM_CODEC, SendNestFeedback::handleClient);
         registrar.playToClient(FinishNestJoining.TYPE, FinishNestJoining.STREAM_CODEC, FinishNestJoining::handleClient);
+        registrar.playToClient(SyncBuildMode.TYPE, SyncBuildMode.STREAM_CODEC, SyncBuildMode::handleClient);
+        registrar.playToClient(SyncLayingEggs.TYPE, SyncLayingEggs.STREAM_CODEC, SyncLayingEggs::handleClient);
+        registrar.playToClient(SyncGestationCountdown.TYPE, SyncGestationCountdown.STREAM_CODEC, SyncGestationCountdown::handleClient);
+        registrar.playToClient(SyncStoredEggs.TYPE, SyncStoredEggs.STREAM_CODEC, SyncStoredEggs::handleClient);
 
 
         registrar.playToServer(RequestSelectDinosaur.TYPE, RequestSelectDinosaur.STREAM_CODEC, RequestSelectDinosaur::handleServer);
@@ -67,6 +71,7 @@ public class ModPackets {
         registrar.playToServer(RequestNestJoinByType.TYPE, RequestNestJoinByType.STREAM_CODEC, RequestNestJoinByType::handleServer);
         registrar.playToServer(RequestNestJoinByUUID.TYPE, RequestNestJoinByUUID.STREAM_CODEC, RequestNestJoinByUUID::handleServer);
         registrar.playToServer(AcceptOrDeclineJoinRequest.TYPE, AcceptOrDeclineJoinRequest.STREAM_CODEC, AcceptOrDeclineJoinRequest::handleServer);
+        registrar.playToServer(RequestLayEggs.TYPE, RequestLayEggs.STREAM_CODEC, RequestLayEggs::handleServer);
 
 
         registrar.playBidirectional(SyncDinoSprint.TYPE, SyncDinoSprint.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncDinoSprint::handleClient, SyncDinoSprint::handleServer));
@@ -94,6 +99,8 @@ public class ModPackets {
         registrar.playBidirectional(SyncHitboxes.TYPE, SyncHitboxes.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncHitboxes::handleClient, SyncHitboxes::handleServer));
         registrar.playBidirectional(SyncKnockdownTime.TYPE, SyncKnockdownTime.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncKnockdownTime::handleClient, SyncKnockdownTime::handleServer));
         registrar.playBidirectional(SyncCharging.TYPE, SyncCharging.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncCharging::handleClient, SyncCharging::handleServer));
+        registrar.playBidirectional(SyncFlightState.TYPE, SyncFlightState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncFlightState::handleClient, SyncFlightState::handleServer));
+        registrar.playBidirectional(SyncAirbraking.TYPE, SyncAirbraking.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAirbraking::handleClient, SyncAirbraking::handleServer));
 
 
     }

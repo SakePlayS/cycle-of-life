@@ -1,7 +1,6 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
 
-import by.sakeplays.cycle_of_life.client.screen.util.NestButton;
 import by.sakeplays.cycle_of_life.common.data.ClientNestData;
 import by.sakeplays.cycle_of_life.common.data.Nest;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
@@ -19,12 +18,15 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class NestListScreen extends Screen {
 
     private List<Integer> types = new ArrayList<>();
+    private Map<Button, Integer> speciesButtons = new HashMap<>();
     private Button refreshButton;
     private EditBox nestUUIDEditBox;
     private Button joinButton;
@@ -76,6 +78,8 @@ public class NestListScreen extends Screen {
     protected void init() {
         super.init();
 
+        ClientNestData.nestFeedback = "";
+
         backButton = new Button.Builder(Component.literal("Back"), button -> {
             Minecraft.getInstance().setScreen(new DinoSelectionScreen(Component.literal("Select your dinosaur")));
         }).size(120, 18).pos(width/2 - 60, height - 20).build();
@@ -95,6 +99,7 @@ public class NestListScreen extends Screen {
         nestUUIDEditBox = new EditBox(Minecraft.getInstance().font, width/2 - 60, height - 60, 80, 18,
                 Component.literal("Nest UUID"));
         nestUUIDEditBox.setMaxLength(48);
+        nestUUIDEditBox.setHint(Component.literal("Nest UUID"));
 
 
         this.addRenderableWidget(refreshButton);
@@ -106,25 +111,31 @@ public class NestListScreen extends Screen {
 
     private void createNestButtons() {
         this.clearWidgets();
+        speciesButtons.clear();
+        types.clear();
 
         int startY = 100;
         int spacing = 20;
-
-        for (int i = 0; i < ClientNestData.nests.size(); i++) {
-            Nest nest = ClientNestData.nests.get(i);
+        int i = 0;
+        for (Nest nest : ClientNestData.nests) {
 
             if (types.contains(nest.getType())) continue;
+            i++;
 
             int y = startY + i * spacing;
 
-            NestButton button = NestButton.nestButtonBuilder(Component.literal(Dinosaurs.getById(nest.getType()).toString()), btn -> {
-                PacketDistributor.sendToServer(new RequestNestJoinByType(btn.type));
+            String dinoNameRaw = Dinosaurs.getById(nest.getType()).toString();
+            String dinoName = dinoNameRaw.charAt(0) + dinoNameRaw.substring(1).toLowerCase();
+
+            Button button = Button.builder(Component.literal(dinoName), btn -> {
+
+                if (speciesButtons.containsKey(btn)) PacketDistributor.sendToServer(new RequestNestJoinByType(speciesButtons.get(btn)));
 
             }).pos(this.width / 2 - 75, y)
-                    .type(nest.getType())
                     .size(150, 18)
                     .build();
 
+            speciesButtons.put(button, nest.getType());
             addRenderableWidget(button);
             types.add(nest.getType());
         }
@@ -134,11 +145,11 @@ public class NestListScreen extends Screen {
         addRenderableWidget(joinButton);
         addRenderableWidget(backButton);
 
-        types.clear();
     }
 
     @Override
     public boolean shouldCloseOnEsc() {
         return false;
     }
+
 }

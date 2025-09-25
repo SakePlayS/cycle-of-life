@@ -35,7 +35,7 @@ public class DinoSelectionScreen extends Screen {
     private Button AUSTRORAPTOR_BUTTON;
     private Button UTAHRAPTOR_BUTTON;
     private Button ORNITHOLESTES_BUTTON;
-    private Button QUETZALCOATLUS_BUTTON;
+    private Button PTERANODON_BUTTON;
 
     private Button HERBIVORES_BUTTON;
     private Button CARNIVORES_BUTTON;
@@ -61,7 +61,6 @@ public class DinoSelectionScreen extends Screen {
         GALLIMIMUS_BUTTON.active = false;
         PARKSOSAURUS_BUTTON.active = false;
         ORNITHOLESTES_BUTTON.active = false;
-        QUETZALCOATLUS_BUTTON.active = false;
 
         tickButtons();
     }
@@ -81,7 +80,7 @@ public class DinoSelectionScreen extends Screen {
         super.init();
 
         CONFIRM_BUTTON = new Button.Builder(Component.literal("Next"), button -> {
-            if (desiredDinosaurID != 0 && desiredDinosaurID <= 2) {
+            if (desiredDinosaurID != 0) {
                 Minecraft.getInstance().setScreen(new SkinCreatorScreen(Component.literal("Skin Creation"), desiredDinosaurID));
             }
         }).size(120, 18).pos(width/2 - 60, height - 40).build();
@@ -157,8 +156,8 @@ public class DinoSelectionScreen extends Screen {
         }).size(150, 18).pos(width/2 - 75, height/2 + 20)
                 .tooltip(Tooltip.create(Component.literal("Orni desc"))).build();
 
-        QUETZALCOATLUS_BUTTON = new Button.Builder(Component.literal("Quetzalcoatlus"), button -> {
-            desiredDinosaurID = 0;
+        PTERANODON_BUTTON = new Button.Builder(Component.literal("Pteranodon"), button -> {
+            desiredDinosaurID = Dinosaurs.PTERANODON.ID;
         }).size(150, 18).pos(width/2 - 75, height/2 + 40)
                 .tooltip(Tooltip.create(Component.literal("Quetz desc"))).build();
 
@@ -188,7 +187,7 @@ public class DinoSelectionScreen extends Screen {
         addRenderableWidget(UTAHRAPTOR_BUTTON);
         addRenderableWidget(AUSTRORAPTOR_BUTTON);
         addRenderableWidget(ORNITHOLESTES_BUTTON);
-        addRenderableWidget(QUETZALCOATLUS_BUTTON);
+        addRenderableWidget(PTERANODON_BUTTON);
 
         addRenderableWidget(LATENIVENATRIX_BUTTON);
 
@@ -216,7 +215,7 @@ public class DinoSelectionScreen extends Screen {
         UTAHRAPTOR_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
         AUSTRORAPTOR_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
         ORNITHOLESTES_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
-        QUETZALCOATLUS_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
+        PTERANODON_BUTTON.visible = selectedDiet == Diet.CARNIVORE;
 
         PACHYCEPHALOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;
         DRYOSAURUS_BUTTON.visible = selectedDiet == Diet.HERBIVORE;

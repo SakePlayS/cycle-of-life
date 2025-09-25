@@ -26,7 +26,6 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private float carriedMeatSize;
     private int carriedMeatType;
 
-
     private boolean isSprinting;
     private boolean isMoving;
     private boolean isMale;
@@ -36,7 +35,15 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private boolean isDrinking;
     private boolean carryingItem;
     private boolean isCharging;
+    private boolean isAirbraking;
+
+    private boolean isInBuildMode;
+    private boolean buildModeUpdated;
+    private boolean isLayingEggs;
+
     private UUID lifeUUID;
+
+    private int flightState;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
@@ -59,6 +66,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.isSliding = isSliding;
         this.isCharging = false;
 
+        this.isInBuildMode = false;
+        this.buildModeUpdated = false;
 
         isMale = Math.random() < 0.5;
 
@@ -66,10 +75,15 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         isPaired = false;
         isDrinking = false;
         carryingItem = false;
+        isLayingEggs = false;
+
         this.carriedMeatType = 0;
         this.carriedMeatSize = 0.7f;
 
         lifeUUID = UUID.randomUUID();
+
+        flightState = 0;
+        this.isAirbraking = false;
 
     }
 
@@ -94,6 +108,9 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putBoolean("IsPaired", isPaired);
         nbt.putBoolean("IsDrinking", isDrinking);
         nbt.putUUID("LifeUUID", lifeUUID);
+        nbt.putBoolean("BuildMode", isInBuildMode);
+        nbt.putBoolean("BuildModeUpdated", buildModeUpdated);
+        nbt.putInt("FlightState", flightState);
 
         return nbt;
     }
@@ -118,6 +135,9 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.isPaired = nbt.getBoolean("IsPaired");
         this.isDrinking = nbt.getBoolean("IsDrinking");
         this.lifeUUID = nbt.getUUID("LifeUUID");
+        this.isInBuildMode = nbt.getBoolean("BuildMode");
+        this.buildModeUpdated = nbt.getBoolean("BuildModeUpdated");
+        this.flightState = nbt.getInt("FlightState");
     }
 
     public void setSelectedDinosaur(int selectedDinosaur) {
@@ -232,6 +252,13 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bleed = bleed;
     }
 
+    public boolean isInBuildMode() {
+        return isInBuildMode;
+    }
+
+    public void setBuildMode(boolean val) {
+        isInBuildMode = val;
+    }
 
     public void fullReset() {
         setSelectedDinosaur(0);
@@ -251,6 +278,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         setPairingWith(UUID.randomUUID());
         setPaired(false);
         isMale = Math.random() < 0.5;
+        setFlightState(0);
 
 
     }
@@ -334,6 +362,38 @@ public class DinoData implements INBTSerializable<CompoundTag> {
 
     public void setLifeUUID(String lifeUUID) {
         this.lifeUUID = UUID.fromString(lifeUUID);
+    }
+
+    public boolean isBuildModeUpdated() {
+        return buildModeUpdated;
+    }
+
+    public void setBuildModeUpdated(boolean buildModeUpdated) {
+        this.buildModeUpdated = buildModeUpdated;
+    }
+
+    public boolean isLayingEggs() {
+        return isLayingEggs;
+    }
+
+    public void setLayingEggs(boolean layingEggs) {
+        isLayingEggs = layingEggs;
+    }
+
+    public int getFlightState() {
+        return flightState;
+    }
+
+    public void setFlightState(int flightState) {
+        this.flightState = flightState;
+    }
+
+    public boolean isAirbraking() {
+        return isAirbraking;
+    }
+
+    public void setAirbraking(boolean airbraking) {
+        isAirbraking = airbraking;
     }
 }
 

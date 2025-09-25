@@ -22,6 +22,9 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     public static final RawAnimation SWIM_SLOW = RawAnimation.begin().thenLoop("deinonychus.swim");
 
     protected static final RawAnimation IDLE = RawAnimation.begin().thenLoop("deinonychus.idle");
+    protected static final RawAnimation ATTACK_BASE = RawAnimation.begin().thenLoop("deinonychus.attack_base");
+    protected static final RawAnimation LAYING_EGGS = RawAnimation.begin().thenLoop("deinonychus.laying_eggs");
+
     protected static final RawAnimation BLINK = RawAnimation.begin().thenPlay("deinonychus.blink");
 
     protected static final RawAnimation REST_IN = RawAnimation.begin().thenPlay("deinonychus.resting_in");
@@ -98,13 +101,13 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     protected PlayState movementController(final AnimationState<Deinonychus> state) {
 
         if (isBody()) return state.setAndContinue(DEAD);
+        if (isForScreenRendering) return state.setAndContinue(IDLE);
 
         if (getPlayer() != null) {
             Player player = getPlayer();
 
             state.getController().transitionLength(5);
 
-            if (isForScreenRendering) return state.setAndContinue(IDLE);
 
             if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return state.setAndContinue(DEAD);
 
@@ -128,6 +131,16 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
             if (player.getData(DataAttachments.DINO_DATA).isMoving()) {
                 return state.setAndContinue(WALK_ANIM);
             }
+
+            if (player.getData(DataAttachments.ATTACK_TURNAROUND)) attackAnimUntil = player.tickCount + 15;
+            if (player.getData(DataAttachments.ATTACK_MAIN_1)) {
+                attackAnimUntil = player.tickCount + 6;
+            }
+            if (player.getData(DataAttachments.ATTACK_MAIN_2)) attackAnimUntil = player.tickCount + 6;
+
+            if (player.tickCount < attackAnimUntil) return state.setAndContinue(ATTACK_BASE);
+
+            if (player.getData(DataAttachments.DINO_DATA).isLayingEggs()) return state.setAndContinue(LAYING_EGGS);
 
             return state.setAndContinue(IDLE);
 

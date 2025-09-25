@@ -13,6 +13,7 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> DEINONYCHUS_NEST = BLOCKS.registerBlock("deinonychus_nest", DeinonychusNestBlock::new, BlockBehaviour.Properties.of().noOcclusion());
 
+
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
     }

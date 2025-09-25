@@ -77,14 +77,18 @@ public class ClientHitboxData {
                 player.getPosition(partialTick).y + bone.getWorldPosition().y,
                 player.getPosition(partialTick).z + bone.getWorldPosition().z);
 
-        return new AssociatedAABB(
-                (boneWorldPos.x() - cube.size().x/32 * growth),
-                (boneWorldPos.y() - cube.size().y/32 * growth),
-                (boneWorldPos.z() - cube.size().z/32 * growth),
+        double xOffset = cube.size().x / 32 * Math.max(0.07, growth);
+        double yOffset = cube.size().y / 32 * Math.max(0.07, growth);
+        double zOffset = cube.size().z / 32 * Math.max(0.07, growth);
 
-                (boneWorldPos.x() + cube.size().x/32 * growth),
-                (boneWorldPos.y() + cube.size().y/32 * growth),
-                (boneWorldPos.z() + cube.size().z/32 * growth),
+        return new AssociatedAABB(
+                (boneWorldPos.x() - xOffset),
+                (boneWorldPos.y() - yOffset),
+                (boneWorldPos.z() - zOffset),
+
+                (boneWorldPos.x() + xOffset),
+                (boneWorldPos.y() + yOffset),
+                (boneWorldPos.z() + zOffset),
                 player
         );
     }

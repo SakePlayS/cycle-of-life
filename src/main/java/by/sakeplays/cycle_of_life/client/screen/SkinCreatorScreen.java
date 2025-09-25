@@ -5,10 +5,7 @@ import by.sakeplays.cycle_of_life.client.screen.util.BrightnessSlider;
 import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.client.screen.util.Colors;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
-import by.sakeplays.cycle_of_life.entity.Deinonychus;
-import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
-import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
+import by.sakeplays.cycle_of_life.entity.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncSkinData;
 import by.sakeplays.cycle_of_life.network.to_server.RequestSelectDinosaur;
@@ -72,7 +69,7 @@ public class SkinCreatorScreen extends Screen {
         desiredDinosaurID = desiredDinoID;
         dummyDino = getDinoToRender(desiredDinosaurID);
 
-        MALE_DISPLAY =  Colors.LOAD_MALE_DISPLAY_COLORS(desiredDinosaurID);
+        MALE_DISPLAY = Colors.LOAD_MALE_DISPLAY_COLORS(desiredDinosaurID);
         BODY =  Colors.LOAD_BODY_COLORS(desiredDinosaurID);
         FLANK = Colors.LOAD_FLANK_COLORS(desiredDinosaurID);
         BELLY = Colors.LOAD_BELLY_COLORS(desiredDinosaurID);
@@ -341,14 +338,16 @@ public class SkinCreatorScreen extends Screen {
 
     private DinosaurEntity getDinoToRender(int desiredDinosaurID) {
         if (desiredDinosaurID == Dinosaurs.DEINONYCHUS.getID())
-            return new Deinonychus(COLEntities.DEINONYCHUS.get(), Minecraft.getInstance().level);
+            return new Deinonychus(ModEntities.DEINONYCHUS.get(), Minecraft.getInstance().level);
 
         if (desiredDinosaurID == Dinosaurs.PACHYCEPHALOSAURUS.getID())
-            return new Pachycephalosaurus(COLEntities.PACHYCEPHALOSAURUS.get(), Minecraft.getInstance().level);
+            return new Pachycephalosaurus(ModEntities.PACHYCEPHALOSAURUS.get(), Minecraft.getInstance().level);
 
+        if (desiredDinosaurID == Dinosaurs.PTERANODON.getID())
+            return new Pteranodon(ModEntities.PTERANODON.get(), Minecraft.getInstance().level);
 
         // fallback
-        return new Deinonychus(COLEntities.DEINONYCHUS.get(), Minecraft.getInstance().level);
+        return new Deinonychus(ModEntities.DEINONYCHUS.get(), Minecraft.getInstance().level);
     }
 
     private int processColor(ColorOption colorOption, double brightness) {

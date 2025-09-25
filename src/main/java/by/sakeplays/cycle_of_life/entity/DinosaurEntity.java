@@ -1,7 +1,6 @@
 package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.util.Util;
-import by.sakeplays.cycle_of_life.common.data.Position;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,15 +26,15 @@ public abstract class DinosaurEntity extends LivingEntity {
         super(entityType, level);
     }
 
+    public List<Float> rotHistory = new ArrayList<>();
     public float prevRotY = 0;
     public float prevTailRotY1 = 0;
     public float prevTailRotY2 = 0;
     public float prevTailRotY3 = 0;
     public float scale = 1;
+    public int lastUpdatedTick = 0;
 
     public float prevTailRotX = 0;
-
-    public List<Position> tailBonePositionHistory = new ArrayList<>();
 
     public float headRot = 0;
 
@@ -47,8 +46,9 @@ public abstract class DinosaurEntity extends LivingEntity {
     public int maleDisplayColor = Util.rgbaToInt(0.9f, 0.35f, 0.42f, 1f);
     public volatile Integer playerId = 0;
     public boolean isForScreenRendering = false;
+    protected int attackAnimUntil = 0;
 
-    // ALL synched data here is used ONLY for dead bodies!
+    // ALL synced data here is used ONLY for corpses!
 
     public static final EntityDataAccessor<Boolean> IS_BODY =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.BOOLEAN);
@@ -307,12 +307,12 @@ public abstract class DinosaurEntity extends LivingEntity {
         return this.entityData.get(BODY_EYES_COLOR);
     }
 
-    public void recordTailPosHistory(Position pos) {
-        tailBonePositionHistory.add(pos);
 
-        if (tailBonePositionHistory.size() > 11) tailBonePositionHistory.removeFirst();
+    public void recordRotHistory(float val, int withSize) {
+        rotHistory.add(val);
+
+        if (rotHistory.size() > withSize) rotHistory.removeFirst();
     }
-
 
 
 

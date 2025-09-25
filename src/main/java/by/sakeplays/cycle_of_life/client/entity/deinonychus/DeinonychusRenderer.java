@@ -3,7 +3,7 @@ package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
+import by.sakeplays.cycle_of_life.entity.ModEntities;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.MeatChunkEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -39,7 +39,7 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
     public void preRender(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        animatable.scale = Util.calculateGrowth(animatable, 0.04f, 0.8f);
+        animatable.scale = Util.calculateScale(animatable, 0.08f, 0.8f);
 
         poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
 
@@ -79,7 +79,7 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
             GeoBone mouthBone = this.getGeoModel().getAnimationProcessor().getBone("grab_handler");
             if (mouthBone != null) {
                 poseStack.pushPose();
-                Entity meatChunk = new MeatChunkEntity(COLEntities.MEAT_CHUNK.get(), player.level());
+                Entity meatChunk = new MeatChunkEntity(ModEntities.MEAT_CHUNK.get(), player.level());
 
                 this.moveToBone(poseStack, mouthBone);
                 float scale = (float) Math.cbrt(player.getData(DataAttachments.DINO_DATA).getCarriedMeatSize());

@@ -1,11 +1,15 @@
 package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
@@ -68,6 +72,22 @@ public class KeyMappings {
             new KeyMapping("key.cycle_of_life.character_info", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_TAB,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping TAKEOFF_MAPPING =
+            new KeyMapping("key.cycle_of_life.takeoff", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_SPACE,
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping ASCEND =
+            new KeyMapping("key.cycle_of_life.ascend", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_SPACE,
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping DESCEND =
+            new KeyMapping("key.cycle_of_life.descend", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_SHIFT,
+                    "key.categories.cycle_of_life");
+
+    public static final KeyMapping AIRBRAKE =
+            new KeyMapping("key.cycle_of_life.airbrake", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S,
+                    "key.categories.cycle_of_life");
+
     @SubscribeEvent
     public static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(FORWARD_MAPPING);
@@ -84,7 +104,12 @@ public class KeyMappings {
         event.register(CHARACTER_MAPPING);
         event.register(BACKWARD_MAPPING);
         event.register(PLACE_NEST_MAPPING);
+        event.register(TAKEOFF_MAPPING);
+        event.register(ASCEND);
+        event.register(DESCEND);
+        event.register(AIRBRAKE);
 
     }
+
 }
 

@@ -2,12 +2,11 @@ package by.sakeplays.cycle_of_life.network.to_server;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.*;
+import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
+import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncGrowth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncSkinData;
-import by.sakeplays.cycle_of_life.network.to_client.FinishNestJoining;
-import by.sakeplays.cycle_of_life.network.to_client.SendNestFeedback;
-import by.sakeplays.cycle_of_life.network.to_client.SyncOwnNest;
-import by.sakeplays.cycle_of_life.network.to_client.SyncSelectedDinosaur;
+import by.sakeplays.cycle_of_life.network.to_client.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -19,6 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPacketPayload {
 
@@ -41,6 +43,8 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
 
             Nest nest = NestData.get(server).getNestByPlayer(context.player());
 
+            if (nest.getQueuedPlayers().isEmpty()) return;
+
             if (packet.accepted()) {
 
                 ServerPlayer player = server.getPlayerList().getPlayer(nest.getQueuedPlayers().getFirst());
@@ -50,13 +54,17 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
 
                 NestData.get(server).removeEgg(nest);
 
-                player.connection.teleport(nest.getX() + 0.5, nest.getY() + 1, nest.getZ() + 0.5, player.getYRot(), player.getXRot());
+                player.connection.teleport(nest.getX() + 0.5, nest.getY() + 0.1, nest.getZ() + 0.5, player.getYRot(), player.getXRot());
                 SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
                 DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
                 PairData pairData = player.getData(DataAttachments.PAIRING_DATA);
+                AdaptationData adaptationData = player.getData(DataAttachments.ADAPTATION_DATA);
+
+                adaptationData.fullReset();
+                inheritAdaptations(player, nest, adaptationData);
 
                 skinData.setMarkingsColor(Math.random() < 0.5 ? nest.getMatriarchColors().markings : nest.getPatriarchColors().markings);
-                skinData.setMaleDisplayColor(dinoData.isMale() ? nest.getPatriarchColors().maleDisplay : nest.getMatriarchColors().maleDisplay);
+                skinData.setMaleDisplayColor(nest.getPatriarchColors().maleDisplay);
                 skinData.setEyesColor(Math.random() < 0.5 ? nest.getMatriarchColors().eyes : nest.getPatriarchColors().eyes);
                 skinData.setBellyColor(Math.random() < 0.5 ? nest.getMatriarchColors().belly : nest.getPatriarchColors().belly);
                 skinData.setBodyColor(Math.random() < 0.5 ? nest.getMatriarchColors().body : nest.getPatriarchColors().body);
@@ -64,6 +72,7 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
 
                 PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), skinData.getEyesColor(), skinData.getMarkingsColor(),
                         skinData.getBodyColor(), skinData.getFlankColor(), skinData.getBellyColor(), skinData.getMaleDisplayColor()));
+
 
                 dinoData.setGrowth(0f);
                 PacketDistributor.sendToAllPlayers(new SyncGrowth(0, player.getId()));
@@ -81,12 +90,10 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
 
                 if (matriarch != null) {
                     PacketDistributor.sendToPlayer(matriarch, new SyncOwnNest(nest));
-                    matriarch.sendSystemMessage(Component.literal("Remaining eggs: " + nest.getEggsCount()));
                 }
 
                 if (patriarch != null) {
                     PacketDistributor.sendToPlayer(patriarch, new SyncOwnNest(nest));
-                    patriarch.sendSystemMessage(Component.literal("Remaining eggs: " + nest.getEggsCount()));
                 }
 
             } else {
@@ -103,4 +110,29 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
             }
         });
     }
+
+    private static void inheritAdaptations(ServerPlayer player, Nest nest, AdaptationData data) {
+
+        Map<String, Integer> matriarchAdaptations = new HashMap<>(nest.getMatriarchAdaptations().getMap());
+        Map<String, Integer> patriarchAdaptations = new HashMap<>(nest.getPatriarchAdaptations().getMap());
+
+        for (Adaptation adaptation : data.getAdaptationList()) {
+            inherit(player, adaptation, matriarchAdaptations, patriarchAdaptations);
+        }
+    }
+
+    private static void inherit(ServerPlayer player, Adaptation adaptation, Map<String, Integer> matriarchAdaptations, Map<String, Integer> patriarchAdaptations) {
+        adaptation.setLevel(Math.max(0, Math.random() < 0.5 ?
+                matriarchAdaptations.get(adaptation.getName()) - (int)(Math.random() + 0.5) :
+                patriarchAdaptations.get(adaptation.getName()) - (int)(Math.random() + 0.5)
+        ));
+
+        adaptation.setUpgraded(false);
+
+        PacketDistributor.sendToPlayer(player, new SyncAdaptation(adaptation.getType(),
+                adaptation.getProgress(), adaptation.getLevel(),
+                player.getId(), false));
+    }
+
+
 }

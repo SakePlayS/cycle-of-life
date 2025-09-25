@@ -6,6 +6,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.checkerframework.checker.units.qual.A;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +25,7 @@ public class ClientHooksMixin {
 
         Player player = Minecraft.getInstance().player;
 
-        if (player == null) return 4F;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return 4F;
 
         float scale = 0;
 
@@ -34,7 +35,11 @@ public class ClientHooksMixin {
             default -> 1f;
         };
 
-        return 3F * scale * (0.1f + (Math.max(0f, Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getGrowth() - 0.1f)));
+        float dzSpeed = (float)(Math.sqrt(0.35f + player.getDeltaMovement().length()));
+
+        if (player.getData(DataAttachments.DINO_DATA).getFlightState() != 2) dzSpeed = 1;
+
+        return 3F * scale * dzSpeed * (0.1f + (Math.max(0f, Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getGrowth() - 0.025f)));
     }
 
 }

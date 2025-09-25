@@ -3,7 +3,6 @@ package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
-import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -37,7 +36,6 @@ public class PachycephalosaurusBodyLayer<T extends Entity & GeoAnimatable> exten
         } else {
             color = animatable.getBodyColor();
         }
-        float size = Util.calculateGrowth(animatable, 0.04f, 0.8f);
 
         poseStack.pushPose();
         poseStack.scale(1/animatable.scale, 1/animatable.scale, 1/animatable.scale);

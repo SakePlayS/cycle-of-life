@@ -21,6 +21,7 @@ public class PairData implements INBTSerializable<CompoundTag> {
     private boolean isPaired;
     private String mateName;
     private int storedEggs;
+    private int gestationCountdown;
 
     // since the player's uuid persists, we need another uuid to
     // know whether the player is still living the same life.
@@ -50,6 +51,7 @@ public class PairData implements INBTSerializable<CompoundTag> {
         storedEggs = 0;
         nestUUID = UNSET;
         nestPos = BlockPos.ZERO;
+        gestationCountdown = 5400;
     }
 
     @Override
@@ -69,6 +71,7 @@ public class PairData implements INBTSerializable<CompoundTag> {
         nbt.putUUID("NestUUID", nestUUID);
         nbt.putString("MateName", mateName);
         nbt.putInt("StoredEggs", storedEggs);
+        nbt.putInt("GestationCountdown", gestationCountdown);
         nbt.putIntArray("NestPos", nestPos);
 
         ListTag listTag = new ListTag();
@@ -89,6 +92,7 @@ public class PairData implements INBTSerializable<CompoundTag> {
         this.nestUUID = nbt.getUUID("NestUUID");
         this.mateName = nbt.getString("MateName");
         this.storedEggs = nbt.getInt("StoredEggs");
+        this.gestationCountdown = nbt.getInt("GestationCountdown");
         int[] nestPos = nbt.getIntArray("NestPos");
         this.nestPos = new BlockPos(nestPos[0], nestPos[1], nestPos[2]);
 
@@ -148,6 +152,7 @@ public class PairData implements INBTSerializable<CompoundTag> {
         if (fullReset) bloodlineUUIDs.clear();
         if (fullReset) bloodlineUUIDs.add(lifeUUID);
         if (fullReset) storedEggs = 0;
+        if (fullReset) gestationCountdown = 5400;
     }
 
     public int getStoredEggs() {
@@ -176,6 +181,14 @@ public class PairData implements INBTSerializable<CompoundTag> {
 
     public void setNestPos(BlockPos nestPos) {
         this.nestPos = nestPos;
+    }
+
+    public int getGestationCountdown() {
+        return gestationCountdown;
+    }
+
+    public void setGestationCountdown(int gestationCountdown) {
+        this.gestationCountdown = gestationCountdown;
     }
 }
 

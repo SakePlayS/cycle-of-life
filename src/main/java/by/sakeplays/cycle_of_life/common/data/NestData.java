@@ -2,6 +2,8 @@ package by.sakeplays.cycle_of_life.common.data;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.network.to_client.SyncOwnNest;
+import by.sakeplays.cycle_of_life.network.to_client.SyncStoredEggs;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -65,8 +67,22 @@ public class NestData extends SavedData {
 
     public Nest getNestByPlayer(Player player) {
 
+        UUID lifeUUID = LifeData.get(player.level().getServer()).getLifeOf(player.getUUID());
+
         for (Nest nest : NESTS) {
-            if (nest.getPatriarch().equals(player.getUUID()) || nest.getMatriarch().equals(player.getUUID()) ) return nest;
+            if (
+                    nest.getPatriarch().equals(player.getUUID()) && nest.getPatriarchLifeUUID().equals(lifeUUID) ||
+                    nest.getMatriarch().equals(player.getUUID()) && nest.getMatriarchLifeUUID().equals(lifeUUID)
+            ) return nest;
+        }
+
+        return null;
+    }
+
+    public Nest getNestByBlockPos(BlockPos pos) {
+
+        for (Nest nest : NESTS) {
+            if (nest.getPos().equals(pos)) return nest;
         }
 
         return null;
@@ -114,6 +130,7 @@ public class NestData extends SavedData {
 
         data.setStoredEggs(data.getStoredEggs() - 1);
         nest.setEggsCount(nest.getEggsCount() + 1);
+        PacketDistributor.sendToPlayer(player, new SyncStoredEggs(data.getStoredEggs(), player.getId()));
         setDirty();
     }
 

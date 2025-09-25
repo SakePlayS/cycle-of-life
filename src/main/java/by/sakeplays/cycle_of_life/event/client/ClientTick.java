@@ -17,17 +17,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class ClientTick {
 
-    @SubscribeEvent
-    public static void syncHitboxes(ClientTickEvent.Pre event) {
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-
-    }
 
     @SubscribeEvent
     public static void recordHistory(ClientTickEvent.Pre event) {
         Player player = Minecraft.getInstance().player;
-        if (player == null) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+
 
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
 

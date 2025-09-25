@@ -3,10 +3,9 @@ package by.sakeplays.cycle_of_life.event.client;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.screen.DinoSelectionScreen;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.COLEntities;
+import by.sakeplays.cycle_of_life.entity.ModEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -51,14 +50,18 @@ public class OnRenderPlayerEvent {
     private static DinosaurEntity getDinoToRender(Player player) {
         int selectedDino = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
 
-        if (selectedDino == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return COLEntities.PACHYCEPHALOSAURUS.get().create(player.level());
-        return COLEntities.DEINONYCHUS.get().create(player.level());
+        if (selectedDino == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return ModEntities.PACHYCEPHALOSAURUS.get().create(player.level());
+        if (selectedDino == Dinosaurs.PTERANODON.getID()) return ModEntities.PTERANODON.get().create(player.level());
+
+        return ModEntities.DEINONYCHUS.get().create(player.level());
 
     }
 
 
     @SubscribeEvent
     private static void onRender(RenderPlayerEvent.Pre event) {
+
+        if (event.getEntity().getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
 
         event.setCanceled(true);
 
@@ -87,7 +90,10 @@ public class OnRenderPlayerEvent {
         AbstractClientPlayer player = Minecraft.getInstance().player;
         Minecraft instance = Minecraft.getInstance();
 
-        if (instance.screen == null && player != null) {
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+
+
+        if (instance.screen == null) {
             if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) {
                 instance.setScreen(new DinoSelectionScreen(Component.literal("Select the dino")));
             }
@@ -99,15 +105,7 @@ public class OnRenderPlayerEvent {
         instance.options.bobView().set(false);
         instance.options.entityShadows().set(false);
 
-        instance.options.keyLeft.setKey(InputConstants.UNKNOWN);
-        instance.options.keyRight.setKey(InputConstants.UNKNOWN);
-        instance.options.keyUp.setKey(InputConstants.UNKNOWN);
-        instance.options.keyDown.setKey(InputConstants.UNKNOWN);
-        instance.options.keySprint.setKey(InputConstants.UNKNOWN);
-        instance.options.keyInventory.setKey(InputConstants.UNKNOWN);
-        instance.options.keySocialInteractions.setKey(InputConstants.UNKNOWN);
-        instance.options.keyAttack.setKey(InputConstants.UNKNOWN);
-        instance.options.keyUse.setKey(InputConstants.UNKNOWN);
-
     }
+
+
 }

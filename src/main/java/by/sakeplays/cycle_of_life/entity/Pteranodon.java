@@ -1,0 +1,83 @@
+package by.sakeplays.cycle_of_life.entity;
+
+import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.DinoData;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class Pteranodon extends DinosaurEntity implements GeoEntity {
+
+
+    public float oldBodyPitch = 0;
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+    protected static final RawAnimation IDLE = RawAnimation.begin().thenPlay("idle");
+    protected static final RawAnimation GLIDE = RawAnimation.begin().thenPlay("glide");
+    protected static final RawAnimation FLAP = RawAnimation.begin().thenPlay("flap");
+    protected static final RawAnimation FLAP_FAST = RawAnimation.begin().thenPlay("flap_fast");
+    protected static final RawAnimation AIRBRAKING = RawAnimation.begin().thenPlay("airbrake");
+
+
+    public Pteranodon(EntityType<? extends LivingEntity> entityType, Level level) {
+        super(entityType, level);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, this::movementController));
+
+    }
+
+    protected PlayState movementController(final AnimationState<Pteranodon> state) {
+
+
+
+        if (getPlayer() != null) {
+
+            Player player = getPlayer();
+            DinoData data = player.getData(DataAttachments.DINO_DATA);
+            float xzDelta = new Vec2((float)(player.getX() - player.xOld), (float)(player.getZ() - player.zOld)).length();
+
+            state.getController().transitionLength(5);
+
+
+            if (data.getFlightState() == 2) {
+                state.getController().transitionLength(8);
+
+                if (data.isAirbraking()) return state.setAndContinue(AIRBRAKING);
+
+                if ((xzDelta < 0.5f) || player.getY() - player.yOld > 0.15f || data.isSprinting()) return state.setAndContinue(FLAP_FAST);
+
+                if (player.getY() - player.yOld > 0f) return state.setAndContinue(FLAP);
+
+                return state.setAndContinue(GLIDE);
+            }
+            return state.setAndContinue(IDLE);
+
+        }
+
+        return state.setAndContinue(IDLE);
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
+    }
+
+    @Override
+    public double getTick(Object object) {
+        if (playerId != null && !isBody()) {
+            return level().getEntity(playerId).tickCount;
+        }
+
+        return GeoEntity.super.getTick(object);
+    }
+}
