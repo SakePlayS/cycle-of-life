@@ -2,6 +2,8 @@ package by.sakeplays.cycle_of_life.common.data;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.text.DecimalFormat;
+
 public class Position {
 
     private double x;
@@ -35,5 +37,16 @@ public class Position {
 
     public double z() {
         return z;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    public String toShortString() {
+        DecimalFormat format = new DecimalFormat("#.##");
+
+        return "(" + format.format(x) + ", " + format.format(y) + ", " + format.format(z) + ")";
     }
 }

@@ -19,7 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestDeinonychusDoubleSlash(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestDeinonychusDoubleSlash(int target, String hbType) implements CustomPacketPayload {
 
     public static final Type<RequestDeinonychusDoubleSlash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_deinonychus_double_slash"));
@@ -31,7 +31,7 @@ public record RequestDeinonychusDoubleSlash(int target, HitboxType hbType) imple
 
     public static final StreamCodec<FriendlyByteBuf, RequestDeinonychusDoubleSlash> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestDeinonychusDoubleSlash::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestDeinonychusDoubleSlash::hbType,
+            ByteBufCodecs.STRING_UTF8, RequestDeinonychusDoubleSlash::hbType,
             RequestDeinonychusDoubleSlash::new
     );
 
@@ -44,9 +44,8 @@ public record RequestDeinonychusDoubleSlash(int target, HitboxType hbType) imple
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
 
-            if (packet.hbType == HitboxType.NONE) {
-                return;
-            }
+            if (HitboxType.fromString(packet.hbType()) == HitboxType.NONE) return;
+
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 

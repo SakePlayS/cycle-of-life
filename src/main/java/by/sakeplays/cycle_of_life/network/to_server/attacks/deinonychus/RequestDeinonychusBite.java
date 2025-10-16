@@ -25,7 +25,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 
-public record RequestDeinonychusBite(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestDeinonychusBite(int target, String hbType) implements CustomPacketPayload {
 
     public static final Type<RequestDeinonychusBite> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_deinonychus_bite"));
@@ -37,7 +37,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
     
     public static final StreamCodec<FriendlyByteBuf, RequestDeinonychusBite> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestDeinonychusBite::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestDeinonychusBite::hbType,
+            ByteBufCodecs.STRING_UTF8, RequestDeinonychusBite::hbType,
             RequestDeinonychusBite::new
     );
 
@@ -51,10 +51,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
 
-            if (packet.hbType == HitboxType.NONE) {
-                return;
-            }
-
+            if (HitboxType.fromString(packet.hbType()) == HitboxType.NONE) return;
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 
@@ -65,7 +62,7 @@ public record RequestDeinonychusBite(int target, HitboxType hbType) implements C
 
                 if (!Util.isAttackValid(context.player(), targetPlayer)) return;
 
-                Util.attemptToHitPlayer(targetPlayer, 15f * damageModifier, 0.01f * damageModifier, true, HitboxType.fromString(packet.hbType().toString()));
+                Util.attemptToHitPlayer(targetPlayer, 15f * damageModifier, 0.01f * damageModifier, true, HitboxType.fromString(packet.hbType()));
             }
         });
     }

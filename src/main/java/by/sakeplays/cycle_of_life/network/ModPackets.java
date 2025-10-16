@@ -52,6 +52,10 @@ public class ModPackets {
         registrar.playToClient(SyncLayingEggs.TYPE, SyncLayingEggs.STREAM_CODEC, SyncLayingEggs::handleClient);
         registrar.playToClient(SyncGestationCountdown.TYPE, SyncGestationCountdown.STREAM_CODEC, SyncGestationCountdown::handleClient);
         registrar.playToClient(SyncStoredEggs.TYPE, SyncStoredEggs.STREAM_CODEC, SyncStoredEggs::handleClient);
+        registrar.playToClient(SyncHeldFoodType.TYPE, SyncHeldFoodType.STREAM_CODEC, SyncHeldFoodType::handleClient);
+        registrar.playToClient(SyncEatingTime.TYPE, SyncEatingTime.STREAM_CODEC, SyncEatingTime::handleClient);
+        registrar.playToClient(SyncDiets.TYPE, SyncDiets.STREAM_CODEC, SyncDiets::handleClient);
+        registrar.playToClient(SyncAdaptationsReset.TYPE, SyncAdaptationsReset.STREAM_CODEC, SyncAdaptationsReset::handleClient);
 
 
         registrar.playToServer(RequestSelectDinosaur.TYPE, RequestSelectDinosaur.STREAM_CODEC, RequestSelectDinosaur::handleServer);
@@ -101,7 +105,9 @@ public class ModPackets {
         registrar.playBidirectional(SyncCharging.TYPE, SyncCharging.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncCharging::handleClient, SyncCharging::handleServer));
         registrar.playBidirectional(SyncFlightState.TYPE, SyncFlightState.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncFlightState::handleClient, SyncFlightState::handleServer));
         registrar.playBidirectional(SyncAirbraking.TYPE, SyncAirbraking.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncAirbraking::handleClient, SyncAirbraking::handleServer));
-
+        registrar.playBidirectional(SendJumpAnimFlag.TYPE, SendJumpAnimFlag.STREAM_CODEC, new DirectionalPayloadHandler<>(SendJumpAnimFlag::handleClient, SendJumpAnimFlag::handleServer));
+        registrar.playBidirectional(SyncJumpWindup.TYPE, SyncJumpWindup.STREAM_CODEC, new DirectionalPayloadHandler<>(SyncJumpWindup::handleClient, SyncJumpWindup::handleServer));
+        registrar.playBidirectional(RequestFoodSwallow.TYPE, RequestFoodSwallow.STREAM_CODEC, new DirectionalPayloadHandler<>(RequestFoodSwallow::handleClient, RequestFoodSwallow::handleServer));
 
     }
 

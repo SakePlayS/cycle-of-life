@@ -36,7 +36,7 @@ public class CameraEvent {
 
         if (false) return;
 
-        if (player.getData(DataAttachments.DINO_DATA).getFlightState() == 2) {
+        if (player.getData(DataAttachments.DINO_DATA).isFlying()) {
 
             if (lastProcessedTick != player.tickCount) {
                 lastProcessedTick = player.tickCount;

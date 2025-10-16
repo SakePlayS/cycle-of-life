@@ -80,7 +80,7 @@ public class SyncHandler {
                     new SyncBuildMode(player.getId(), player.getData(DataAttachments.DINO_DATA).isInBuildMode()));
 
             PacketDistributor.sendToAllPlayers(
-                    new SyncFlightState(player.getData(DataAttachments.DINO_DATA).getFlightState(), player.getId()));
+                    new SyncFlightState(player.getData(DataAttachments.DINO_DATA).isFlying(), player.getId()));
         }
     }
 

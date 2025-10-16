@@ -1,19 +1,29 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
+import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.common.data.HeldFoodData;
+import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.entity.ModEntities;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
-import by.sakeplays.cycle_of_life.entity.MeatChunkEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -39,12 +49,11 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
     public void preRender(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        animatable.scale = Util.calculateScale(animatable, 0.08f, 0.8f);
+        animatable.scale = Util.calculateScale(animatable);
 
         poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
 
-
-        boolean isMale = !animatable.isBody() ? animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale() : animatable.isMale();
+        boolean isMale = !animatable.isCorpse() ? animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale() : animatable.isMale();
         model.getBone("male_display1").get().setHidden(false);
         model.getBone("male_display2").get().setHidden(false);
         model.getBone("male_display3").get().setHidden(false);
@@ -53,7 +62,6 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
         model.getBone("male_display1").get().setHidden(!isMale);
         model.getBone("male_display2").get().setHidden(!isMale);
         model.getBone("male_display3").get().setHidden(!isMale);
-
     }
 
 
@@ -61,7 +69,7 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
     public void postRender(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        if (animatable.isBody()) return;
+        if (animatable.isCorpse()) return;
 
         GeoBone head = model.getBone("head_center").get();
         GeoBone body2 = model.getBone("body2_center").get();
@@ -72,39 +80,42 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
         Player player = animatable.getPlayer();
 
         ClientHitboxData.updateHitboxes(head, body1, body2, tail1, tail2, player, partialTick);
+    }
 
+    @Override
+    public void renderRecursively(PoseStack poseStack, Deinonychus animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-
-        if (true) {
-            GeoBone mouthBone = this.getGeoModel().getAnimationProcessor().getBone("grab_handler");
-            if (mouthBone != null) {
-                poseStack.pushPose();
-                Entity meatChunk = new MeatChunkEntity(ModEntities.MEAT_CHUNK.get(), player.level());
-
-                this.moveToBone(poseStack, mouthBone);
-                float scale = (float) Math.cbrt(player.getData(DataAttachments.DINO_DATA).getCarriedMeatSize());
-
-                poseStack.scale(scale, scale, scale);
-             //   Minecraft.getInstance().getEntityRenderDispatcher().render
-             //           (meatChunk, mouthBone.getWorldPosition().x() / scale, mouthBone.getWorldPosition().y() / scale,
-             //                  mouthBone.getWorldPosition().z() / scale, 0, partialTick, poseStack, bufferSource, packedLight);
-
-                poseStack.popPose();
+        if (!animatable.isCorpse() && animatable.getPlayer() != null && animatable.getPlayer().getData(DataAttachments.HELD_FOOD_DATA).getHeldFood() != DinosaurFood.FOOD_NONE) {
+            GeoBone mouthBone = this.getGeoModel().getAnimationProcessor().getBone("item_display");
+            if (mouthBone == bone) {
+                Util.renderItemStack(poseStack, animatable.level(), packedLight, bufferSource,
+                        animatable.getPlayer().getData(DataAttachments.HELD_FOOD_DATA).getHeldFood().getItemForTexture(),
+                        -0.1f, 1.8, -1.5f,
+                        1.3f, 1.3f, 3,
+                        90f, 0f, -30f);
             }
         }
     }
-
 
     @Override
     protected void renderNameTag(Deinonychus entity, Component displayName, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {
     }
 
 
-    private void moveToBone(PoseStack poseStack, GeoBone bone) {
-        poseStack.translate(bone.getPosX() / 16f, bone.getPosY() / 16f, bone.getPosZ() / 16f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(bone.getRotX()));
-        poseStack.mulPose(Axis.YP.rotationDegrees(bone.getRotY()));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(bone.getRotZ()));
-        poseStack.scale(bone.getScaleX(), bone.getScaleY(), bone.getScaleZ());
+    @Override
+    public void renderFinal(PoseStack poseStack, Deinonychus animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
+
+        if (animatable.isCorpse() || animatable.getPlayer() == null || animatable.isForScreenRendering) return;
+
+        GeoBone tail_root = model.getBone("tail_root").get();
+
+        animatable.tailRootPos = new Position(
+                animatable.getPlayer().getX() + tail_root.getWorldPosition().x,
+                animatable.getPlayer().getY() + tail_root.getWorldPosition().y,
+                animatable.getPlayer().getZ() + tail_root.getWorldPosition().z
+        );
     }
+
 }

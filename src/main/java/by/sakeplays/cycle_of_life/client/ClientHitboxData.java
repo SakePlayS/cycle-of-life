@@ -2,8 +2,10 @@ package by.sakeplays.cycle_of_life.client;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
 import by.sakeplays.cycle_of_life.util.AssociatedAABB;
+import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -19,10 +21,10 @@ public class ClientHitboxData {
     public static ArrayList<AssociatedAABB> HITBOXES = new ArrayList<>();
 
 
-    public static Position getPos(AssociatedAABB hb, boolean min) {
+    public static Position getPos(AssociatedAABB hb, boolean getCenter) {
 
         double x = (hb.minX + hb.maxX) / 2;
-        double y = min ? hb.minY : (hb.minY + hb.maxY) / 2;
+        double y = !getCenter ? hb.minY : (hb.minY + hb.maxY) / 2;
         double z = (hb.minZ + hb.maxZ) / 2;
 
         return new Position(x, y, z);
@@ -31,16 +33,17 @@ public class ClientHitboxData {
 
     public static void updateHitboxes(GeoBone head, GeoBone body1, GeoBone body2, GeoBone tail1, GeoBone tail2,
                                       Player player, float partialTick) {
-        float growth = player.getData(DataAttachments.DINO_DATA).getGrowth();
+        float scale = Util.getDino(player).getGrowthCurve().calculate(player.getData(DataAttachments.DINO_DATA).getGrowth(), GrowthCurveStat.SCALE);
 
         ArrayList<AssociatedAABB> list = new ArrayList<>(5);
-        AssociatedAABB headAABB = createAABB(head, player, growth, partialTick);
-        AssociatedAABB body1AABB = createAABB(body1, player, growth, partialTick);
-        AssociatedAABB body2AABB = createAABB(body2, player, growth, partialTick);
-        AssociatedAABB tail1AABB = createAABB(tail1, player, growth, partialTick);
-        AssociatedAABB tail2AABB = createAABB(tail2, player, growth, partialTick);
+        AssociatedAABB headAABB = createAABB(head, player, scale, partialTick);
+        AssociatedAABB body1AABB = createAABB(body1, player, scale, partialTick);
+        AssociatedAABB body2AABB = createAABB(body2, player, scale, partialTick);
+        AssociatedAABB tail1AABB = createAABB(tail1, player, scale, partialTick);
+        AssociatedAABB tail2AABB = createAABB(tail2, player, scale, partialTick);
 
         headAABB.setType(HitboxType.HEAD);
+        body1AABB.setType(HitboxType.BODY1);
         body2AABB.setType(HitboxType.BODY2);
         tail1AABB.setType(HitboxType.TAIL1);
         tail2AABB.setType(HitboxType.TAIL2);
@@ -69,7 +72,7 @@ public class ClientHitboxData {
         return list;
     }
 
-    private static AssociatedAABB createAABB(GeoBone bone, Player player, float growth, float partialTick) {
+    private static AssociatedAABB createAABB(GeoBone bone, Player player, float scale, float partialTick) {
 
         GeoCube cube = bone.getCubes().getFirst();
         Position boneWorldPos = new Position(
@@ -77,9 +80,9 @@ public class ClientHitboxData {
                 player.getPosition(partialTick).y + bone.getWorldPosition().y,
                 player.getPosition(partialTick).z + bone.getWorldPosition().z);
 
-        double xOffset = cube.size().x / 32 * Math.max(0.07, growth);
-        double yOffset = cube.size().y / 32 * Math.max(0.07, growth);
-        double zOffset = cube.size().z / 32 * Math.max(0.07, growth);
+        double xOffset = cube.size().x / 32 * Math.max(0.07, scale);
+        double yOffset = cube.size().y / 32 * Math.max(0.07, scale);
+        double zOffset = cube.size().z / 32 * Math.max(0.07, scale);
 
         return new AssociatedAABB(
                 (boneWorldPos.x() - xOffset),

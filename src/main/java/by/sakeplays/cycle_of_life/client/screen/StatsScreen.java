@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class StatsScreen extends Screen {
     private Button ADAPTATIONS;
     private Button NEST;
     private Button STATUS;
+    private Button DIET;
 
     public StatsScreen(Component title) {
         super(title);
@@ -42,6 +44,7 @@ public class StatsScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         List<Pair<String, Integer>> stats = new ArrayList<>();
+        DecimalFormat format = new DecimalFormat("##.##");
 
         Player player = Minecraft.getInstance().player;
 
@@ -53,9 +56,9 @@ public class StatsScreen extends Screen {
         String onlineStatus = " (Online)";
 
 
-        stats.add(Pair.of("Weight: " + data.getWeight() + " kg", Util.rgbaToInt(150, 255, 255, 1)));
+        stats.add(Pair.of("Weight: " + format.format(data.getWeight()) + " kg", Util.rgbaToInt(150, 255, 255, 1)));
         stats.add(Pair.of("Growth: " + (int)(data.getGrowth() * 100) + "%", Util.rgbaToInt(150, 255, 255, 1)));
-        stats.add(Pair.of("Max speed: " + maxSpeed + " b/s", Util.rgbaToInt(150, 255, 255, 1)));
+        stats.add(Pair.of("Max speed: " + format.format(maxSpeed * 20) + " b/s", Util.rgbaToInt(150, 255, 255, 1)));
 
         if (pairData.isPaired()) {
             if (player.level().getPlayerByUUID(pairData.getMateUUID()) == null) onlineStatus = " (Offline)";
@@ -88,9 +91,15 @@ public class StatsScreen extends Screen {
             Minecraft.getInstance().setScreen(new StatusScreen(Component.literal("Status")));
         }).size(120, 18).pos(width/2 - 60, height/2 + 84).build();
 
+        DIET = new Button.Builder(Component.literal("Diet"), button -> {
+            Minecraft.getInstance().setScreen(new DietScreen(Component.literal("Diet")));
+        }).size(120, 18).pos(width/2 - 60, height/2 + 66).build();
+
         addRenderableWidget(ADAPTATIONS);
         addRenderableWidget(NEST);
         addRenderableWidget(STATUS);
+        addRenderableWidget(DIET);
+
     }
 
     @Override

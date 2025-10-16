@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "cycle_of_life:block/item/crimsonweed_item"
+  }
+}

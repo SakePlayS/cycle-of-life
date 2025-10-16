@@ -1611,7 +1611,7 @@
 			}
 		},
 		"idle": {
-			"loop": true,
+			"animation_length": 1.25,
 			"bones": {
 				"root": {
 					"position": {
@@ -2525,7 +2525,7 @@
 				},
 				"head": {
 					"rotation": {
-						"vector": [25, 0, 0]
+						"vector": [45, 0, 0]
 					}
 				},
 				"right_leg": {
@@ -2898,6 +2898,11 @@
 							},
 							"lerp_mode": "catmullrom"
 						}
+					}
+				},
+				"root": {
+					"position": {
+						"vector": [0, 13, 0]
 					}
 				}
 			}

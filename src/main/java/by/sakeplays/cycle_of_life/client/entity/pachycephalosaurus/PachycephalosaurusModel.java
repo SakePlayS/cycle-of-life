@@ -2,16 +2,18 @@ package by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.Position;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 
-import java.util.ArrayList;
 
 public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
     @Override
@@ -34,10 +36,12 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
 
-        if (!animatable.isBody()) {
+        if (!animatable.isCorpse()) {
+
+            // TODO: migrate this to a controller
 
             if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) animatable.triggerAnim("attack", "bash");
-            if (animatable.getPlayer().getData(DataAttachments.ATTACK_TURNAROUND)) animatable.triggerAnim("attack", "upper_bash");
+            if (animatable.getPlayer().getData(DataAttachments.ALT_ATTACK)) animatable.triggerAnim("attack", "upper_bash");
 
             if (animatable.getPlayer().getData(DataAttachments.RESTING_STATE) == 1)
                 animatable.triggerAnim("attack", "rest_in");
@@ -52,7 +56,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
 
         handleBodyRotation(this, animatable, partialTick);
         handleNeckRotation(this, animatable, partialTick);
-        handleTailPhysics(this, animatable, partialTick);
+        handleTailPhysics(animatable, partialTick);
 
     }
 
@@ -63,7 +67,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
         GeoBone center = getAnimationProcessor().getBone("root");
 
 
-        if (animatable.playerId != null && !animatable.isBody()) {
+        if (animatable.playerId != null && !animatable.isCorpse()) {
             playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
         }
 
@@ -86,7 +90,7 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
         float targetYaw = 0;
         float rot = animatable.headRot;
 
-        if (animatable.playerId != null && !animatable.isBody()) {
+        if (animatable.playerId != null && !animatable.isCorpse()) {
             playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
             playerYaw = animatable.getPlayer().getYRot();
             additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
@@ -99,72 +103,132 @@ public class PachycephalosaurusModel extends GeoModel<Pachycephalosaurus> {
                 Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
                 -0.35f, 0.35f);
 
-        rot += (desiredHeadRot - rot) * 0.13f / ((float) 60 / Math.min(60, Minecraft.getInstance().getFps() + 1));
+        rot += (desiredHeadRot - rot) * 0.13f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 
 
         neck_tilt.setRotY(rot * 1.15f);
         head_tilt.setRotY(rot * 1.5f);
 
-
         animatable.headRot = rot;
-
     }
 
 
-    private void handleTailPhysics(GeoModel<Pachycephalosaurus> model, Pachycephalosaurus animatable, float partialTick) {
+    private void handleTailPhysics(Pachycephalosaurus animatable, float partialTick) {
 
         GeoBone tail_1_rot = getAnimationProcessor().getBone("tail_1_rot");
         GeoBone tail_2_rot = getAnimationProcessor().getBone("tail_2_rot");
         GeoBone tail_3_rot = getAnimationProcessor().getBone("tail_3_rot");
-        GeoBone leaningHandler = getAnimationProcessor().getBone("leaning_handler");
 
-        float currentRotY1 = 0;
-        float currentRotY2 = 0;
-        float currentRotY3 = 0;
+        if (animatable.getPlayer() == null || animatable.isForScreenRendering || animatable.isCorpse()) {
+            tail_1_rot.setRotY(0);
+            tail_1_rot.setRotX(0);
 
-        float currentRotX = 0;
-        float speed = 1;
+            tail_2_rot.setRotY(0);
+            tail_2_rot.setRotX(0);
 
-        if (animatable.playerId != null && !animatable.isBody()) {
+            tail_3_rot.setRotY(0);
+            tail_3_rot.setRotX(0);
+            return;
+        }
 
-            speed += animatable.getPlayer().getData(DataAttachments.SPEED);
+        if (animatable.lastUpdatedTick != animatable.getPlayer().tickCount) {
+            animatable.lastUpdatedTick = animatable.getPlayer().tickCount;
 
-            ArrayList<Float> yHistory = animatable.getPlayer().getData(DataAttachments.Y_HISTORY);
-            ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
+            GeoBone tail_root = getAnimationProcessor().getBone("tail_root");
 
-            if (yHistory.size() < 6 || turnDegreeHistory.size() < 7) return;
+            animatable.recordTailPosHistory(6, animatable.tailRootPos);
 
-            float tailRotX = 35 * Util.calculateTailXRot(yHistory);
-            float tailRotY1 = (20 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 0, 2)) / speed;
+            if (animatable.tailPosHistory.size() < 6) return;
 
-            float tailRotY2 = (30 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2, 4)) / speed;
-            float tailRotY3 = (40 * Util.calculateTailYRot(turnDegreeHistory,
-                    animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 4, 6)) / speed;
 
-            currentRotY1 = Mth.lerp(partialTick, animatable.prevTailRotY1, tailRotY1);
-            currentRotY2 = Mth.lerp(partialTick, animatable.prevTailRotY2, tailRotY2);
-            currentRotY3 = Mth.lerp(partialTick, animatable.prevTailRotY3, tailRotY3);
+            float dxz = new Vec2(
+                    (float) (Util.getFromEnd(animatable.tailPosHistory, 0).x() - Util.getFromEnd(animatable.tailPosHistory, 1).x()),
+                    (float) (Util.getFromEnd(animatable.tailPosHistory, 0).z() - Util.getFromEnd(animatable.tailPosHistory, 1).z())).length() + 0.2f;
+            float dy = (float) ((Util.getFromEnd(animatable.tailPosHistory, 0).y() - Util.getFromEnd(animatable.tailPosHistory, 1).y()));
 
-            currentRotX = Mth.lerp(partialTick, animatable.prevTailRotX, tailRotX);
+
+            float desiredTailRotX = (float) Math.atan2(dy, dxz);
+            animatable.tailRotX = animatable.tailRotX + ((desiredTailRotX - animatable.tailRotX) * 0.8f);
+            animatable.recordTailRotXHistory(15);
+
+            Position currPos = Util.getFromEnd(animatable.tailPosHistory, 0);
+            Position prevPos = Util.getFromEnd(animatable.tailPosHistory, 2);
+
+            float f = (float) Math.atan2(currPos.z() - prevPos.z(), currPos.x() - prevPos.x());
+
+            if (new Vec2((float) (currPos.z() - prevPos.z()), (float) (currPos.x() - prevPos.x())).length() > 0.1f) {
+                float playerRot = animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
+                float targetYaw = (float) Math.atan2(Math.sin(f - playerRot), Math.cos(f - playerRot)) - 1.570796f;
+                targetYaw = (float) Math.atan2(Math.sin(targetYaw), Math.cos(targetYaw));
+                animatable.tailRotY += (targetYaw - animatable.tailRotY) * 0.4F;
+                animatable.tailRotY *= 0.8F;
+
+                float bodyYawChange = animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION) - animatable.prevBodyRot;
+                bodyYawChange = (float)Math.atan2(Math.sin(bodyYawChange), Math.cos(bodyYawChange));
+                animatable.prevBodyRot = animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
+
+                animatable.tailRotY -= bodyYawChange * 0.8F;
+
+            }
+            animatable.recordTailRotYHistory(15);
+
+            animatable.oldTailRootPos = new Position(
+                    animatable.getPlayer().getPosition(partialTick).x + (tail_root.getWorldPosition()).x,
+                    animatable.getPlayer().getPosition(partialTick).y + (tail_root.getWorldPosition()).y,
+                    animatable.getPlayer().getPosition(partialTick).z + (tail_root.getWorldPosition()).z);
 
         }
 
-        leaningHandler.setRotZ(currentRotY1 / -1.75f);
+        if (animatable.tailRotXHistory.size() < 15 || animatable.tailRotYHistory.size() < 15) return;
 
-        tail_1_rot.setRotX(currentRotX);
-        tail_2_rot.setRotX(currentRotX);
-        tail_3_rot.setRotX(currentRotX);
+        tail_1_rot.setRotX(0.5f * Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotXHistory, 1),
+                        Util.getFromEnd(animatable.tailRotXHistory, 0)
+                )
+        );
 
-        tail_1_rot.setRotY(currentRotY1);
-        tail_2_rot.setRotY(currentRotY2);
-        tail_3_rot.setRotY(currentRotY3);
+        tail_2_rot.setRotX(0.7f * Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotXHistory, 3),
+                        Util.getFromEnd(animatable.tailRotXHistory, 2)
+                )
+        );
 
-        animatable.prevTailRotX = currentRotX;
-        animatable.prevTailRotY1 = currentRotY1;
-        animatable.prevTailRotY2 = currentRotY2;
-        animatable.prevTailRotY3 = currentRotY3;
+        tail_3_rot.setRotX( Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotXHistory, 5),
+                        Util.getFromEnd(animatable.tailRotXHistory, 4)
+                )
+        );
 
+
+
+        tail_1_rot.setRotY(0.4f * -Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotYHistory, 1),
+                        Util.getFromEnd(animatable.tailRotYHistory, 0)
+                )
+        );
+
+        tail_2_rot.setRotY(0.6f * -Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotYHistory, 3),
+                        Util.getFromEnd(animatable.tailRotYHistory, 2)
+                )
+        );
+
+        tail_3_rot.setRotY(0.8f * -Mth.lerp
+                (
+                        partialTick,
+                        Util.getFromEnd(animatable.tailRotYHistory, 5),
+                        Util.getFromEnd(animatable.tailRotYHistory, 4)
+                )
+        );
     }
 }

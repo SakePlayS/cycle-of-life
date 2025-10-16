@@ -5,10 +5,7 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.PairData;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
-import by.sakeplays.cycle_of_life.network.to_client.SyncBloodLevel;
-import by.sakeplays.cycle_of_life.network.to_client.SyncGestationCountdown;
-import by.sakeplays.cycle_of_life.network.to_client.SyncIsMale;
-import by.sakeplays.cycle_of_life.network.to_client.SyncWaterLevel;
+import by.sakeplays.cycle_of_life.network.to_client.*;
 import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -24,7 +21,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import oshi.util.tuples.Pair;
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class ModCommands {
@@ -68,13 +64,133 @@ public class ModCommands {
                                                 )
                                         )
                                 )
+                        .then(Commands.literal("food")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
+                                                .executes(ctx -> {
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                    float value = FloatArgumentType.getFloat(ctx, "value");
+                                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+                                                    data.setFoodLevel(value);
+                                                    PacketDistributor.sendToAllPlayers(new SyncFoodLevel(target.getId(), value));
+                                                    ctx.getSource().sendSuccess(() -> Component.literal("Set water of " +
+                                                            target.getName().getString() + " to " + value), true);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("carbs")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
+                                                .executes(ctx -> {
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                    float value = FloatArgumentType.getFloat(ctx, "value");
+                                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                                    data.setCarbs(value);
+
+                                                    ctx.getSource().sendSuccess(() -> Component.literal("Set carbs of " +
+                                                            target.getName().getString() + " to " + value), true);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("lipids")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
+                                                .executes(ctx -> {
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                    float value = FloatArgumentType.getFloat(ctx, "value");
+                                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                                    data.setLipids(value);
+
+                                                    ctx.getSource().sendSuccess(() -> Component.literal("Set lipids of " +
+                                                            target.getName().getString() + " to " + value), true);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("diets")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("carbs", FloatArgumentType.floatArg(0f, 1f))
+                                                .then(Commands.argument("proteins", FloatArgumentType.floatArg(0f, 1f))
+                                                        .then(Commands.argument("lipids", FloatArgumentType.floatArg(0f, 1f))
+                                                                .then(Commands.argument("vitamins", FloatArgumentType.floatArg(0f, 1f))
+                                                                        .executes(ctx -> {
+                                                                            ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                                            float carbs = FloatArgumentType.getFloat(ctx, "carbs");
+                                                                            float proteins = FloatArgumentType.getFloat(ctx, "proteins");
+                                                                            float lipids = FloatArgumentType.getFloat(ctx, "lipids");
+                                                                            float vitamins = FloatArgumentType.getFloat(ctx, "vitamins");
+
+                                                                            DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                                                            data.setProteins(proteins);
+                                                                            data.setCarbs(carbs);
+                                                                            data.setLipids(lipids);
+                                                                            data.setVitamins(vitamins);
+
+                                                                            ctx.getSource().sendSuccess(() -> Component.literal(
+
+                                                                                    "Set carbs of " + target.getName().getString() + " to " + carbs + ", " +
+                                                                                            "proteins to " + proteins + ", " +
+                                                                                            "lipids to " + lipids + ", " +
+                                                                                            "vitamins to " + vitamins
+                                                                                    ),
+                                                                                    true);
+                                                                            return Command.SINGLE_SUCCESS;
+                                                                        })
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("proteins")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
+                                                .executes(ctx -> {
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                    float value = FloatArgumentType.getFloat(ctx, "value");
+                                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                                    data.setProteins(value);
+
+                                                    ctx.getSource().sendSuccess(() -> Component.literal("Set proteins of " +
+                                                            target.getName().getString() + " to " + value), true);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("vitamins")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
+                                                .executes(ctx -> {
+                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                                    float value = FloatArgumentType.getFloat(ctx, "value");
+                                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                                    data.setVitamins(value);
+
+                                                    ctx.getSource().sendSuccess(() -> Component.literal("Set vitamins of " +
+                                                            target.getName().getString() + " to " + value), true);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
                         .then(Commands.literal("stamina")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))
                                                 .executes(ctx -> {
                                                     ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
                                                     float value = FloatArgumentType.getFloat(ctx, "value");
-                                                    float maxStam = Util.getStaminaUpgraded(target);
+                                                    float maxStam = Util.getStaminaPool(target);
                                                     float stam = maxStam * value;
 
                                                     DinoData data = target.getData(DataAttachments.DINO_DATA);
@@ -176,6 +292,30 @@ public class ModCommands {
                                 )
                         )
                 )
+                .then(Commands.literal("heal")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(ctx -> {
+                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                    DinoData data = target.getData(DataAttachments.DINO_DATA);
+
+                                    data.setFoodLevel(1);
+                                    data.setHealth(data.getWeight());
+                                    data.setBleed(0);
+                                    data.setBloodLevel(data.getWeight());
+                                    data.setWaterLevel(1);
+                                    data.setStamina(Util.getDino(target).getStaminaPool());
+
+                                    data.setLipids(1);
+                                    data.setCarbs(1);
+                                    data.setProteins(1);
+                                    data.setVitamins(1);
+
+
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Healed " + target.getName().getString()), true);
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                )
                 .then(Commands.literal("reset")
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(ctx -> {
@@ -187,7 +327,8 @@ public class ModCommands {
                                     PacketDistributor.sendToAllPlayers(new SyncFullReset(target.getId()));
                                     PacketDistributor.sendToAllPlayers(new SyncPairingReset(target.getId()));
 
-                                    ctx.getSource().sendSuccess(() -> Component.literal("Reset dino data for " + target.getName().getString()), false);
+
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Reset dino data for " + target.getName().getString()), true);
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )

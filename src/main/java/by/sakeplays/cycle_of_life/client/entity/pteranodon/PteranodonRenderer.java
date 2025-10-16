@@ -1,7 +1,6 @@
 package by.sakeplays.cycle_of_life.client.entity.pteranodon;
 
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
-import by.sakeplays.cycle_of_life.client.entity.deinonychus.*;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Pteranodon;
 import by.sakeplays.cycle_of_life.util.Util;
@@ -32,11 +31,11 @@ public class PteranodonRenderer extends GeoEntityRenderer<Pteranodon>  {
     public void preRender(PoseStack poseStack, Pteranodon animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        animatable.scale = Util.calculateScale(animatable, 0.08f, 0.8f);
+        animatable.scale = Util.calculateScale(animatable);
 
         poseStack.scale(animatable.scale, animatable.scale, animatable.scale);
 
-        boolean isMale = !animatable.isBody() ? animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale() : animatable.isMale();
+        boolean isMale = !animatable.isCorpse() ? animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale() : animatable.isMale();
 
 
     }
@@ -46,7 +45,7 @@ public class PteranodonRenderer extends GeoEntityRenderer<Pteranodon>  {
     public void postRender(PoseStack poseStack, Pteranodon animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         super.postRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
 
-        if (animatable.isBody()) return;
+        if (animatable.isCorpse()) return;
 
         GeoBone head = model.getBone("head_center").get();
         GeoBone body2 = model.getBone("body2_center").get();

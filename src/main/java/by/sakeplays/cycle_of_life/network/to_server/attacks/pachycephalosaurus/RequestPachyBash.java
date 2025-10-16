@@ -5,7 +5,6 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
-import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncKnockdownTime;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_client.ApplyKnockback;
@@ -23,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestPachyBash(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestPachyBash(int target, String hbType) implements CustomPacketPayload {
 
     public static final Type<RequestPachyBash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_pachy_bash"));
@@ -35,7 +34,7 @@ public record RequestPachyBash(int target, HitboxType hbType) implements CustomP
 
     public static final StreamCodec<FriendlyByteBuf, RequestPachyBash> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestPachyBash::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestPachyBash::hbType,
+            ByteBufCodecs.STRING_UTF8, RequestPachyBash::hbType,
             RequestPachyBash::new
     );
 
@@ -50,9 +49,8 @@ public record RequestPachyBash(int target, HitboxType hbType) implements CustomP
             dataSource.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
 
-            if (packet.hbType == HitboxType.NONE) {
-                return;
-            }
+            if (HitboxType.fromString(packet.hbType()) == HitboxType.NONE) return;
+
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 

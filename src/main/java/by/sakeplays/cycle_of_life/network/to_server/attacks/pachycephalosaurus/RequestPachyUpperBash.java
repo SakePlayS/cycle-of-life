@@ -5,7 +5,6 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
-import by.sakeplays.cycle_of_life.network.ModCodecs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncKnockdownTime;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_client.ApplyKnockback;
@@ -23,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestPachyUpperBash(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestPachyUpperBash(int target, String hbType) implements CustomPacketPayload {
 
     public static final Type<RequestPachyUpperBash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_pachy_upper_bash"));
@@ -35,7 +34,7 @@ public record RequestPachyUpperBash(int target, HitboxType hbType) implements Cu
 
     public static final StreamCodec<FriendlyByteBuf, RequestPachyUpperBash> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestPachyUpperBash::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestPachyUpperBash::hbType,
+            ByteBufCodecs.STRING_UTF8, RequestPachyUpperBash::hbType,
             RequestPachyUpperBash::new
     );
 
@@ -50,9 +49,8 @@ public record RequestPachyUpperBash(int target, HitboxType hbType) implements Cu
             dataSource.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
 
-            if (packet.hbType == HitboxType.NONE) {
-                return;
-            }
+            if (HitboxType.fromString(packet.hbType()) == HitboxType.NONE) return;
+
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 

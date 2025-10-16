@@ -23,9 +23,6 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private float bleed;
     private float weight;
 
-    private float carriedMeatSize;
-    private int carriedMeatType;
-
     private boolean isSprinting;
     private boolean isMoving;
     private boolean isMale;
@@ -33,17 +30,22 @@ public class DinoData implements INBTSerializable<CompoundTag> {
     private boolean isInitialized;
     private boolean isPaired;
     private boolean isDrinking;
-    private boolean carryingItem;
     private boolean isCharging;
     private boolean isAirbraking;
+    private boolean isLatched;
+    private boolean isFlying;
 
     private boolean isInBuildMode;
     private boolean buildModeUpdated;
     private boolean isLayingEggs;
 
+    private float carbs;
+    private float lipids;
+    private float proteins;
+    private float vitamins;
+
     private UUID lifeUUID;
 
-    private int flightState;
 
     public DinoData(int selectedDino, float stamina, float foodLevel, float waterLevel,
                     float turnDegree, float health, boolean isSprinting, boolean isMoving, float acceleration,
@@ -74,16 +76,19 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         pairingWith = UUID.randomUUID();
         isPaired = false;
         isDrinking = false;
-        carryingItem = false;
         isLayingEggs = false;
 
-        this.carriedMeatType = 0;
-        this.carriedMeatSize = 0.7f;
 
         lifeUUID = UUID.randomUUID();
 
-        flightState = 0;
         this.isAirbraking = false;
+        this.isLatched = false;
+        this.isFlying = false;
+
+        carbs = 0.475f + (float)Math.random() * 0.05f;
+        proteins = 0.475f + (float)Math.random() * 0.05f;
+        lipids = 0.475f + (float)Math.random() * 0.05f;
+        vitamins = 0.475f + (float)Math.random() * 0.05f;
 
     }
 
@@ -110,7 +115,8 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putUUID("LifeUUID", lifeUUID);
         nbt.putBoolean("BuildMode", isInBuildMode);
         nbt.putBoolean("BuildModeUpdated", buildModeUpdated);
-        nbt.putInt("FlightState", flightState);
+        nbt.putBoolean("IsLatched", isLatched);
+        nbt.putBoolean("IsFlying", isFlying);
 
         return nbt;
     }
@@ -137,7 +143,9 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.lifeUUID = nbt.getUUID("LifeUUID");
         this.isInBuildMode = nbt.getBoolean("BuildMode");
         this.buildModeUpdated = nbt.getBoolean("BuildModeUpdated");
-        this.flightState = nbt.getInt("FlightState");
+        this.isLatched = nbt.getBoolean("IsLatched");
+        this.isFlying = nbt.getBoolean("IsFlying");
+
     }
 
     public void setSelectedDinosaur(int selectedDinosaur) {
@@ -278,9 +286,12 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         setPairingWith(UUID.randomUUID());
         setPaired(false);
         isMale = Math.random() < 0.5;
-        setFlightState(0);
+        setFlying(false);
 
-
+        carbs = 0.475f + (float)Math.random() * 0.05f;
+        proteins = 0.475f + (float)Math.random() * 0.05f;
+        lipids = 0.475f + (float)Math.random() * 0.05f;
+        vitamins = 0.475f + (float)Math.random() * 0.05f;
     }
 
     public boolean isMale() {
@@ -324,30 +335,6 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         isDrinking = drinking;
     }
 
-    public boolean isCarryingItem() {
-        return carryingItem;
-    }
-
-    public void setCarryingItem(boolean carryingItem) {
-        this.carryingItem = carryingItem;
-    }
-
-    public float getCarriedMeatSize() {
-        return carriedMeatSize;
-    }
-
-    public void setCarriedMeatSize(float carriedMeatSize) {
-        this.carriedMeatSize = carriedMeatSize;
-    }
-
-    public int getCarriedMeatType() {
-        return carriedMeatType;
-    }
-
-    public void setCarriedMeatType(int carriedMeatType) {
-        this.carriedMeatType = carriedMeatType;
-    }
-
     public boolean isCharging() {
         return isCharging;
     }
@@ -380,20 +367,60 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         isLayingEggs = layingEggs;
     }
 
-    public int getFlightState() {
-        return flightState;
-    }
-
-    public void setFlightState(int flightState) {
-        this.flightState = flightState;
-    }
-
     public boolean isAirbraking() {
         return isAirbraking;
     }
 
     public void setAirbraking(boolean airbraking) {
         isAirbraking = airbraking;
+    }
+
+    public boolean isLatched() {
+        return isLatched;
+    }
+
+    public void setLatched(boolean latched) {
+        isLatched = latched;
+    }
+
+    public boolean isFlying() {
+        return isFlying;
+    }
+
+    public void setFlying(boolean flying) {
+        isFlying = flying;
+    }
+
+    public float getCarbs() {
+        return carbs;
+    }
+
+    public void setCarbs(float carbs) {
+        this.carbs = carbs;
+    }
+
+    public float getLipids() {
+        return lipids;
+    }
+
+    public void setLipids(float lipids) {
+        this.lipids = lipids;
+    }
+
+    public float getProteins() {
+        return proteins;
+    }
+
+    public void setProteins(float proteins) {
+        this.proteins = proteins;
+    }
+
+    public float getVitamins() {
+        return vitamins;
+    }
+
+    public void setVitamins(float vitamins) {
+        this.vitamins = vitamins;
     }
 }
 

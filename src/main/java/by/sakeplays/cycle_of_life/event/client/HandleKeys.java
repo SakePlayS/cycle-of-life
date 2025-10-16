@@ -4,13 +4,16 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
+import by.sakeplays.cycle_of_life.entity.util.HitboxType;
+import by.sakeplays.cycle_of_life.network.bidirectional.RequestFoodSwallow;
 import by.sakeplays.cycle_of_life.network.to_server.RequestNestCreation;
 import by.sakeplays.cycle_of_life.network.to_server.SyncPairing;
 import by.sakeplays.cycle_of_life.util.AssociatedAABB;
 import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.screen.StatsScreen;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
-import by.sakeplays.cycle_of_life.network.to_server.attacks.deinonychus.RequestGrabFood;
+import by.sakeplays.cycle_of_life.network.to_server.RequestGrabFood;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -19,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -37,7 +41,6 @@ public class HandleKeys {
     public static int attackTimer = 0;
     public static int attackTimeout = 0;
     public static boolean turningLocked = false;
-    protected static boolean canMove = true;
     protected static boolean restingPressed = false;
     protected static boolean isPairing = false;
     protected static int restingTimerOut = 0;
@@ -52,6 +55,7 @@ public class HandleKeys {
     public static float dx = 0;
     private static boolean pairMovementLocked = false;
     protected static float angleDiff = 0;
+    private static int airborneTime = 0;
 
 
 
@@ -61,36 +65,96 @@ public class HandleKeys {
 
         if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
 
-
         attackTimer--;
         attackTimeout--;
 
         handleTakeoff(player);
 
-        handleAttacks(player);
-
+        AttackDispatcher.tick();
         handleSprint(player);
         handleMovement(player);
+        handleJump(player);
 
         handleResting(player);
         handlePairing(player);
-        requestDrinking(player);
+
+        if (player.getData(DataAttachments.HELD_FOOD_DATA).getHeldFood() == DinosaurFood.FOOD_NONE) {
+            handleDrinking(player);
+        } else {
+            handleEating(player);
+        }
         openCharacterInfo();
         handleGrabbing(player);
 
+        airborneTime = isAirborne(player) ? airborneTime + 1 : 0;
+
+    }
+
+    private static void actuallyJump(Player player) {
+        DinoData data = player.getData(DataAttachments.DINO_DATA);
+
+        float baseJumpStrength = Util.getDino(player).getJumpStrength();
+
+        float dinoJumpStrength = baseJumpStrength * Util.getDino(player).getGrowthCurve().calculate(data.getGrowth(), GrowthCurveStat.JUMP_STRENGTH);
+
+        if (dinoJumpStrength > 0.32f && player.getData(DataAttachments.KNOCKDOWN_TIME) < 0 && !data.isLayingEggs()) {
+            player.setDeltaMovement(
+                    player.getDeltaMovement().x,
+                    player.getDeltaMovement().y + dinoJumpStrength,
+                    player.getDeltaMovement().z
+            );
+
+            player.setData(DataAttachments.JUMP_ANIM_FLAG, true);
+            PacketDistributor.sendToServer(new SendJumpAnimFlag(player.getId()));
+
+        }
+    }
+
+    private static boolean oldWindup = false;
+    private static int jumpWindupTicks = 0;
+    private static void handleJump(Player player) {
+
+        if (isAirborne(player)) jumpWindupTicks = 0;
+        if ((!isAirborne(player) && Minecraft.getInstance().options.keyJump.isDown()) || jumpWindupTicks > 0) jumpWindupTicks++;
+
+
+        player.setData(DataAttachments.JUMP_WINDUP, jumpWindupTicks > 0);
+
+        if (player.getData(DataAttachments.JUMP_WINDUP) != oldWindup) PacketDistributor.sendToServer(new SyncJumpWindup(player.getData(DataAttachments.JUMP_WINDUP), player.getId()));
+
+        if (!Minecraft.getInstance().options.keyJump.isDown() && jumpWindupTicks > 5) {
+            jumpWindupTicks = 0;
+
+            actuallyJump(player);
+        }
+
+        oldWindup = player.getData(DataAttachments.JUMP_WINDUP);
     }
 
     private static void handleGrabbing(Player player) {
 
-        if (!canMove) return;
-        if (turningLocked) return;
-        if (player.tickCount - lastGrabTick < 10) return;
+        if (!shouldMove(player)) return;
 
         if (KeyMappings.GRAB_MAPPING.isDown()) {
             if (!isGrabbing) {
                 isGrabbing = true;
-                PacketDistributor.sendToServer(new RequestGrabFood());
-                lastGrabTick = player.tickCount;
+
+                if (!ClientHitboxData.getOwnHitboxes().isEmpty()) {
+                    AssociatedAABB aabb = null;
+
+                    for (AssociatedAABB hb : ClientHitboxData.getOwnHitboxes()) {
+                        if (hb.getType() == HitboxType.HEAD) {
+                            aabb = hb;
+                            break;
+                        }
+                    }
+
+                    if (aabb != null) {
+
+                        Position pos = ClientHitboxData.getPos(aabb, true);
+                        PacketDistributor.sendToServer(new RequestGrabFood(pos.x(), pos.y(), pos.z()));
+                    }
+                }
             }
         } else {
             isGrabbing = false;
@@ -98,7 +162,6 @@ public class HandleKeys {
     }
 
     private static float sprintBonus = 0;
-
 
     private static void handleSprint(Player player) {
 
@@ -117,16 +180,21 @@ public class HandleKeys {
         }
     }
 
+    enum Axis{X, Y, Z}
+    private static float xBlockedFactor = 1f;
+    private static float zBlockedFactor = 1f;
+    private static float maxSpeedPenalty = 1;
 
     private static void handleMovement(Player player) {
 
+        if (Float.isNaN(xBlockedFactor)) xBlockedFactor = 1f;
+        if (Float.isNaN(zBlockedFactor)) zBlockedFactor = 1f;
 
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);
 
-        if (dinoData.getFlightState() != 0) {
+        if (dinoData.isFlying()) {
 
-            if (dinoData.getFlightState() == 2) handleFlight(player);
-
+            handleFlight(player);
             return;
         }
 
@@ -140,8 +208,8 @@ public class HandleKeys {
         float additionalTurn = 0;
 
 
-        if (!player.onGround() && !player.isInWater()) {
-            turnSpeed *= 0.1f;
+        if (airborneTime >= 3) {
+            turnSpeed *= 0.2f;
             speed *= 0.985f;
         }
 
@@ -181,6 +249,12 @@ public class HandleKeys {
         if (angleDiff > -0.01) turnMultiplier = Math.min(1, turnMultiplier + turnTransitionSpeed);
         if (angleDiff < 0.01) turnMultiplier = Math.max(-1, turnMultiplier - turnTransitionSpeed);
 
+        float angleDiffAbs = Math.abs(angleDiff);
+
+        maxSpeedPenalty = Mth.clamp(1.3f - (angleDiffAbs/3f), 0.4f, 1f);
+
+        maxSpeed *= maxSpeedPenalty;
+
         if (movementKeyDown()) {
 
             if (shouldMove(player)) {
@@ -209,21 +283,55 @@ public class HandleKeys {
         player.setData(DataAttachments.TURN_PROGRESS, turnMultiplier);
         PacketDistributor.sendToServer(new SyncTurnProgress(turnMultiplier, player.getId()));
 
-
-        if (!(isAirborne(player)) && player.getData(DataAttachments.KNOCKDOWN_TIME) < 1) {
+        if (airborneTime < 3 && player.getData(DataAttachments.KNOCKDOWN_TIME) < 1) {
             dx = (float) -Math.sin(newTurnDegree);
             dz = (float) Math.cos(newTurnDegree);
         }
 
-        player.setDeltaMovement(dx * speed, player.getDeltaMovement().y, dz * speed);
+        float recoverySpeed = (acceleration/maxSpeed) * 3f;
 
-        float speed = new Vec2((float) player.getDeltaMovement().x(),
+        Vec3 desiredMovement = new Vec3(dx * speed, player.getDeltaMovement().y, dz * speed);
+
+        if (isAxisBlocked(player, desiredMovement, Axis.X)) {
+            xBlockedFactor = Math.max(0.07f, xBlockedFactor - 0.3f);
+        } else {
+            if (!isAirborne(player)) xBlockedFactor = Math.min(1f, xBlockedFactor + recoverySpeed);
+        }
+
+        if (isAxisBlocked(player, desiredMovement, Axis.Z)) {
+            zBlockedFactor = Math.max(0.07f, zBlockedFactor - 0.3f);
+        } else {
+            if (!isAirborne(player)) zBlockedFactor = Math.min(1, zBlockedFactor + recoverySpeed);
+        }
+
+        player.setDeltaMovement(dx * speed * xBlockedFactor, player.getDeltaMovement().y, dz * speed * zBlockedFactor);
+
+        float movementSpeed = new Vec2((float) player.getDeltaMovement().x(),
                 (float) player.getDeltaMovement().z()).length();
 
-        player.setData(DataAttachments.SPEED, speed);
-        PacketDistributor.sendToServer(new SyncSpeed(player.getId(), speed));
+        player.setData(DataAttachments.SPEED, movementSpeed);
+        PacketDistributor.sendToServer(new SyncSpeed(player.getId(), movementSpeed));
 
         additionalSpeed = 1;
+    }
+
+
+    private static boolean isAxisBlocked(Player player, Vec3 attemptedMove, Axis axis) {
+        AABB box = player.getBoundingBox();
+
+        AABB testBox;
+        switch (axis) {
+            case X -> testBox = box.move(Math.signum(attemptedMove.x) * 0.01f, 0, 0);
+            case Y -> testBox = box.move(0, Math.signum(attemptedMove.y) * 0.01f, 0);
+            case Z -> testBox = box.move(0, 0, Math.signum(attemptedMove.z) * 0.01f);
+            default -> testBox = box;
+        }
+
+        boolean collision = !player.level().noCollision(player, testBox);
+
+        if (!collision) return false;
+
+        return !player.level().noCollision(player, testBox.move(0, player.maxUpStep(), 0));
     }
 
     private static boolean isAirborne(Player player) {
@@ -232,7 +340,12 @@ public class HandleKeys {
 
 
     private static boolean shouldMove(Player player) {
-        if (player.getData(DataAttachments.KNOCKDOWN_TIME) <= 0 && player.getData(DataAttachments.DINO_DATA).getFlightState() == 0 && canMove) {
+
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return false;
+        if (player.getData(DataAttachments.DINO_DATA).isFlying()) return false;
+        if (player.getData(DataAttachments.RESTING_STATE) == 2) return false;
+
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) <= 0 && !player.getData(DataAttachments.DINO_DATA).isFlying()) {
             return true;
         }
 
@@ -241,7 +354,7 @@ public class HandleKeys {
 
     private static void handleForwardMovement(float maxSpeed, float acceleration, float drag, Player player) {
         if (speed <= maxSpeed) {
-            if (isAirborne(player)) {
+            if (airborneTime >= 3) {
                 speed = speed * 0.985f;
             } else {
                 speed = Math.min(maxSpeed, speed + acceleration);
@@ -263,12 +376,13 @@ public class HandleKeys {
 
         float newTurnDegree = turnDegree + (delta * Math.abs(turnMultiplier));
 
-        if (!(turningLocked || !canMove || KeyMappings.DIRECTIONAL_ATTACK.isDown() || player.getData(DataAttachments.KNOCKDOWN_TIME) > 0)) {
-            player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
-            PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
-        } else {
-            newTurnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
-        }
+        if (AttackDispatcher.isAltAttacking) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return player.getData(DataAttachments.PLAYER_ROTATION);
+
+        player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
+        PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
 
         return newTurnDegree;
     }
@@ -280,21 +394,13 @@ public class HandleKeys {
     }
 
 
-    private static void handleAttacks(Player player) {
-        DinoData data = player.getData(DataAttachments.DINO_DATA);
-
-        switch (data.getSelectedDinosaur()) {
-            case 1 -> Attacks.pachycephalosaurus(player);
-            case 2 -> Attacks.deinonychus(player);
-        }
-    }
-
     public static int takeoffHoldTicks;
     private static float xzMomentum = 0.15f;
     private static float yMomentum = 0;
     private static int flyingFor = 0;
     private static float turnSpeed = 0;
-    private static boolean airbrakingOld;
+    private static boolean airbrakingOld = false;
+    private static boolean hitWall = false;
 
     private static void handleFlight(Player player) {
 
@@ -302,11 +408,11 @@ public class HandleKeys {
 
         flyingFor++;
 
-        if (!isAirborne(player) && flyingFor > 2) {
+        if (flyingFor > 2 && (!isAirborne(player) || !Util.getDino(player).equals(Dinosaurs.PTERANODON))) {
 
             flyingFor = 0;
-            data.setFlightState(0);
-            PacketDistributor.sendToServer(new SyncFlightState(0, player.getId()));
+            data.setFlying(false);
+            PacketDistributor.sendToServer(new SyncFlightState(false, player.getId()));
             xzMomentum = 0.15f;
             return;
         }
@@ -334,27 +440,25 @@ public class HandleKeys {
             data.setAirbraking(true);
 
             xzMomentumCap = 0.25f;
-            if (xzMomentum >= xzMomentumCap) xzMomentum = Math.max(xzMomentumCap, xzMomentum - 0.0075f);
-
-            if (airbrakingOld != data.isAirbraking()) PacketDistributor.sendToServer(new SyncAirbraking(data.isAirbraking(), player.getId()));
+            if (xzMomentum >= xzMomentumCap) xzMomentum = Math.max(xzMomentumCap, xzMomentum - 0.0075f - xzMomentum * 0.01f);
 
         } else {
             data.setAirbraking(false);
         }
 
+        if (airbrakingOld != data.isAirbraking()) PacketDistributor.sendToServer(new SyncAirbraking(data.isAirbraking(), player.getId()));
 
         if (xzMomentum < xzMomentumCap) xzMomentum = xzMomentum + 0.0075f;
 
         if (KeyMappings.ASCEND.isDown()) {
-            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum + 0.015f : yMomentum + 0.04f ;
+            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum + 0.004f : yMomentum + 0.04f ;
             if (yMomentum >= 0) xzMomentum = Math.max(0.35f, xzMomentum * 0.98f);
         }
         if (KeyMappings.DESCEND.isDown()) {
-            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum - 0.01f : yMomentum - 0.043f;
+            yMomentum = KeyMappings.AIRBRAKE.isDown() ? yMomentum - 0.004f : yMomentum - 0.043f;
         }
 
-
-        yMomentum = Math.clamp(yMomentum, -1.5f, 0.55f);
+        yMomentum = Mth.clamp(yMomentum, -1.5f, 0.55f);
         yMomentum = (yMomentum * 0.975f) - 0.001f;
         if (!KeyMappings.DESCEND.isDown() && yMomentum < -0.05f) xzMomentum = Math.min(1.5f, xzMomentum + Math.abs(yMomentum) * 0.0175f);
 
@@ -368,13 +472,13 @@ public class HandleKeys {
         if (!Util.getDino(player).equals(Dinosaurs.PTERANODON)) return;
 
 
-        if (data.getFlightState() == 0 && KeyMappings.TAKEOFF_MAPPING.isDown() && player.onGround()) {
+        if (KeyMappings.TAKEOFF_MAPPING.isDown() && player.onGround()) {
             takeoffHoldTicks++;
 
             if (takeoffHoldTicks > 5) {
 
-                data.setFlightState(2);
-                PacketDistributor.sendToServer(new SyncFlightState(2, player.getId()));
+                data.setFlying(true);
+                PacketDistributor.sendToServer(new SyncFlightState(true, player.getId()));
                 dx = (float) -Math.sin(player.getData(DataAttachments.PLAYER_ROTATION));
                 dz = (float) Math.cos(player.getData(DataAttachments.PLAYER_ROTATION));
 
@@ -407,7 +511,6 @@ public class HandleKeys {
 
             if (!restingPressed && restingTimerOut <= 0) {
                 restingPressed = true;
-                canMove = false;
                 if (player.getData(DataAttachments.RESTING_STATE) == 0 && restingTimerIn == 0) {
                     restingTimerIn = 21;
 
@@ -438,8 +541,6 @@ public class HandleKeys {
         if (restingTimerOut == 1) {
             player.setData(DataAttachments.RESTING_STATE, 0);
             PacketDistributor.sendToServer(new SyncRestingState(0, player.getId()));
-            canMove = true;
-
         }
 
         if (restingTimerIn == 1) {
@@ -456,11 +557,9 @@ public class HandleKeys {
         pairingTimeOut--;
         if (player.getData(DataAttachments.PAIRING_STATE) == 1) pairingTimeOut = 55;
         if (pairingTimeOut > 0) {
-            canMove = false;
             turningLocked = true;
             pairMovementLocked = true;
         } else if (pairingTimeOut == 0 && pairMovementLocked) {
-            canMove = true;
             turningLocked = false;
             pairMovementLocked = false;
         }
@@ -490,7 +589,6 @@ public class HandleKeys {
 
         if (KeyMappings.PAIR_MAPPING.isDown()) {
             isPairing = true;
-            canMove = false;
             turningLocked = true;
 
             player.setData(DataAttachments.ATTEMPTING_PAIRING, true);
@@ -499,7 +597,6 @@ public class HandleKeys {
         } else if (isPairing) {
             isPairing = false;
             turningLocked = false;
-            canMove = true;
             pairingLocked = false;
 
             player.setData(DataAttachments.ATTEMPTING_PAIRING, false);
@@ -549,14 +646,24 @@ public class HandleKeys {
     }
 
 
-    private static void requestDrinking(Player player) {
+    private static boolean wasEatKeyDown = false;
+    private static void handleEating(Player player) {
+        if (!wasEatKeyDown && KeyMappings.EAT_MAPPING.isDown() && player.getData(DataAttachments.EATING_TIME) <= 1) {
+            PacketDistributor.sendToServer(new RequestFoodSwallow(player.getId()));
+        }
 
-        if (ClientHitboxData.getOwnHitboxes().isEmpty()) return;
+        wasEatKeyDown = KeyMappings.EAT_MAPPING.isDown();
+    }
+
+    private static void handleDrinking(Player player) {
+
+        if (ClientHitboxData.getOwnHitboxes().isEmpty() || player.getData(DataAttachments.EATING_TIME) > 0) return;
 
         AssociatedAABB head = ClientHitboxData.getOwnHitboxes().getFirst();
         Position headPos = ClientHitboxData.getPos(head, true);
 
-        if (KeyMappings.EAT_MAPPING.isDown()) {
+
+        if (KeyMappings.DRINK_MAPPING.isDown()) {
             if (!drinkingLocked) {
                 drinkingLocked = true;
                 PacketDistributor.sendToServer(new RequestDrinking(true, player.getId(), headPos.x(), headPos.z()));

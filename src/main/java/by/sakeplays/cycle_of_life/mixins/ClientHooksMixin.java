@@ -1,6 +1,8 @@
 package by.sakeplays.cycle_of_life.mixins;
 
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
+import by.sakeplays.cycle_of_life.util.Util;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -37,9 +39,11 @@ public class ClientHooksMixin {
 
         float dzSpeed = (float)(Math.sqrt(0.35f + player.getDeltaMovement().length()));
 
-        if (player.getData(DataAttachments.DINO_DATA).getFlightState() != 2) dzSpeed = 1;
+        if (!player.getData(DataAttachments.DINO_DATA).isFlying()) dzSpeed = 1;
 
-        return 3F * scale * dzSpeed * (0.1f + (Math.max(0f, Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).getGrowth() - 0.025f)));
+        float size = Util.getDino(player).getGrowthCurve().calculate(player.getData(DataAttachments.DINO_DATA).getGrowth(), GrowthCurveStat.SCALE);
+
+        return Math.max(0.5f, 3F * scale * dzSpeed * (0.1f + (Math.max(0f, size - 0.025f))));
     }
 
 }

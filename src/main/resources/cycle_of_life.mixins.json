@@ -9,7 +9,10 @@
     "CameraAccessor",
     "LivingEntityMixins",
     "CancelInventoryOpen",
-    "CancelPlayerDamage"
+    "AnimationControllerAccessor",
+    "AnimationControllerMixin",
+    "CancelPlayerDamage",
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

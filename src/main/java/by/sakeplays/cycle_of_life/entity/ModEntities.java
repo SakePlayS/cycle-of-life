@@ -25,9 +25,9 @@ public class ModEntities {
             ("pachycephalosaurus", () -> EntityType.Builder.of(Pachycephalosaurus::new, MobCategory.MISC)
             .sized(0.75f, 0.75f).build("pachycephalosaurus"));
 
-    public static final Supplier<EntityType<MeatChunkEntity>> MEAT_CHUNK = ENTITY_TYPES.register
-            ("meat_chunk", () -> EntityType.Builder.of(MeatChunkEntity::new, MobCategory.MISC)
-                    .sized(0.2f, 0.2f).build("meat_chunk"));
+    public static final Supplier<EntityType<FoodEntity>> FOOD_ENTITY = ENTITY_TYPES.register
+            ("food_entity", () -> EntityType.Builder.of(FoodEntity::new, MobCategory.MISC)
+                    .sized(0.2f, 0.2f).build("food_entity"));
 
     public static final Supplier<EntityType<Deinonychus>> DEINONYCHUS = ENTITY_TYPES.register
             ("deinonychus", () -> EntityType.Builder.of(Deinonychus::new, MobCategory.MISC)

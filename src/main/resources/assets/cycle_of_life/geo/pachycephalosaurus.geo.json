@@ -3,7 +3,7 @@
 	"minecraft:geometry": [
 		{
 			"description": {
-				"identifier": "geometry.unknown",
+				"identifier": "geometry.pachycephalosaurus",
 				"texture_width": 256,
 				"texture_height": 256,
 				"visible_bounds_width": 8,
@@ -103,6 +103,20 @@
 					]
 				},
 				{
+					"name": "jaw_sides",
+					"parent": "jaw",
+					"pivot": [0, 23.75, -16],
+					"cubes": [
+						{"origin": [-2.7, 22.75, -20.9], "size": [1, 4, 5], "uv": [-2, -3]},
+						{"origin": [1.7, 22.75, -20.9], "size": [1, 4, 5], "uv": [-2, -3], "mirror": true}
+					]
+				},
+				{
+					"name": "item_display",
+					"parent": "jaw",
+					"pivot": [0, 23.75, -23]
+				},
+				{
 					"name": "right_eye",
 					"parent": "head_rot",
 					"pivot": [-3.125, 26.09903, -17.2236],
@@ -145,8 +159,18 @@
 					]
 				},
 				{
-					"name": "tail_1_rot",
+					"name": "tail_ah",
 					"parent": "body",
+					"pivot": [0, 20.25, 8]
+				},
+				{
+					"name": "tail_root",
+					"parent": "tail_ah",
+					"pivot": [0, 20.25, 8]
+				},
+				{
+					"name": "tail_1_rot",
+					"parent": "tail_root",
 					"pivot": [0, 20.25, 8]
 				},
 				{

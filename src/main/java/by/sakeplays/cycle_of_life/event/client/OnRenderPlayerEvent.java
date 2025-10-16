@@ -6,6 +6,7 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.ModEntities;
 import by.sakeplays.cycle_of_life.entity.DinosaurEntity;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -48,13 +49,15 @@ public class OnRenderPlayerEvent {
 
 
     private static DinosaurEntity getDinoToRender(Player player) {
-        int selectedDino = player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur();
+        Dinosaurs selectedDino = Util.getDino(player);
 
-        if (selectedDino == Dinosaurs.PACHYCEPHALOSAURUS.getID()) return ModEntities.PACHYCEPHALOSAURUS.get().create(player.level());
-        if (selectedDino == Dinosaurs.PTERANODON.getID()) return ModEntities.PTERANODON.get().create(player.level());
+        return switch (selectedDino) {
+            case DEINONYCHUS -> ModEntities.DEINONYCHUS.get().create(player.level());
+            case PTERANODON -> ModEntities.PTERANODON.get().create(player.level());
+            case PACHYCEPHALOSAURUS -> ModEntities.PACHYCEPHALOSAURUS.get().create(player.level());
 
-        return ModEntities.DEINONYCHUS.get().create(player.level());
-
+            default -> ModEntities.DEINONYCHUS.get().create(player.level());
+        };
     }
 
 
@@ -65,22 +68,26 @@ public class OnRenderPlayerEvent {
 
         event.setCanceled(true);
 
-        if (!(event.getEntity() instanceof AbstractClientPlayer player)) {
+        if (!(event.getEntity() instanceof AbstractClientPlayer player)) return;
+
+        if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) {
+            PLAYER_DINOS.remove(player.getId());
             return;
         }
 
-        if (player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0) {
-            return;
+        if (PLAYER_DINOS.containsKey(player.getId())) {
+            if (!Util.getDino(player).equals(PLAYER_DINOS.get(player.getId()).getDinosaurSpecies())) {
+                PLAYER_DINOS.remove(player.getId());
+            }
         }
+
 
         Minecraft instance = Minecraft.getInstance();
         DinosaurEntity dinosaurEntity = getOrCreateDino(player);
 
-        if (!instance.options.getCameraType().isFirstPerson() || player != instance.player) {
+        instance.getEntityRenderDispatcher().getRenderer(dinosaurEntity).render(dinosaurEntity, player.getViewYRot(event.getPartialTick()),
+                event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
 
-            instance.getEntityRenderDispatcher().getRenderer(dinosaurEntity).render(dinosaurEntity, player.getViewYRot(event.getPartialTick()),
-                    event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
-        }
     }
 
 
@@ -104,7 +111,6 @@ public class OnRenderPlayerEvent {
         instance.options.fovEffectScale().set(0.25d);
         instance.options.bobView().set(false);
         instance.options.entityShadows().set(false);
-
     }
 
 

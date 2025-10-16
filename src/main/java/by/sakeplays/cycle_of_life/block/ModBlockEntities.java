@@ -1,6 +1,7 @@
 package by.sakeplays.cycle_of_life.block;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.block.herbi_food.CrimsonweedBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -16,6 +17,11 @@ public class ModBlockEntities {
     public static final Supplier<BlockEntityType<DeinonychusNestBlockEntity>> DEINONYCHUS_NEST_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
             "deinonychus_nest_block_entity",
             () -> BlockEntityType.Builder.of(DeinonychusNestBlockEntity::new, ModBlocks.DEINONYCHUS_NEST.get())
+                    .build(null));
+
+    public static final Supplier<BlockEntityType<CrimsonweedBlockEntity>> CRIMSONWEED_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
+            "crimsonweed_block_entity",
+            () -> BlockEntityType.Builder.of(CrimsonweedBlockEntity::new, ModBlocks.CRIMSONWEED.get())
                     .build(null));
 
     public static void register(IEventBus modBus) {

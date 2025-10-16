@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record SyncFlightState(int flightState, int playerID) implements CustomPacketPayload {
+public record SyncFlightState(boolean flightState, int playerID) implements CustomPacketPayload {
 
     public static final Type<SyncFlightState> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "sync_flight_state"));
@@ -22,7 +22,7 @@ public record SyncFlightState(int flightState, int playerID) implements CustomPa
     }
 
     public static final StreamCodec<FriendlyByteBuf, SyncFlightState> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.INT, SyncFlightState::flightState,
+            ByteBufCodecs.BOOL, SyncFlightState::flightState,
             ByteBufCodecs.INT, SyncFlightState::playerID,
             SyncFlightState::new
     );
@@ -30,7 +30,7 @@ public record SyncFlightState(int flightState, int playerID) implements CustomPa
     public static void handleClient(final SyncFlightState packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.getData(DataAttachments.DINO_DATA).setFlightState(packet.flightState);
+                player.getData(DataAttachments.DINO_DATA).setFlying(packet.flightState);
             }
         });
     }
@@ -38,7 +38,7 @@ public record SyncFlightState(int flightState, int playerID) implements CustomPa
     public static void handleServer(final SyncFlightState packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             Player player = context.player();
-            player.getData(DataAttachments.DINO_DATA).setFlightState(packet.flightState);
+            player.getData(DataAttachments.DINO_DATA).setFlying(packet.flightState);
             PacketDistributor.sendToPlayersTrackingEntity(player, packet);
         });
     }

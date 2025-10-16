@@ -13,7 +13,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 
 import java.text.DecimalFormat;
-import java.util.HexFormat;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = CycleOfLife.MODID, value = Dist.CLIENT)
 public class HUDEvent {
@@ -59,7 +58,7 @@ public class HUDEvent {
 
         float weight = player.getData(DataAttachments.DINO_DATA).getWeight();
         float stamina = player.getData(DataAttachments.DINO_DATA).getStamina();
-        float staminaPercentage = (stamina / Util.getStaminaUpgraded(player)) * 100;
+        float staminaPercentage = (stamina / Util.getStaminaPool(player)) * 100;
 
         float health = player.getData(DataAttachments.DINO_DATA).getHealth();
         float healthPercentage = Math.max(0f, health/weight * 100f);

@@ -1,8 +1,12 @@
 package by.sakeplays.cycle_of_life.entity;
 
+import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,19 +26,29 @@ import java.util.List;
 
 public abstract class DinosaurEntity extends LivingEntity {
 
+    public float prevBodyRot;
+
     public DinosaurEntity(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
     }
 
     public List<Float> rotHistory = new ArrayList<>();
+    public List<Float> tailYawHistory = new ArrayList<>();
+
+    public List<Float> tailRotXHistory = new ArrayList<>();
+    public List<Float> tailRotYHistory = new ArrayList<>();
+    public List<Position> tailPosHistory = new ArrayList<>();
     public float prevRotY = 0;
-    public float prevTailRotY1 = 0;
-    public float prevTailRotY2 = 0;
-    public float prevTailRotY3 = 0;
     public float scale = 1;
     public int lastUpdatedTick = 0;
+    public Position tailRootPos = new Position(0, 0, 0);
+    public Position oldTailRootPos = new Position(0, 0, 0);
 
-    public float prevTailRotX = 0;
+
+    public float tailRotX;
+    public float tailRotY;
+    public float tailYaw;
+
 
     public float headRot = 0;
 
@@ -47,6 +61,32 @@ public abstract class DinosaurEntity extends LivingEntity {
     public volatile Integer playerId = 0;
     public boolean isForScreenRendering = false;
     protected int attackAnimUntil = 0;
+
+    public void recordTailRotXHistory(int withSize) {
+        if (tailRotXHistory.size() >= withSize) tailRotXHistory.removeFirst();
+
+        tailRotXHistory.add(tailRotX);
+    }
+
+    public void recordTailRotYHistory(int withSize) {
+        if (tailRotYHistory.size() >= withSize) tailRotYHistory.removeFirst();
+
+        tailRotYHistory.add(tailRotY);
+    }
+
+    public void recordTailYawHistory(int withSize) {
+        if (tailYawHistory.size() >= withSize) tailYawHistory.removeFirst();
+
+        tailYawHistory.add((float) Math.asin(Math.sin(tailYaw)));
+    }
+
+    public void recordTailPosHistory(int withSize, Position position) {
+        if (tailPosHistory.size() >= withSize) tailPosHistory.removeFirst();
+
+        tailPosHistory.add(position);
+    }
+
+
 
     // ALL synced data here is used ONLY for corpses!
 
@@ -64,9 +104,6 @@ public abstract class DinosaurEntity extends LivingEntity {
 
     public static final EntityDataAccessor<Float> REMAINING_WEIGHT =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.FLOAT);
-
-    public static final EntityDataAccessor<Integer> OLD_PLAYER =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
 
     public static final EntityDataAccessor<Integer> BODY_FLANK_COLOR =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
@@ -94,9 +131,6 @@ public abstract class DinosaurEntity extends LivingEntity {
         builder.define(IS_MALE, true);
         builder.define(BODY_GROWTH, 1f);
         builder.define(BODY_ROT, 0f);
-
-        builder.define(OLD_PLAYER, 0);
-
         builder.define(BODY_MALE_DISPLAY_COLOR, 0);
         builder.define(BODY_BODY_COLOR, 0);
         builder.define(BODY_EYES_COLOR, 0);
@@ -116,9 +150,7 @@ public abstract class DinosaurEntity extends LivingEntity {
         setBodyGrowth(compound.getFloat("BodyGrowth"));
         setBodyRot(compound.getFloat("BodyRot"));
 
-        setRemainingWeight(compound.getFloat("RemainingWeight"));
-
-        setOldPlayer(compound.getInt("OldPlayer"));
+        setRemainingFood(compound.getFloat("RemainingWeight"));
 
         setBodyColor(compound.getInt("BodyColor"));
         setFlankColor(compound.getInt("FlankColor"));
@@ -133,14 +165,12 @@ public abstract class DinosaurEntity extends LivingEntity {
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
 
-        compound.putBoolean("IsBody", isBody());
+        compound.putBoolean("IsBody", isCorpse());
         compound.putBoolean("IsMale", isMale());
         compound.putFloat("BodyGrowth", getBodyGrowth());
         compound.putFloat("BodyRot", getBodyRot());
 
-        compound.putFloat("RemainingWeight", getRemainingWeight());
-
-        compound.putInt("OldPlayer", getOldPlayerID());
+        compound.putFloat("RemainingWeight", getRemainingFood());
 
         compound.putInt("BodyColor", getBodyColor());
         compound.putInt("FlankColor", getFlankColor());
@@ -149,13 +179,12 @@ public abstract class DinosaurEntity extends LivingEntity {
         compound.putInt("BellyColor", getBellyColor());
         compound.putInt("MaleDisplayColor", getMaleDisplayColor());
 
-
     }
 
     public Player getPlayer() {
 
-        if (isBody()) {
-            if (level().getEntity(getOldPlayerID()) instanceof Player player) return player;
+        if (isCorpse()) {
+            return null;
         }
 
         if (level().getEntity(playerId) instanceof Player player && playerId != null) {
@@ -208,10 +237,10 @@ public abstract class DinosaurEntity extends LivingEntity {
     public void tick() {
         super.tick();
 
-        if (getRemainingWeight() <= 0) this.remove(RemovalReason.DISCARDED);
+        if (getRemainingFood() <= 0) this.remove(RemovalReason.DISCARDED);
     }
 
-    public boolean isBody() {
+    public boolean isCorpse() {
         return this.entityData.get(IS_BODY);
     }
 
@@ -235,11 +264,11 @@ public abstract class DinosaurEntity extends LivingEntity {
         return this.entityData.get(BODY_GROWTH);
     }
 
-    public void setRemainingWeight(float val) {
+    public void setRemainingFood(float val) {
         this.entityData.set(REMAINING_WEIGHT, val);
     }
 
-    public float getRemainingWeight() {
+    public float getRemainingFood() {
         return this.entityData.get(REMAINING_WEIGHT);
     }
 
@@ -249,14 +278,6 @@ public abstract class DinosaurEntity extends LivingEntity {
 
     public float getBodyRot() {
         return this.entityData.get(BODY_ROT);
-    }
-
-    public void setOldPlayer(int val) {
-        this.entityData.set(OLD_PLAYER, val);
-    }
-
-    public int getOldPlayerID() {
-        return this.entityData.get(OLD_PLAYER);
     }
 
     public void setBodyColor(int val) {
@@ -314,6 +335,8 @@ public abstract class DinosaurEntity extends LivingEntity {
         if (rotHistory.size() > withSize) rotHistory.removeFirst();
     }
 
+    public abstract Dinosaurs getDinosaurSpecies();
 
+    public abstract DinosaurFood getMeatType();
 
 }

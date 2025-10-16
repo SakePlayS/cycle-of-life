@@ -1,6 +1,5 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
-import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
@@ -29,7 +28,7 @@ public class DeinonychusMaleDisplayLayer<T extends Entity & GeoAnimatable> exten
     public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
         int color;
         SkinData data;
-        if (!animatable.isBody()) {
+        if (!animatable.isCorpse()) {
              data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
              color = animatable.isForScreenRendering ? animatable.maleDisplayColor : data.getMaleDisplayColor();
             if (!animatable.isForScreenRendering) color = animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale()
@@ -39,7 +38,6 @@ public class DeinonychusMaleDisplayLayer<T extends Entity & GeoAnimatable> exten
             color = animatable.getMaleDisplayColor();
             if (!animatable.isMale()) color = animatable.getMarkingsColor();
         }
-
 
 
         poseStack.pushPose();

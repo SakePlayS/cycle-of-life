@@ -30,7 +30,7 @@ public record SyncAttackTurnaround(boolean attackState, int playerID) implements
     public static void handleClient(final SyncAttackTurnaround packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.setData(DataAttachments.ATTACK_TURNAROUND, packet.attackState);
+                player.setData(DataAttachments.ALT_ATTACK, packet.attackState);
             }
         });
     }
@@ -38,7 +38,7 @@ public record SyncAttackTurnaround(boolean attackState, int playerID) implements
     public static void handleServer(final SyncAttackTurnaround packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player().level().getEntity(packet.playerID) instanceof Player player) {
-                player.setData(DataAttachments.ATTACK_TURNAROUND, packet.attackState);
+                player.setData(DataAttachments.ALT_ATTACK, packet.attackState);
             }
         }).thenRun(() -> PacketDistributor.sendToAllPlayers( packet));
     }

@@ -3,7 +3,7 @@
 	"minecraft:geometry": [
 		{
 			"description": {
-				"identifier": "geometry.player_raptor",
+				"identifier": "geometry.deinonychus",
 				"texture_width": 128,
 				"texture_height": 128,
 				"visible_bounds_width": 7,
@@ -68,24 +68,39 @@
 					]
 				},
 				{
-					"name": "left_leg_2",
+					"name": "ll_2_ah",
 					"parent": "left_leg_1",
+					"pivot": [3.17448, 10, -0.74619]
+				},
+				{
+					"name": "left_leg_2",
+					"parent": "ll_2_ah",
 					"pivot": [3.17448, 10, -0.74619],
 					"cubes": [
 						{"origin": [1.17448, 3.5, -1.49619], "size": [4, 8, 4], "inflate": -0.25, "pivot": [3.17448, 7.5, 0.50381], "rotation": [30, 0, 0], "uv": [80, 59]}
 					]
 				},
 				{
-					"name": "left_leg_3",
+					"name": "ll_3_ah",
 					"parent": "left_leg_2",
+					"pivot": [3.17448, 5, 3.25381]
+				},
+				{
+					"name": "left_leg_3",
+					"parent": "ll_3_ah",
 					"pivot": [3.17448, 5, 3.25381],
 					"cubes": [
 						{"origin": [1.17448, -0.25, 0.25381], "size": [4, 6, 4], "inflate": -0.5, "uv": [82, 12]}
 					]
 				},
 				{
-					"name": "left_leg_4",
+					"name": "ll_4_ah",
 					"parent": "left_leg_3",
+					"pivot": [3.17448, 0.5, 2.75381]
+				},
+				{
+					"name": "left_leg_4",
+					"parent": "ll_4_ah",
 					"pivot": [3.17448, 0.5, 2.75381],
 					"cubes": [
 						{"origin": [1.67448, 0, -0.24619], "size": [3, 1, 3], "inflate": 0.25, "uv": [94, 43]}
@@ -135,24 +150,39 @@
 					]
 				},
 				{
-					"name": "right_leg_2",
+					"name": "rl_2_ah",
 					"parent": "right_leg_1",
+					"pivot": [-2.82552, 10, -0.74619]
+				},
+				{
+					"name": "right_leg_2",
+					"parent": "rl_2_ah",
 					"pivot": [-2.82552, 10, -0.74619],
 					"cubes": [
 						{"origin": [-4.82552, 3.5, -1.49619], "size": [4, 8, 4], "inflate": -0.25, "pivot": [-2.82552, 7.5, 0.50381], "rotation": [30, 0, 0], "uv": [82, 0]}
 					]
 				},
 				{
-					"name": "right_leg_3",
+					"name": "rr_3_ah",
 					"parent": "right_leg_2",
+					"pivot": [-2.82552, 5, 3.25381]
+				},
+				{
+					"name": "right_leg_3",
+					"parent": "rr_3_ah",
 					"pivot": [-2.82552, 5, 3.25381],
 					"cubes": [
 						{"origin": [-4.82552, -0.25, 0.25381], "size": [4, 6, 4], "inflate": -0.5, "uv": [72, 88]}
 					]
 				},
 				{
-					"name": "right_leg_4",
+					"name": "rr_4_ah",
 					"parent": "right_leg_3",
+					"pivot": [-2.82552, 0.5, 2.75381]
+				},
+				{
+					"name": "right_leg_4",
+					"parent": "rr_4_ah",
 					"pivot": [-2.82552, 0.5, 2.75381],
 					"cubes": [
 						{"origin": [-4.32552, 0, -0.24619], "size": [3, 1, 3], "inflate": 0.25, "uv": [52, 94]}
@@ -189,8 +219,13 @@
 					]
 				},
 				{
-					"name": "tail_1_rot",
+					"name": "tail_root",
 					"parent": "body",
+					"pivot": [0, 18.25, 3]
+				},
+				{
+					"name": "tail_1_rot",
+					"parent": "tail_root",
 					"pivot": [0.17448, 18.25, 3.00381]
 				},
 				{
@@ -419,8 +454,13 @@
 					"pivot": [0.17448, 26, -13.99619]
 				},
 				{
-					"name": "head",
+					"name": "head_helper",
 					"parent": "head_tilt",
+					"pivot": [0.17448, 26, -13.99619]
+				},
+				{
+					"name": "head",
+					"parent": "head_helper",
 					"pivot": [0.17448, 26, -13.99619],
 					"cubes": [
 						{"origin": [-2.82552, 26, -17.99619], "size": [6, 4, 6], "uv": [70, 40]},
@@ -478,8 +518,13 @@
 					]
 				},
 				{
-					"name": "jaw",
+					"name": "item_grab_handler",
 					"parent": "head",
+					"pivot": [0.17448, 25, -15.74619]
+				},
+				{
+					"name": "jaw",
+					"parent": "item_grab_handler",
 					"pivot": [0.17448, 25, -15.74619],
 					"cubes": [
 						{"origin": [-2.32552, 24, -22.99619], "size": [5, 1, 5], "uv": [32, 88]},
@@ -521,9 +566,9 @@
 					]
 				},
 				{
-					"name": "grab_handler",
+					"name": "item_display",
 					"parent": "jaw",
-					"pivot": [0.17448, 26.5, -21.99619]
+					"pivot": [0.17448, 25.5, -21.99619]
 				},
 				{
 					"name": "male_display1",

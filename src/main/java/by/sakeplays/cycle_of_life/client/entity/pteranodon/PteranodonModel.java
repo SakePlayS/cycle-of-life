@@ -48,12 +48,8 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
         }
 
         handleBodyRotation(this, animationState.getAnimatable(), partialTick);
-
-        if (animatable.getPlayer().getData(DataAttachments.DINO_DATA).getFlightState() != 2) {
-            handleNeckRotation(this, animationState.getAnimatable(), partialTick);
-        } else {
-            handleFlightRotation(this, animationState.getAnimatable(), partialTick);
-        }
+        handleNeckRotation(this, animationState.getAnimatable(), partialTick);
+        handleFlightRotation(this, animationState.getAnimatable(), partialTick);
 
     }
 
@@ -64,7 +60,7 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
         GeoBone center = getAnimationProcessor().getBone("root");
 
 
-        if (animatable.playerId != null && !animatable.isBody()) {
+        if (animatable.playerId != null && !animatable.isCorpse()) {
             playerRot = -animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
         }
 
@@ -77,6 +73,7 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
 
     private void handleNeckRotation(GeoModel<Pteranodon> model, Pteranodon animatable, float partialTick) {
 
+
         GeoBone head_tilt = getAnimationProcessor().getBone("head_tilt");
         GeoBone neck_tilt = getAnimationProcessor().getBone("neck_tilt");
 
@@ -86,19 +83,20 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
         float targetYaw = 0;
         float rot = animatable.headRot;
 
-        if (animatable.playerId != null && !animatable.isBody()) {
+        if (animatable.playerId != null && !animatable.isCorpse()) {
             playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
             playerYaw = animatable.getPlayer().getYRot();
             additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
             targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
         }
 
+        float flightFactor = !animatable.getPlayer().getData(DataAttachments.DINO_DATA).isFlying() ? 1 : 0;
 
         float desiredHeadRot = -Math.clamp(
                 Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
                 -0.35f, 0.35f);
 
-        rot += (desiredHeadRot - rot) * 0.13f / ((float) 60 / Math.min(60, Minecraft.getInstance().getFps() + 1));
+        rot += flightFactor * ((desiredHeadRot - rot) * 0.13f / ((float) 60 / Math.min(60, Minecraft.getInstance().getFps() + 1)));
 
 
         neck_tilt.setRotY(rot * 1.15f);
@@ -116,13 +114,20 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
         Player player = animatable.getPlayer();
 
         if (player == null) return;
+        float flightFactor = animatable.getPlayer().getData(DataAttachments.DINO_DATA).isFlying() ? 1 : 0;
 
-        float airbrakeFactor = player.getData(DataAttachments.DINO_DATA).isAirbraking() ? 0 : 1;
+        float delta = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+
+        animatable.airbrakeFactor =
+                player.getData(DataAttachments.DINO_DATA).isAirbraking() ?
+                Math.max(0, animatable.airbrakeFactor - 0.075f * delta) :
+                Math.min(1, animatable.airbrakeFactor + 0.075f * delta);
+
 
         float xzDelta = new Vec2((float)(player.getX() - player.xOld), (float)(player.getZ() - player.zOld)).length();
         float yDelta = (float) (player.getY() - player.yOld);
 
-        float xRot = (float) Math.atan2(yDelta, xzDelta);
+        float xRot = (float) Math.atan2(yDelta, xzDelta) * flightFactor;
 
         if (player.getId() == Minecraft.getInstance().player.getId()) {
             CameraEvent.rawPitch = xRot * -Mth.RAD_TO_DEG;
@@ -130,7 +135,7 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
             CameraEvent.rawPitch = 0;
         }
 
-        root.setRotX(xRot * airbrakeFactor);
+        root.setRotX(xRot * animatable.airbrakeFactor);
 
         ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
 
@@ -140,7 +145,7 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
             GeoBone head_tilt = getAnimationProcessor().getBone("head_tilt");
             GeoBone neck_tilt = getAnimationProcessor().getBone("neck_tilt");
 
-            float zRot = turnDegreeHistory.getLast() - turnDegreeHistory.get(turnDegreeHistory.size() - 2);
+            float zRot = (turnDegreeHistory.getLast() - turnDegreeHistory.get(turnDegreeHistory.size() - 2)) * flightFactor;
 
             if (player.getId() == Minecraft.getInstance().player.getId()) {
                 CameraEvent.rawRoll = zRot * 5 * Mth.RAD_TO_DEG;
@@ -148,15 +153,15 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
                 CameraEvent.rawRoll = 0;
             }
 
-            flightHelper.setRotZ(zRot * -7 * airbrakeFactor);
+            flightHelper.setRotZ(zRot * -7 * animatable.airbrakeFactor);
 
-            neck_tilt.setRotZ(zRot * 3 * airbrakeFactor);
-            neck_tilt.setRotY(zRot * -2.5f * airbrakeFactor);
-            neck_tilt.setRotX(Math.abs(zRot) * airbrakeFactor);
+            neck_tilt.setRotZ(zRot * 3);
+            neck_tilt.setRotY(zRot * -2.5f);
+            neck_tilt.setRotX(Math.abs(zRot));
 
-            head_tilt.setRotZ(zRot * 3 * airbrakeFactor);
-            head_tilt.setRotY(zRot * -2.5f * airbrakeFactor);
-            neck_tilt.setRotX(Math.abs(zRot) * airbrakeFactor);
+            head_tilt.setRotZ(zRot * 3);
+            head_tilt.setRotY(zRot * -2.5f);
+            neck_tilt.setRotX(Math.abs(zRot));
 
         }
     }

@@ -4,7 +4,8 @@ package by.sakeplays.cycle_of_life.entity;
 import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
-import net.minecraft.network.chat.Component;
+import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -30,6 +31,9 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("pachycephalosaurus.run");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("pachycephalosaurus.walk");
     protected static final RawAnimation IDLE = RawAnimation.begin().thenLoop("pachycephalosaurus.idle");
+
+    protected static final RawAnimation HOLD_ITEM = RawAnimation.begin().thenPlay("pachycephalosaurus.hold_item");
+
     public float prevRotY = 0;
 
 
@@ -58,6 +62,8 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
                 .triggerableAnim("rest_loop", REST_LOOP)
                 .triggerableAnim("bash", BASH));
 
+        controllers.add(new AnimationController<>(this, "hold", 3, this::holdItemController));
+
     }
 
     @Override
@@ -67,7 +73,7 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     @Override
     public double getTick(Object object) {
-        if (playerId != null && !isBody()) {
+        if (playerId != null && !isCorpse()) {
             return level().getEntity(playerId).tickCount;
         }
 
@@ -77,7 +83,7 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     protected PlayState movementController(final AnimationState<Pachycephalosaurus> state) {
 
-        if (isBody()) return state.setAndContinue(KNOCKED_DOWN);
+        if (isCorpse()) return state.setAndContinue(KNOCKED_DOWN);
 
 
         if (getPlayer() != null) {
@@ -103,8 +109,34 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     protected PlayState chargeController(final AnimationState<Pachycephalosaurus> state) {
 
+        if (isCorpse()) return PlayState.STOP;
+
         if (getPlayer().getData(DataAttachments.DINO_DATA).isCharging()) return state.setAndContinue(CHARGE_ANIM);
 
         return state.setAndContinue(NONE);
+    }
+
+    @Override
+    public Dinosaurs getDinosaurSpecies() {
+        return Dinosaurs.PACHYCEPHALOSAURUS;
+    }
+
+    @Override
+    public DinosaurFood getMeatType() {
+        return DinosaurFood.PACHYCEPHALOSAURUS_MEAT;
+    }
+
+    protected PlayState holdItemController(final AnimationState<Pachycephalosaurus> state) {
+
+        if (getPlayer() != null && !isCorpse()) {
+
+            if (getPlayer().getData(DataAttachments.HELD_FOOD_DATA).getHeldFood() != DinosaurFood.FOOD_NONE) {
+                return state.setAndContinue(HOLD_ITEM);
+            }
+
+        }
+
+        return PlayState.STOP;
+
     }
 }

@@ -25,7 +25,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 
-public record RequestDeinonychusSlash(int target, HitboxType hbType) implements CustomPacketPayload {
+public record RequestDeinonychusSlash(int target, String hbType) implements CustomPacketPayload {
 
     public static final Type<RequestDeinonychusSlash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_deinonychus_slash"));
@@ -37,7 +37,7 @@ public record RequestDeinonychusSlash(int target, HitboxType hbType) implements 
 
     public static final StreamCodec<FriendlyByteBuf, RequestDeinonychusSlash> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, RequestDeinonychusSlash::target,
-            ModCodecs.enumCodec(HitboxType.class), RequestDeinonychusSlash::hbType,
+            ByteBufCodecs.STRING_UTF8, RequestDeinonychusSlash::hbType,
             RequestDeinonychusSlash::new
     );
     public static void handleServer(final RequestDeinonychusSlash packet, final IPayloadContext context) {
@@ -50,9 +50,8 @@ public record RequestDeinonychusSlash(int target, HitboxType hbType) implements 
             data.setStamina(newStam);
             PacketDistributor.sendToAllPlayers(new SyncStamina(context.player().getId(), newStam));
 
-            if (packet.hbType == HitboxType.NONE) {
-                return;
-            }
+            if (HitboxType.fromString(packet.hbType()) == HitboxType.NONE) return;
+
 
             if (context.player().level().getEntity(packet.target) instanceof Player targetPlayer) {
 

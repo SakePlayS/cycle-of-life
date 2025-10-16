@@ -20,6 +20,7 @@ public class OnRegisterAttributes {
         event.put(ModEntities.PACHYCEPHALOSAURUS.get(), supplier);
         event.put(ModEntities.DEINONYCHUS.get(), supplier);
         event.put(ModEntities.PTERANODON.get(), supplier);
+        event.put(ModEntities.FOOD_ENTITY.get(), supplier);
 
     }
 }

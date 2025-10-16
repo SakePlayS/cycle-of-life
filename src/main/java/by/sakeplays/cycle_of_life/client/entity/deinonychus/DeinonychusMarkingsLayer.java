@@ -1,6 +1,5 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
-import by.sakeplays.cycle_of_life.util.Util;
 import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
@@ -30,7 +29,7 @@ public class DeinonychusMarkingsLayer<T extends Entity & GeoAnimatable> extends 
 
         int color;
         SkinData data;
-        if (!animatable.isBody()) {
+        if (!animatable.isCorpse()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
             color = animatable.isForScreenRendering ? animatable.markingsColor : data.getMarkingsColor();
 

@@ -1,15 +1,11 @@
 package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
-import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
@@ -64,6 +60,10 @@ public class KeyMappings {
             new KeyMapping("key.cycle_of_life.grab", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping DRINK_MAPPING =
+            new KeyMapping("key.cycle_of_life.drink", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E,
+                    "key.categories.cycle_of_life");
+
     public static final KeyMapping EAT_MAPPING =
             new KeyMapping("key.cycle_of_life.eat", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_E,
                     "key.categories.cycle_of_life");
@@ -99,7 +99,7 @@ public class KeyMappings {
         event.register(MAIN_ATTACK_MAPPING_2);
         event.register(REST_MAPPING);
         event.register(PAIR_MAPPING);
-        event.register(EAT_MAPPING);
+        event.register(DRINK_MAPPING);
         event.register(GRAB_MAPPING);
         event.register(CHARACTER_MAPPING);
         event.register(BACKWARD_MAPPING);
@@ -108,6 +108,7 @@ public class KeyMappings {
         event.register(ASCEND);
         event.register(DESCEND);
         event.register(AIRBRAKE);
+        event.register(EAT_MAPPING);
 
     }
 

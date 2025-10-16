@@ -1,24 +1,42 @@
 package by.sakeplays.cycle_of_life.util;
 
 import by.sakeplays.cycle_of_life.ModSounds;
+import by.sakeplays.cycle_of_life.client.entity.CrossfadeTickTracker;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.common.data.DietStat;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
 import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.entity.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
+import by.sakeplays.cycle_of_life.mixins.AnimationControllerAccessor;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncBleed;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncHealth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncStamina;
 import by.sakeplays.cycle_of_life.network.to_server.RequestPlayHurtSound;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Util {
 
@@ -28,7 +46,7 @@ public class Util {
     }
 
     public static float getStamRegen(Player player) {
-        return getDino(player).getStaminaRegen();
+        return getDino(player).getStaminaRegen() * DietStat.calculate(player, DietStat.STAMINA_REGEN);
 
     }
 
@@ -151,7 +169,7 @@ public class Util {
             DinoData data = target.getData(DataAttachments.DINO_DATA);
             float newStam = data.getStamina() + stamina;
 
-            if (newStam >  Util.getStaminaUpgraded(target)) newStam = Util.getStaminaUpgraded(target);
+            if (newStam >  Util.getStaminaPool(target)) newStam = Util.getStaminaPool(target);
 
             target.getData(DataAttachments.DINO_DATA).setStamina(newStam);
             PacketDistributor.sendToServer(new SyncStamina(target.getId(), newStam));
@@ -174,11 +192,11 @@ public class Util {
         return alpha | red | green | b;
     }
 
-    public static float getStaminaUpgraded(Player player) {
+    public static float getStaminaPool(Player player) {
         Adaptation data = player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA);
 
 
-        return getDino(player).getStaminaPool() * (1 + data.getType().getValue(data.getLevel()));
+        return getDino(player).getStaminaPool() * DietStat.calculate(player, DietStat.STAMINA_POOL) * (1 + data.getType().getValue(data.getLevel()));
     }
 
     public static DinosaurEntity getBody(Player player) {
@@ -191,11 +209,11 @@ public class Util {
         return new Deinonychus(ModEntities.DEINONYCHUS.get(), player.level());
     }
 
-    public static float calculateScale(DinosaurEntity entity, float lowerBound, float upperBound) {
+    public static float calculateScale(DinosaurEntity entity) {
 
-        if (entity.isBody()) return Mth.lerp(entity.getBodyGrowth(), lowerBound, upperBound);
+        if (entity.isCorpse()) return entity.getDinosaurSpecies().getGrowthCurve().calculate(entity.getBodyGrowth(), GrowthCurveStat.SCALE);
         if (entity.isForScreenRendering) return 1;
-        return Mth.lerp(entity.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth(), lowerBound, upperBound);
+        return Util.getDino(entity.getPlayer()).getGrowthCurve().calculate(entity.getPlayer().getData(DataAttachments.DINO_DATA).getGrowth(), GrowthCurveStat.SCALE);
 
     }
 
@@ -204,9 +222,8 @@ public class Util {
         DinoData data = player.getData(DataAttachments.DINO_DATA);
 
         float growth = data.getGrowth();
-        float maxSpeed = Util.getDino(player).getSprintSpeed();
-        float adjustedSpeed = (float) Math.pow(growth, 1f/2f);
-        maxSpeed = maxSpeed * (Mth.lerp(adjustedSpeed, 0.1f, 1f) * 20);
+        float maxSpeed = Util.getDino(player).getSprintSpeed() * Util.getDino(player).getGrowthCurve().calculate(growth, GrowthCurveStat.SPEED);
+        maxSpeed *= DietStat.calculate(player, DietStat.SPEED);
 
         return maxSpeed;
     }
@@ -218,10 +235,8 @@ public class Util {
         float growth = data.getGrowth();
         float speed = data.isSprinting() ? Util.getDino(player).getSprintSpeed() : Util.getDino(player).getWalkSpeed();
 
-
-        float adjustedSpeed = (float) Math.pow(growth, 0.5f);
-        speed = speed * (Mth.lerp(adjustedSpeed, 0.1f, 1f));
-
+        speed *= Util.getDino(player).getGrowthCurve().calculate(growth, GrowthCurveStat.SPEED);
+        speed *= DietStat.calculate(player, DietStat.SPEED);
         if (player.isInWater()) {
             speed *= Util.getSwimSpeed(player);
         }
@@ -232,32 +247,120 @@ public class Util {
     public static boolean isAttackValid(Player source, Player target) {
 
         /// the hitbox may vary in size. if the dino player is big they have higher attack distance.
-        if (source.distanceTo(target) > 7 * (source.getBoundingBox().getXsize() + 0.5)) return false;
+        if (source.distanceTo(target) > 7 * (source.getBoundingBox().getXsize() + 0.75)) return false;
+
+        if (source.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return false;
 
         return true;
     }
 
-    public static float calculateDamageFactor(HitboxType type, Player target) {
 
-        if (Util.getDino(target).getID() == Dinosaurs.PACHYCEPHALOSAURUS.getID() && type == HitboxType.HEAD) return 0.5f;
+    public static void attemptToHitPlayer(Player target, float damage, float bleed, boolean makeNoise, HitboxType type) {
 
-        if (type == HitboxType.HEAD) return 1.66f;
-        if (type == HitboxType.BODY1) return 1f;
-        if (type == HitboxType.BODY2) return 0.75f;
-        if (type == HitboxType.TAIL1) return 0.5f;
-        if (type == HitboxType.TAIL2) return 0.25f;
-
-        return 0f;
-    }
-
-
-    public static boolean attemptToHitPlayer(Player target, float damage, float bleed, boolean makeNoise, HitboxType type) {
-
-        float damageModifier = calculateDamageFactor(type, target);
+        float damageModifier = type.getDamageModifier();
 
         dealDamage(target, damage * damageModifier, bleed * damageModifier, makeNoise);
-        return true;
-
     }
 
+    public static float getDinoBaseWidth(Player player) {
+        return switch (getDino(player)) {
+            case PACHYCEPHALOSAURUS -> 0.725F;
+            case DEINONYCHUS -> 0.65F;
+            case PTERANODON -> 0.5F;
+
+            default -> 0.6F;
+        };
+    }
+
+    public static float getDinoBaseHeight(Player player) {
+        return switch (getDino(player)) {
+            case PACHYCEPHALOSAURUS -> 1.7F;
+            case DEINONYCHUS -> 1.35F;
+            case PTERANODON -> 1.1F;
+
+            default -> 1.8F;
+        };
+    }
+
+    public static <E extends GeoAnimatable> void setAnimationSpeed(double speed, double currentAnimTick, AnimationController<E> controller) {
+        if(speed == controller.getAnimationSpeed() || speed <= 0) {
+            return;
+        }
+
+        if (controller.getCurrentAnimation() != null) {
+
+            double distance = currentAnimTick - ((AnimationControllerAccessor)controller).getTickOffset();
+            ((AnimationControllerAccessor) controller).setTickOffset(currentAnimTick - distance * (controller.getAnimationSpeed() / speed));
+            controller.setAnimationSpeed(speed);
+        }
+    }
+
+
+
+    public static <E extends GeoAnimatable> PlayState setAndContinue(AnimationState<E> state, double currentTick, double tickAdvance, RawAnimation transitioningFrom, RawAnimation transitioningTo, double nextAnimLength) {
+        AnimationController<E> controller = state.getController();
+
+        controller.transitionLength((int) tickAdvance);
+        crossfade(controller, currentTick, tickAdvance, transitioningFrom, nextAnimLength);
+        return state.setAndContinue(transitioningTo);
+    }
+
+    public static <E extends GeoAnimatable> void crossfade(AnimationController<E> controller, double currentTick, double tickAdvance, RawAnimation transitioningFrom, double nextAnimLength) {
+        AnimationControllerAccessor accessor = (AnimationControllerAccessor)controller;
+
+        if (controller.getCurrentRawAnimation() == transitioningFrom) {
+            if (accessor.getAnimatable() instanceof DinosaurEntity entity && entity.getPlayer() != null) {
+                double length = controller.getCurrentAnimation().animation().length();
+                double animCrossfadeTick = (currentTick % length) + tickAdvance;
+
+                if (animCrossfadeTick > nextAnimLength * 20d) animCrossfadeTick -= nextAnimLength * 20d;
+
+                CrossfadeTickTracker.addOrReplace(entity.getPlayer().getId(), animCrossfadeTick);
+
+                accessor.setTickOffset(accessor.getTickOffset() + animCrossfadeTick);
+
+            }
+        }
+    }
+
+    public static void renderItemStack(
+            PoseStack poseStack, Level level, int packedLight, MultiBufferSource bufferSource,
+            String itemId,
+            double xTranslation, double yTranslation, double zTranslation,
+            float xScale, float yScale, float zScale,
+            float xRot, float yRot, float zRot
+            ) {
+        poseStack.pushPose();
+
+        poseStack.translate(xTranslation, yTranslation, zTranslation);
+
+        poseStack.mulPose(Axis.XP.rotationDegrees(xRot));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+
+        poseStack.scale(xScale, yScale, zScale);
+
+        if (BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(itemId))) {
+            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemId));
+
+            ItemStack stack = new ItemStack(item);
+
+            Minecraft.getInstance().getItemRenderer().renderStatic(
+                    stack,
+                    ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                    packedLight,
+                    OverlayTexture.NO_OVERLAY,
+                    poseStack,
+                    bufferSource,
+                    level,
+                    0
+            );
+        }
+
+        poseStack.popPose();
+    }
+
+    public static <T> T getFromEnd(List<T> list, int index) {
+        return list.get(list.size() - 1 - index);
+    }
 }

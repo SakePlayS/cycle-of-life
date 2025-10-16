@@ -38,6 +38,9 @@ public enum AdaptationType {
     }
 
     public float getValue(int level) {
+
+        if (level >= 6) return val5;
+
         switch (level) {
             case 1 -> {return val1;}
             case 2 -> {return val2;}

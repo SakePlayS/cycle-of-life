@@ -26,6 +26,9 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<PairData>> PAIRING_DATA = ATTACHMENT_TYPES.register(
             "pairing_data", () -> AttachmentType.serializable(PairData::new).build());
 
+    public static final Supplier<AttachmentType<HeldFoodData>> HELD_FOOD_DATA = ATTACHMENT_TYPES.register(
+            "held_food_data", () -> AttachmentType.serializable(HeldFoodData::new).build());
+
     public static final Supplier<AttachmentType<AdaptationData>> ADAPTATION_DATA = ATTACHMENT_TYPES.register(
             "adaptations_data", () -> AttachmentType.serializable(AdaptationData::new).build());
 
@@ -74,23 +77,29 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<Boolean>> ATTACK_MAIN_2 = ATTACHMENT_TYPES.register(
             "attack_main_two", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 
+    public static final Supplier<AttachmentType<Boolean>> JUMP_ANIM_FLAG = ATTACHMENT_TYPES.register(
+            "jump_anim_flag", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
+    public static final Supplier<AttachmentType<Boolean>> SWALLOW_ANIM_FLAG = ATTACHMENT_TYPES.register(
+            "swallow_anim_flag", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
+    public static final Supplier<AttachmentType<Boolean>> JUMP_WINDUP = ATTACHMENT_TYPES.register(
+            "jump_windup", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
+
     public static final Supplier<AttachmentType<Integer>> ATTACK_COOLDOWN = ATTACHMENT_TYPES.register(
             "attack_cooldown", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
+    public static final Supplier<AttachmentType<Integer>> EATING_TIME = ATTACHMENT_TYPES.register(
+            "eating_time", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
     public static final Supplier<AttachmentType<Integer>> KNOCKDOWN_TIME = ATTACHMENT_TYPES.register(
             "knockdown_time", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
-    public static final Supplier<AttachmentType<Float>> DESIRED_ATTACK_ANGLE = ATTACHMENT_TYPES.register(
-            "desired_attack_angle", () -> AttachmentType.builder(() -> 0f).serialize(Codec.FLOAT).build());
-
-    public static final Supplier<AttachmentType<Boolean>> ATTACK_TURNAROUND = ATTACHMENT_TYPES.register(
+    public static final Supplier<AttachmentType<Boolean>> ALT_ATTACK = ATTACHMENT_TYPES.register(
             "attack_turnaround", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 
     public static final Supplier<AttachmentType<Boolean>> ATTEMPTING_PAIRING = ATTACHMENT_TYPES.register(
             "attempting_pairing", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
-
-    public static final Supplier<AttachmentType<Boolean>> HITBOXES_INITIALIZED = ATTACHMENT_TYPES.register(
-            "hitboxes_initialized", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 
     public static final Supplier<AttachmentType<String>> TURNING_STATE = ATTACHMENT_TYPES.register(
             "turning_state", () -> AttachmentType.builder(() -> "STILL").serialize(Codec.STRING).build());

@@ -7,7 +7,7 @@ import net.minecraft.world.phys.AABB;
 public class AssociatedAABB extends AABB {
 
     private final Player player;
-    private HitboxType type =  HitboxType.BODY1;
+    private HitboxType type = HitboxType.NONE;
 
 
     public AssociatedAABB(double x1, double y1, double z1, double x2, double y2, double z2, Player player) {
