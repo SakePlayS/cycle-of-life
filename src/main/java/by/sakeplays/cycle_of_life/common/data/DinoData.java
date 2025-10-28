@@ -118,6 +118,12 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         nbt.putBoolean("IsLatched", isLatched);
         nbt.putBoolean("IsFlying", isFlying);
 
+        nbt.putFloat("Carbs", carbs);
+        nbt.putFloat("Lipids", lipids);
+        nbt.putFloat("Proteins", proteins);
+        nbt.putFloat("Vitamins", vitamins);
+
+
         return nbt;
     }
 
@@ -145,6 +151,10 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.buildModeUpdated = nbt.getBoolean("BuildModeUpdated");
         this.isLatched = nbt.getBoolean("IsLatched");
         this.isFlying = nbt.getBoolean("IsFlying");
+        this.carbs = nbt.getFloat("Carbs");
+        this.lipids = nbt.getFloat("Lipids");
+        this.vitamins = nbt.getFloat("Vitamins");
+        this.proteins = nbt.getFloat("Proteins");
 
     }
 

@@ -382,10 +382,10 @@ public class OnEntityTick {
 
         if (Util.getDino(player) == Dinosaurs.PTERANODON && player.getData(DataAttachments.DINO_DATA).isFlying()) {
 
-            if (player.getData(DataAttachments.DINO_DATA).isSprinting() || player.getData(DataAttachments.DINO_DATA).isAirbraking()) additionalStam = -8f;
+            if (player.getData(DataAttachments.DINO_DATA).isSprinting() || player.getData(DataAttachments.DINO_DATA).isAirbraking()) additionalStam = -5f;
 
         } else if (player.getData(DataAttachments.DINO_DATA).isSprinting()) {
-            additionalStam = -8f;
+            additionalStam = -5f;
         } else {
             additionalStam = factor * Util.getStamRegen(player)
                     * (player.getData(DataAttachments.REST_FACTOR) * 0.5f + 0.5f);
@@ -400,7 +400,7 @@ public class OnEntityTick {
         if (ratio < 0.25f) {
             Adaptation enhancedStamina = player.getData(DataAttachments.ADAPTATION_DATA).getAdaptation(AdaptationType.ENHANCED_STAMINA);
 
-            float newProgress = enhancedStamina.getProgress() + additionalStam / (2 * Util.getStaminaPool(player));
+            float newProgress = enhancedStamina.getProgress() + Math.max(0f, additionalStam / (2 * Util.getStaminaPool(player)));
             enhancedStamina.setProgress(newProgress);
 
             PacketDistributor.sendToAllPlayers(new SyncAdaptation(AdaptationType.ENHANCED_STAMINA, newProgress,

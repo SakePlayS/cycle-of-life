@@ -24,12 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class OnRenderPlayerEvent {
 
+    // IMPORTANT: Don't create a new entity every tick. Instead, you should store it somewhere.
+
     public static final Map<Integer, DinosaurEntity> PLAYER_DINOS = new ConcurrentHashMap<>();
 
 
-    // Suppress the  player model rendering and replace it
-    // with a dinosaur model.
-
+    // Add a dino entity to the map if it doesn't exist
     public static DinosaurEntity getOrCreateDino(final Player player) {
 
         int key = player.getId();
@@ -47,7 +47,7 @@ public class OnRenderPlayerEvent {
         return PLAYER_DINOS.get(player.getId());
     }
 
-
+    // Get the entity to render
     private static DinosaurEntity getDinoToRender(Player player) {
         Dinosaurs selectedDino = Util.getDino(player);
 
@@ -91,6 +91,7 @@ public class OnRenderPlayerEvent {
     }
 
 
+    // TODO: Move this stuff to somewhere else
 
     @SubscribeEvent
     public static void frameRender(RenderFrameEvent.Pre event) {
