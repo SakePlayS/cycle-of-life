@@ -5,6 +5,7 @@ import by.sakeplays.cycle_of_life.client.entity.CrossfadeTickTracker;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DietStat;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
+import by.sakeplays.cycle_of_life.common.data.Position;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
 import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
 import by.sakeplays.cycle_of_life.entity.*;
@@ -30,7 +31,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.network.PacketDistributor;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animation.*;
@@ -150,10 +154,10 @@ public class Util {
             PacketDistributor.sendToAllPlayers(new SyncHealth(target.getId(), newHealth));
 
             if (playHurtSound)  {
-                int dinoId = Util.getDino(target).getID();
+                Dinosaurs selectedDino = Util.getDino(target);
 
-                switch (dinoId) {
-                    case 2 -> target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                switch (selectedDino) {
+                    case DEINONYCHUS -> target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                             ModSounds.DEINONYCHUS_HURT.get(), SoundSource.PLAYERS, 1f ,1f +
                                     (float) ((Math.random() - 0.5) / 4));
                     default -> target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
@@ -362,5 +366,10 @@ public class Util {
 
     public static <T> T getFromEnd(List<T> list, int index) {
         return list.get(list.size() - 1 - index);
+    }
+
+    public static boolean hasClearLineOfSight(Position from, Position to, Level level) {
+        ClipContext context = new ClipContext(from.toVec3(), to.toVec3(), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty());
+        return level.clip(context).getType() == HitResult.Type.MISS;
     }
 }

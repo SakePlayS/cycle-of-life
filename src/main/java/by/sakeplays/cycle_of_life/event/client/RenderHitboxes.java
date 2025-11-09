@@ -3,7 +3,6 @@ package by.sakeplays.cycle_of_life.event.client;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
-import by.sakeplays.cycle_of_life.common.data.Position;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
@@ -49,7 +48,7 @@ public class RenderHitboxes {
             poseStack.pushPose();
 
             var list = ClientHitboxData.hitboxMap.get(player.getId());
-            if (list == null || list.size() < 5 || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+            if (list == null || list.size() < 5 || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) {
                 poseStack.popPose();
                 continue;
             }

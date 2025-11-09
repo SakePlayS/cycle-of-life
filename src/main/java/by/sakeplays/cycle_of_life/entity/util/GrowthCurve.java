@@ -14,6 +14,7 @@ public class GrowthCurve {
     private List<Pair<Float, Float>> jumpStrength = new ArrayList<>();
     private List<Pair<Float, Float>> runBaseAnimSpeed = new ArrayList<>();
     private List<Pair<Float, Float>> walkBaseAnimSpeed = new ArrayList<>();
+    private List<Pair<Float, Float>> cameraDistance = new ArrayList<>();
 
     public GrowthCurve() {
     }
@@ -26,6 +27,8 @@ public class GrowthCurve {
             case JUMP_STRENGTH -> jumpStrength;
             case RUN_BASE_ANIM_SPEED -> runBaseAnimSpeed;
             case WALK_BASE_ANIM_SPEED -> walkBaseAnimSpeed;
+            case CAMERA_DISTANCE -> cameraDistance;
+
         };
     }
 

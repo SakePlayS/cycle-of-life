@@ -21,7 +21,7 @@ public class ClientTick {
     @SubscribeEvent
     public static void recordHistory(ClientTickEvent.Pre event) {
         Player player = Minecraft.getInstance().player;
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
 
 
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);

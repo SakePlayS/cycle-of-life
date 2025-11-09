@@ -56,6 +56,8 @@ public class HandleKeys {
     private static boolean pairMovementLocked = false;
     protected static float angleDiff = 0;
     private static int airborneTime = 0;
+    public static int cameraMode = 0;
+    private static float turningRate = 0;
 
 
 
@@ -63,10 +65,14 @@ public class HandleKeys {
     public static void onClientTick(ClientTickEvent.Post event) {
         LocalPlayer player = Minecraft.getInstance().player;
 
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
 
         attackTimer--;
         attackTimeout--;
+
+        if (KeyMappings.TOGGLE_CAMERA_MODE.consumeClick()) {
+           cameraMode = (cameraMode + 1) % 3;
+        }
 
         handleTakeoff(player);
 
@@ -206,6 +212,7 @@ public class HandleKeys {
         float maxSpeed = Util.calculateSpeed(player) * additionalSpeed;
 
         float additionalTurn = 0;
+        float newTurnDegree = turnDegree;
 
 
         if (airborneTime >= 3) {
@@ -220,41 +227,6 @@ public class HandleKeys {
 
         }
 
-        if (KeyMappings.LEFT_MAPPING.isDown() && KeyMappings.BACKWARD_MAPPING.isDown()) {
-            additionalTurn = -(2.35619f);
-        } else if (KeyMappings.RIGHT_MAPPING.isDown() && KeyMappings.BACKWARD_MAPPING.isDown()) {
-            additionalTurn = (2.35619f);
-        } else if (KeyMappings.LEFT_MAPPING.isDown() && KeyMappings.FORWARD_MAPPING.isDown()) {
-            additionalTurn = (float) -(Math.PI / 4f);
-        } else if (KeyMappings.RIGHT_MAPPING.isDown() && KeyMappings.FORWARD_MAPPING.isDown()) {
-            additionalTurn = (float) (Math.PI / 4f);
-        } else if (KeyMappings.LEFT_MAPPING.isDown()) {
-            additionalTurn = (float) -(Math.PI / 2f);
-        } else if (KeyMappings.RIGHT_MAPPING.isDown()) {
-            additionalTurn = (float) (Math.PI / 2f);
-        } else if (KeyMappings.BACKWARD_MAPPING.isDown()) {
-            additionalTurn = (float) (Math.PI);
-        }
-
-        player.setData(DataAttachments.ADDITIONAL_TURN, additionalTurn);
-        PacketDistributor.sendToServer(new SyncAdditionalTurn(player.getId(), additionalTurn));
-
-        float newTurnDegree = turnDegree;
-        float turnTransitionSpeed = Math.min(turnSpeed/35 * Mth.RAD_TO_DEG, 1);
-
-        float targetYaw = yRot + additionalTurn;
-        angleDiff = Mth.wrapDegrees((float) Math.toDegrees(targetYaw - turnDegree)) * Mth.DEG_TO_RAD;
-        float delta = Mth.clamp(angleDiff, -turnSpeed, turnSpeed);
-
-        if (angleDiff > -0.01) turnMultiplier = Math.min(1, turnMultiplier + turnTransitionSpeed);
-        if (angleDiff < 0.01) turnMultiplier = Math.max(-1, turnMultiplier - turnTransitionSpeed);
-
-        float angleDiffAbs = Math.abs(angleDiff);
-
-        maxSpeedPenalty = Mth.clamp(1.3f - (angleDiffAbs/3f), 0.4f, 1f);
-
-        maxSpeed *= maxSpeedPenalty;
-
         if (movementKeyDown()) {
 
             if (shouldMove(player)) {
@@ -266,7 +238,7 @@ public class HandleKeys {
             dinoData.setMoving(true);
             PacketDistributor.sendToServer(new SyncDinoWalking(true, player.getId()));
 
-            newTurnDegree = handlePlayerRotation(turnDegree, delta, player);
+            newTurnDegree = handlePlayerRotationAlt(player);
 
         } else {
             handleDrag(drag, player);
@@ -274,14 +246,6 @@ public class HandleKeys {
             dinoData.setMoving(false);
             PacketDistributor.sendToServer(new SyncDinoWalking(false, player.getId()));
         }
-
-        if (angleDiff < 0.01 && angleDiff > -0.01) {
-            if (turnMultiplier > 0) turnMultiplier = Math.max(turnMultiplier - turnTransitionSpeed, 0);
-            if (turnMultiplier < 0) turnMultiplier = Math.min(turnMultiplier + turnTransitionSpeed, 0);
-        }
-
-        player.setData(DataAttachments.TURN_PROGRESS, turnMultiplier);
-        PacketDistributor.sendToServer(new SyncTurnProgress(turnMultiplier, player.getId()));
 
         if (airborneTime < 3 && player.getData(DataAttachments.KNOCKDOWN_TIME) < 1) {
             dx = (float) -Math.sin(newTurnDegree);
@@ -380,6 +344,34 @@ public class HandleKeys {
         if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return player.getData(DataAttachments.PLAYER_ROTATION);
+
+        player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
+        PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
+
+        return newTurnDegree;
+    }
+
+    private static float handlePlayerRotationAlt(Player player) {
+        float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
+
+        float playerRot = player.getData(DataAttachments.PLAYER_ROTATION);
+
+        if (KeyMappings.LEFT_MAPPING.isDown()) {
+            turningRate = Math.max(-turnSpeed, turningRate - turnSpeed * (turningRate > 0 ? 0.4f : 0.2f));
+        } else if (KeyMappings.RIGHT_MAPPING.isDown())  {
+            turningRate = Math.min(turnSpeed, turningRate + turnSpeed * (turningRate < 0 ? 0.4f : 0.2f));
+        } else {
+            turningRate = turningRate / 2;
+        }
+
+        float newTurnDegree = playerRot + turningRate;
+
+        if (AttackDispatcher.isAltAttacking) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
+        if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return player.getData(DataAttachments.PLAYER_ROTATION);
+
+
 
         player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
         PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));

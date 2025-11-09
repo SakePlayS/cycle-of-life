@@ -95,6 +95,9 @@ public class DataAttachments {
     public static final Supplier<AttachmentType<Integer>> KNOCKDOWN_TIME = ATTACHMENT_TYPES.register(
             "knockdown_time", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
 
+    public static final Supplier<AttachmentType<Integer>> VANILLA_IFRAME_COMPAT_UNTILL = ATTACHMENT_TYPES.register(
+            "vanilla_iframe_compat_until", () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).build());
+
     public static final Supplier<AttachmentType<Boolean>> ALT_ATTACK = ATTACHMENT_TYPES.register(
             "attack_turnaround", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 

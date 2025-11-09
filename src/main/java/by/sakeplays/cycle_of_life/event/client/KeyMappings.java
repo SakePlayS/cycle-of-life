@@ -27,7 +27,6 @@ public class KeyMappings {
             new KeyMapping("key.cycle_of_life.backward", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S,
                     "key.categories.cycle_of_life");
 
-
     public static final KeyMapping SPRINT_MAPPING =
             new KeyMapping("key.cycle_of_life.sprint", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
                     "key.categories.cycle_of_life");
@@ -88,6 +87,10 @@ public class KeyMappings {
             new KeyMapping("key.cycle_of_life.airbrake", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S,
                     "key.categories.cycle_of_life");
 
+    public static final KeyMapping TOGGLE_CAMERA_MODE =
+            new KeyMapping("key.cycle_of_life.toggle_camera_mode", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C,
+                    "key.categories.cycle_of_life");
+
     @SubscribeEvent
     public static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(FORWARD_MAPPING);
@@ -109,6 +112,7 @@ public class KeyMappings {
         event.register(DESCEND);
         event.register(AIRBRAKE);
         event.register(EAT_MAPPING);
+        event.register(TOGGLE_CAMERA_MODE);
 
     }
 

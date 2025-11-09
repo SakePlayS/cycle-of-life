@@ -30,7 +30,7 @@ public class CancelInventoryOpen {
     )
     private boolean blockInventoryConsume(KeyMapping self) {
         Minecraft mc = (Minecraft)(Object)this;
-        if (mc.player != null && !mc.player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+        if (mc.player != null && !mc.player.getData(DataAttachments.DINO_DATA).isInHumanMode()) {
             return false;
         }
         return self.consumeClick();

@@ -12,8 +12,20 @@ public interface CameraAccessor {
     @Invoker("setPosition")
     void callSetPosition(double x, double y, double z);
 
+    @Invoker("setRotation")
+    void callSetRotation(float yRot, float xRot, float roll);
+
     @Accessor("eyeHeight")
     float accessorGetEyeHeight();
+
+    @Accessor("yRot")
+    float accessorGetYRot();
+
+    @Accessor("xRot")
+    float accessorGetXRot();
+
+    @Accessor("roll")
+    float accessorGetRoll();
 
     @Accessor("eyeHeightOld")
     float accessorGetEyeHeightOld();

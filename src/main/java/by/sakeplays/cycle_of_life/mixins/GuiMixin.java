@@ -18,26 +18,26 @@ public class GuiMixin {
     @Inject(method = "renderHotbar", at = @At("HEAD"), cancellable = true)
     private void cancelHotbarRender(GuiGraphics graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
         ci.cancel();
     }
 
     @Inject(method = "renderHealthLevel", at = @At("HEAD"), cancellable = true)
     private void cancelHealthRender(GuiGraphics graphics, CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
         ci.cancel();
     }
 
     @Inject(method = "renderFood", at = @At("HEAD"), cancellable = true)
     private void cancelFoodRender(GuiGraphics guiGraphics, Player player, int y, int x, CallbackInfo ci) {
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
         ci.cancel();
     }
     @Inject(method = "renderExperienceBar", at = @At("HEAD"), cancellable = true)
     private void cancelXPRender(GuiGraphics guiGraphics, int x, CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
         ci.cancel();
     }
 }

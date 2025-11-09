@@ -40,7 +40,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         if (animatable.isForScreenRendering) return;
 
 
-        if (!animatable.isCorpse()) {
+        if (!animatable.isCorpse() && !animatable.isForScreenRendering) {
 
             if (animatable.getPlayer().getData(DataAttachments.ATTACK_MAIN_1)) {
                 animatable.triggerAnim("attack", "bite");
@@ -82,6 +82,8 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
             if (animatable.getPlayer().tickCount % 20 == 0) {
                 if (Math.random() < 0.1) animatable.triggerAnim("blink", "blink");
             }
+
+
         }
 
 
@@ -132,28 +134,45 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
             return;
         }
 
-        if (animatable.playerId != null && !animatable.isCorpse()) {
-            playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
-            playerYaw = animatable.getPlayer().getYRot();
-            additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
-            targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
+
+        playerRot =animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION);
+        playerYaw = animatable.getPlayer().getYRot();
+        additionalTurn = animatable.getPlayer().getData(DataAttachments.ADDITIONAL_TURN);
+        targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
+
+
+        if (animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMoving()) {
+
+            float desiredHeadRotY = -Math.clamp(
+                    Mth.lerp(partialTick, animatable.playerRotDeltaOld, animatable.playerRotDelta),
+                    -Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD,
+                    Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD
+            );
+
+            rot += (desiredHeadRotY - rot) * 0.3f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+
+            neck_tilt.setRotY(rot * 1.5f);
+            head_tilt.setRotY(rot * 1.5f);
+
+            animatable.headRot = rot;
+
+        } else {
+
+            float desiredHeadRotY = -Math.clamp(
+                    Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
+                    -0.35f, 0.35f);
+
+            rot += (desiredHeadRotY - rot) * 0.3f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+
+            neck_tilt.setRotY(rot * 1.15f);
+            head_tilt.setRotY(rot * 1.5f);
+
+            neck_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.2f);
+            head_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.8f);
+
+            animatable.headRot = rot;
         }
 
-
-
-        float desiredHeadRotY = -Math.clamp(
-                Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
-                -0.35f, 0.35f);
-
-        rot += (desiredHeadRotY - rot) * 0.13f / ((float) 60 / Math.min(60, Minecraft.getInstance().getFps() + 1));
-
-        neck_tilt.setRotY(rot * 1.15f);
-        head_tilt.setRotY(rot * 1.5f);
-
-        neck_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.2f);
-        head_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.8f);
-
-        animatable.headRot = rot;
 
     }
 
@@ -163,6 +182,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         GeoBone tail_2_rot = getAnimationProcessor().getBone("tail_2_rot");
         GeoBone tail_3_rot = getAnimationProcessor().getBone("tail_3_rot");
         GeoBone tail_root = getAnimationProcessor().getBone("tail_root");
+        GeoBone leaning_handler = getAnimationProcessor().getBone("leaning_handler");
 
         if (animatable.getPlayer() == null || animatable.isForScreenRendering || animatable.isCorpse()) {
             tail_1_rot.setRotY(0);
@@ -179,9 +199,11 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         if (animatable.lastUpdatedTick != animatable.getPlayer().tickCount) {
             animatable.lastUpdatedTick = animatable.getPlayer().tickCount;
 
+            animatable.recordRotHistory(animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2);
+
             animatable.recordTailPosHistory(6, animatable.tailRootPos);
 
-            if (animatable.tailPosHistory.size() < 6) {
+            if (animatable.tailPosHistory.size() < 6 || animatable.rotHistory.size() < 2) {
                 tail_1_rot.setRotY(0);
                 tail_1_rot.setRotX(0);
 
@@ -231,7 +253,7 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
 
         }
 
-        if (animatable.tailRotXHistory.size() < 15 || animatable.tailRotYHistory.size() < 15) {
+        if (animatable.tailRotXHistory.size() < 15 || animatable.tailRotYHistory.size() < 15 || animatable.rotHistory.size() < 2) {
             tail_1_rot.setRotY(0);
             tail_1_rot.setRotX(0);
 
@@ -242,6 +264,12 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
             tail_3_rot.setRotX(0);
             return;
         }
+
+        leaning_handler.setRotZ(
+                Math.clamp(Mth.lerp(partialTick,-animatable.playerRotDeltaOld , -animatable.playerRotDelta),
+                -Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD,
+                Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD)
+        );
 
         tail_1_rot.setRotX(0.5f * Mth.lerp
                 (

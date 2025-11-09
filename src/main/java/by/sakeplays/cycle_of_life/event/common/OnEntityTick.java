@@ -42,10 +42,10 @@ public class OnEntityTick {
 
             if (!player.level().isClientSide && player.tickCount % 10 == 0) {
                 PacketDistributor.sendToAllPlayers(new SyncBuildMode(player.getId(),
-                        player.getData(DataAttachments.DINO_DATA).isInBuildMode()));
+                        player.getData(DataAttachments.DINO_DATA).isInHumanMode()));
             }
 
-            if (player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+            if (player.getData(DataAttachments.DINO_DATA).isInHumanMode()) {
                 if (!player.getData(DataAttachments.DINO_DATA).isBuildModeUpdated()) player.refreshDimensions();
                 player.getData(DataAttachments.DINO_DATA).setBuildModeUpdated(true);
                 return;
@@ -92,7 +92,7 @@ public class OnEntityTick {
 
 
 
-                    syncSkinData(player);
+                    if (player.tickCount % 100 == 0) syncSkinData(player);
                     updateRestingFactor(player);
                     handleGrowth(player);
                     handleRegenerationAndUpdateWeight(player);
@@ -156,9 +156,7 @@ public class OnEntityTick {
 
         SkinData data = player.getData(DataAttachments.SKIN_DATA);
 
-        PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), data.getEyesColor(),
-                data.getMarkingsColor(), data.getBodyColor(), data.getFlankColor(),
-                data.getBellyColor(), data.getMaleDisplayColor()));
+        PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), data.getColors()));
     }
 
 
@@ -168,18 +166,12 @@ public class OnEntityTick {
                 !player.level().isClientSide()) {
 
             DinosaurEntity corpse = Util.getBody(player);
-            corpse.setBody(true);
+            corpse.setCorpse(true);
             corpse.setPos(player.getX(), player.getY(), player.getZ());
 
             SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
 
-            corpse.setBodyColor(skinData.getBodyColor());
-            corpse.setBellyColor(skinData.getBellyColor());
-            corpse.setEyesColor(skinData.getEyesColor());
-            corpse.setMarkingsColor(skinData.getMarkingsColor());
-            corpse.setFlankColor(skinData.getFlankColor());
-            corpse.setMaleDisplayColor(skinData.getMaleDisplayColor());
-
+            corpse.setColors(skinData.getColors());
             corpse.setBodyGrowth(player.getData(DataAttachments.DINO_DATA).getGrowth());
             corpse.setBodyRot(player.getData(DataAttachments.PLAYER_ROTATION));
             corpse.setRemainingFood(player.getData(DataAttachments.DINO_DATA).getWeight());
@@ -345,6 +337,8 @@ public class OnEntityTick {
 
                 data.setStamina(Util.getDino(player).getStaminaPool());
                 PacketDistributor.sendToAllPlayers(new SyncStamina(player.getId(), Util.getDino(player).getStaminaPool()));
+
+                player.setData(DataAttachments.VANILLA_IFRAME_COMPAT_UNTILL, player.tickCount + 200);
 
                 data.setInitialized(true);
                 PacketDistributor.sendToAllPlayers(new SyncInitialized(player.getId(), true));

@@ -2,6 +2,7 @@ package by.sakeplays.cycle_of_life.client.screen.util;
 
 import by.sakeplays.cycle_of_life.common.data.Nest;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -45,7 +46,13 @@ public class ColorHolder {
     }
 
     public static ColorHolder fromSkinData(SkinData data) {
-        return new ColorHolder(data.getEyesColor(), data.getMarkingsColor(), data.getBodyColor(), data.getFlankColor(),
-                data.getBellyColor(), data.getMaleDisplayColor());
+        return new ColorHolder(
+                data.getColor(ColorableBodyParts.EYES),
+                data.getColor(ColorableBodyParts.MARKINGS),
+                data.getColor(ColorableBodyParts.BODY),
+                data.getColor(ColorableBodyParts.BODY),
+                data.getColor(ColorableBodyParts.BELLY),
+                data.getColor(ColorableBodyParts.MALE_DISPLAY)
+        );
     }
 }

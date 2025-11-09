@@ -34,7 +34,7 @@ public class HUDEvent {
         if (Minecraft.getInstance().options.hideGui ||
             player == null ||
             player.getData(DataAttachments.DINO_DATA).getSelectedDinosaur() == 0 ||
-            player.getData(DataAttachments.DINO_DATA).isInBuildMode()
+            player.getData(DataAttachments.DINO_DATA).isInHumanMode()
         ) return;
 
         DinoData dinoData = player.getData(DataAttachments.DINO_DATA);

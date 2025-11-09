@@ -40,7 +40,6 @@ public class DeinonychusRenderer extends GeoEntityRenderer<Deinonychus>  {
         this.addRenderLayer(new DeinonychusBellyLayer<>(this));
         this.addRenderLayer(new DeinonychusBodyLayer<>(this));
         this.addRenderLayer(new DeinonychusEyesLayer<>(this));
-        this.addRenderLayer(new DeinonychusFlankLayer<>(this));
         this.addRenderLayer(new DeinonychusMarkingsLayer<>(this));
 
     }

@@ -2,11 +2,10 @@ package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
 import by.sakeplays.cycle_of_life.common.data.Position;
+import by.sakeplays.cycle_of_life.common.data.SelectedColors;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
-import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -27,6 +26,8 @@ import java.util.List;
 public abstract class DinosaurEntity extends LivingEntity {
 
     public float prevBodyRot;
+    public float playerRotDeltaOld = 0;
+    public float playerRotDelta = 0;
 
     public DinosaurEntity(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
@@ -44,20 +45,14 @@ public abstract class DinosaurEntity extends LivingEntity {
     public Position tailRootPos = new Position(0, 0, 0);
     public Position oldTailRootPos = new Position(0, 0, 0);
 
-
     public float tailRotX;
     public float tailRotY;
     public float tailYaw;
 
-
     public float headRot = 0;
 
-    public int eyesColor = Util.rgbaToInt(0.45f, 0.65f, 0.95f, 1f);
-    public int bodyColor = Util.rgbaToInt(0.2f, 0.2f, 0.33f, 1f);
-    public int flankColor = Util.rgbaToInt(0.3f, 0.3f, 0.4f, 1f);
-    public int markingsColor = Util.rgbaToInt(0.12f, 0.15f, 0.25f, 1f);
-    public int bellyColor = Util.rgbaToInt(0.55f, 0.8f, 0.9f, 1f);
-    public int maleDisplayColor = Util.rgbaToInt(0.9f, 0.35f, 0.42f, 1f);
+    public SelectedColors colors = new SelectedColors();
+
     public volatile Integer playerId = 0;
     public boolean isForScreenRendering = false;
     protected int attackAnimUntil = 0;
@@ -90,7 +85,7 @@ public abstract class DinosaurEntity extends LivingEntity {
 
     // ALL synced data here is used ONLY for corpses!
 
-    public static final EntityDataAccessor<Boolean> IS_BODY =
+    public static final EntityDataAccessor<Boolean> IS_CORPSE =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.BOOLEAN);
 
     public static final EntityDataAccessor<Boolean> IS_MALE =
@@ -105,39 +100,21 @@ public abstract class DinosaurEntity extends LivingEntity {
     public static final EntityDataAccessor<Float> REMAINING_WEIGHT =
             SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.FLOAT);
 
-    public static final EntityDataAccessor<Integer> BODY_FLANK_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<SelectedColors> COLORS =
+            SynchedEntityData.defineId(DinosaurEntity.class, ModEntityDataSerializers.SELECTED_COLORS);
 
-    public static final EntityDataAccessor<Integer> BODY_BELLY_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
-
-    public static final EntityDataAccessor<Integer> BODY_MARKINGS_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
-
-    public static final EntityDataAccessor<Integer> BODY_BODY_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
-
-    public static final EntityDataAccessor<Integer> BODY_EYES_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
-
-    public static final EntityDataAccessor<Integer> BODY_MALE_DISPLAY_COLOR =
-            SynchedEntityData.defineId(DinosaurEntity.class, EntityDataSerializers.INT);
+    public abstract SelectedColors getDefaultColors();
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
 
-        builder.define(IS_BODY, false);
+        builder.define(IS_CORPSE, false);
         builder.define(IS_MALE, true);
         builder.define(BODY_GROWTH, 1f);
         builder.define(BODY_ROT, 0f);
-        builder.define(BODY_MALE_DISPLAY_COLOR, 0);
-        builder.define(BODY_BODY_COLOR, 0);
-        builder.define(BODY_EYES_COLOR, 0);
-        builder.define(BODY_BELLY_COLOR, 0);
-        builder.define(BODY_FLANK_COLOR, 0);
-        builder.define(BODY_MARKINGS_COLOR, 0);
         builder.define(REMAINING_WEIGHT, 1f);
+        builder.define(COLORS, getDefaultColors());
 
     }
 
@@ -145,19 +122,14 @@ public abstract class DinosaurEntity extends LivingEntity {
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
 
-        setBody(compound.getBoolean("IsBody"));
+        setCorpse(compound.getBoolean("IsBody"));
         setMale(compound.getBoolean("IsMale"));
         setBodyGrowth(compound.getFloat("BodyGrowth"));
         setBodyRot(compound.getFloat("BodyRot"));
 
         setRemainingFood(compound.getFloat("RemainingWeight"));
 
-        setBodyColor(compound.getInt("BodyColor"));
-        setFlankColor(compound.getInt("FlankColor"));
-        setMaleDisplayColor(compound.getInt("MaleDisplayColor"));
-        setMarkingsColor(compound.getInt("MarkingsColor"));
-        setBellyColor(compound.getInt("BellyColor"));
-        setEyesColor(compound.getInt("EyesColor"));
+        this.setColors(SelectedColors.fromNBT(compound.getCompound("SelectedColors")));
 
     }
 
@@ -172,12 +144,10 @@ public abstract class DinosaurEntity extends LivingEntity {
 
         compound.putFloat("RemainingWeight", getRemainingFood());
 
-        compound.putInt("BodyColor", getBodyColor());
-        compound.putInt("FlankColor", getFlankColor());
-        compound.putInt("EyesColor", getEyesColor());
-        compound.putInt("MarkingsColor", getMarkingsColor());
-        compound.putInt("BellyColor", getBellyColor());
-        compound.putInt("MaleDisplayColor", getMaleDisplayColor());
+        CompoundTag colors = new CompoundTag();
+
+        this.getColors().toNBT(colors);
+        compound.put("SelectedColors", colors);
 
     }
 
@@ -241,11 +211,11 @@ public abstract class DinosaurEntity extends LivingEntity {
     }
 
     public boolean isCorpse() {
-        return this.entityData.get(IS_BODY);
+        return this.entityData.get(IS_CORPSE);
     }
 
-    public void setBody(boolean val) {
-        this.entityData.set(IS_BODY, val);
+    public void setCorpse(boolean val) {
+        this.entityData.set(IS_CORPSE, val);
     }
 
     public boolean isMale() {
@@ -280,59 +250,23 @@ public abstract class DinosaurEntity extends LivingEntity {
         return this.entityData.get(BODY_ROT);
     }
 
-    public void setBodyColor(int val) {
-        this.entityData.set(BODY_BODY_COLOR, val);
+    public SelectedColors getColors() {
+        return this.entityData.get(COLORS).copy();
     }
 
-    public int getBodyColor() {
-        return this.entityData.get(BODY_BODY_COLOR);
+    public void setColors(SelectedColors colors) {
+        this.entityData.set(COLORS, colors.copy());
     }
-
-    public void setMaleDisplayColor(int val) {
-        this.entityData.set(BODY_MALE_DISPLAY_COLOR, val);
-    }
-
-    public int getMaleDisplayColor() {
-        return this.entityData.get(BODY_MALE_DISPLAY_COLOR);
-    }
-
-    public void setMarkingsColor(int val) {
-        this.entityData.set(BODY_MARKINGS_COLOR, val);
-    }
-
-    public int getMarkingsColor() {
-        return this.entityData.get(BODY_MARKINGS_COLOR);
-    }
-
-    public void setFlankColor(int val) {
-        this.entityData.set(BODY_FLANK_COLOR, val);
-    }
-
-    public int getFlankColor() {
-        return this.entityData.get(BODY_FLANK_COLOR);
-    }
-
-    public void setBellyColor(int val) {
-        this.entityData.set(BODY_BELLY_COLOR, val);
-    }
-
-    public int getBellyColor() {
-        return this.entityData.get(BODY_BELLY_COLOR);
-    }
-
-    public void setEyesColor(int val) {
-        this.entityData.set(BODY_EYES_COLOR, val);
-    }
-
-    public int getEyesColor() {
-        return this.entityData.get(BODY_EYES_COLOR);
-    }
-
 
     public void recordRotHistory(float val, int withSize) {
         rotHistory.add(val);
 
-        if (rotHistory.size() > withSize) rotHistory.removeFirst();
+        if (rotHistory.size() > withSize) {
+            rotHistory.removeFirst();
+
+            playerRotDeltaOld = playerRotDelta;
+            playerRotDelta = rotHistory.getLast() - rotHistory.getFirst();
+        }
     }
 
     public abstract Dinosaurs getDinosaurSpecies();

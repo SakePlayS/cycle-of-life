@@ -5,6 +5,8 @@ import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.common.data.SelectedColors;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
@@ -36,15 +38,21 @@ public class Pachycephalosaurus extends DinosaurEntity implements GeoEntity {
 
     public float prevRotY = 0;
 
+    @Override
+    public SelectedColors getDefaultColors() {
+        SelectedColors colors = new SelectedColors();
+
+        colors.setColor(ColorableBodyParts.EYES, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BODY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MARKINGS, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BELLY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MALE_DISPLAY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().toInt());
+
+        return colors;
+    }
 
     public Pachycephalosaurus(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
-
-        bellyColor = new ColorOption(206, 191, 153, 1f, 0.3f).toInt();
-        maleDisplayColor = new ColorOption(78, 91, 78, 1f, 0.89f).toInt();
-        flankColor = new ColorOption(81, 70, 66, 1f, 0.5f).toInt();
-        bodyColor = new ColorOption(44, 36, 36, 1f, 0.7f).toInt();
-        markingsColor = new ColorOption(140, 100, 82, 1f, 0.5f).toInt();
 
     }
 

@@ -339,9 +339,9 @@ public class ModCommands {
                             if (entity instanceof ServerPlayer player) {
                                 DinoData data = player.getData(DataAttachments.DINO_DATA);
 
-                                data.setBuildMode(!data.isInBuildMode());
+                                data.setBuildMode(!data.isInHumanMode());
 
-                                ctx.getSource().sendSuccess(() -> Component.literal("Set build mode to " + data.isInBuildMode()), true);
+                                ctx.getSource().sendSuccess(() -> Component.literal("Set build mode to " + data.isInHumanMode()), true);
 
                                 return Command.SINGLE_SUCCESS;
                             } else {

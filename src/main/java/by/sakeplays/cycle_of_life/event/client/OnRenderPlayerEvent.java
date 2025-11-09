@@ -64,7 +64,7 @@ public class OnRenderPlayerEvent {
     @SubscribeEvent
     private static void onRender(RenderPlayerEvent.Pre event) {
 
-        if (event.getEntity().getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (event.getEntity().getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
 
         event.setCanceled(true);
 
@@ -98,7 +98,7 @@ public class OnRenderPlayerEvent {
         AbstractClientPlayer player = Minecraft.getInstance().player;
         Minecraft instance = Minecraft.getInstance();
 
-        if (player == null || player.getData(DataAttachments.DINO_DATA).isInBuildMode()) return;
+        if (player == null || player.getData(DataAttachments.DINO_DATA).isInHumanMode()) return;
 
 
         if (instance.screen == null) {

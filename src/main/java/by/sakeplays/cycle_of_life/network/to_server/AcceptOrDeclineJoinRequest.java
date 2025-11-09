@@ -4,6 +4,7 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.*;
 import by.sakeplays.cycle_of_life.common.data.adaptations.Adaptation;
 import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationType;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncGrowth;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncSkinData;
 import by.sakeplays.cycle_of_life.network.to_client.*;
@@ -63,15 +64,14 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
                 adaptationData.fullReset();
                 inheritAdaptations(player, nest, adaptationData);
 
-                skinData.setMarkingsColor(Math.random() < 0.5 ? nest.getMatriarchColors().markings : nest.getPatriarchColors().markings);
-                skinData.setMaleDisplayColor(nest.getPatriarchColors().maleDisplay);
-                skinData.setEyesColor(Math.random() < 0.5 ? nest.getMatriarchColors().eyes : nest.getPatriarchColors().eyes);
-                skinData.setBellyColor(Math.random() < 0.5 ? nest.getMatriarchColors().belly : nest.getPatriarchColors().belly);
-                skinData.setBodyColor(Math.random() < 0.5 ? nest.getMatriarchColors().body : nest.getPatriarchColors().body);
-                skinData.setFlankColor(Math.random() < 0.5 ? nest.getMatriarchColors().flank : nest.getPatriarchColors().flank);
+                skinData.setColor(ColorableBodyParts.MARKINGS, Math.random() < 0.5 ? nest.getMatriarchColors().markings : nest.getPatriarchColors().markings);
+                skinData.setColor(ColorableBodyParts.MALE_DISPLAY, nest.getPatriarchColors().maleDisplay);
+                skinData.setColor(ColorableBodyParts.EYES, Math.random() < 0.5 ? nest.getMatriarchColors().eyes : nest.getPatriarchColors().eyes);
+                skinData.setColor(ColorableBodyParts.BELLY, Math.random() < 0.5 ? nest.getMatriarchColors().belly : nest.getPatriarchColors().belly);
+                skinData.setColor(ColorableBodyParts.BODY, Math.random() < 0.5 ? nest.getMatriarchColors().body : nest.getPatriarchColors().body);
+                skinData.setColor(ColorableBodyParts.BODY, Math.random() < 0.5 ? nest.getMatriarchColors().flank : nest.getPatriarchColors().flank);
 
-                PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), skinData.getEyesColor(), skinData.getMarkingsColor(),
-                        skinData.getBodyColor(), skinData.getFlankColor(), skinData.getBellyColor(), skinData.getMaleDisplayColor()));
+                PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), skinData.getColors()));
 
 
                 dinoData.setGrowth(0f);

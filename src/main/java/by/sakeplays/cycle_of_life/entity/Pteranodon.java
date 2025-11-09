@@ -3,6 +3,8 @@ package by.sakeplays.cycle_of_life.entity;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.common.data.SelectedColors;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,6 +33,19 @@ public class Pteranodon extends DinosaurEntity implements GeoEntity {
 
     public Pteranodon(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    public SelectedColors getDefaultColors() {
+        SelectedColors colors = new SelectedColors();
+
+        colors.setColor(ColorableBodyParts.EYES, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BODY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MARKINGS, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BELLY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MALE_DISPLAY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().toInt());
+
+        return colors;
     }
 
     @Override

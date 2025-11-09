@@ -11,6 +11,7 @@ import by.sakeplays.cycle_of_life.client.entity.pachycephalosaurus.Pachycephalos
 import by.sakeplays.cycle_of_life.client.entity.pteranodon.PteranodonRenderer;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.ModEntities;
+import by.sakeplays.cycle_of_life.entity.ModEntityDataSerializers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
@@ -82,6 +83,7 @@ public class CycleOfLife
         ModSounds.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModEntityDataSerializers.register(modEventBus);
 
 
         NeoForge.EVENT_BUS.register(this);

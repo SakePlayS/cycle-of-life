@@ -77,10 +77,13 @@ public class SyncHandler {
                     new SyncStoredEggs(player.getData(DataAttachments.PAIRING_DATA).getStoredEggs(), player.getId()));
 
             PacketDistributor.sendToAllPlayers(
-                    new SyncBuildMode(player.getId(), player.getData(DataAttachments.DINO_DATA).isInBuildMode()));
+                    new SyncBuildMode(player.getId(), player.getData(DataAttachments.DINO_DATA).isInHumanMode()));
 
             PacketDistributor.sendToAllPlayers(
                     new SyncFlightState(player.getData(DataAttachments.DINO_DATA).isFlying(), player.getId()));
+
+            player.setData(DataAttachments.VANILLA_IFRAME_COMPAT_UNTILL, 100);
+
         }
     }
 

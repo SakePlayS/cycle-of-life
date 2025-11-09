@@ -2,6 +2,8 @@ package by.sakeplays.cycle_of_life.entity;
 
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
+import by.sakeplays.cycle_of_life.common.data.SelectedColors;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
 import by.sakeplays.cycle_of_life.util.Util;
@@ -67,12 +69,21 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
 
     public Deinonychus(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
-        eyesColor = Util.rgbaToInt(0.45f, 0.65f, 0.95f, 1f);
-        bodyColor = Util.rgbaToInt(0.2f, 0.2f, 0.33f, 1f);
-        flankColor = Util.rgbaToInt(0.3f, 0.3f, 0.4f, 1f);
-        markingsColor = Util.rgbaToInt(0.12f, 0.15f, 0.25f, 1f);
-        bellyColor = Util.rgbaToInt(0.55f, 0.8f, 0.9f, 1f);
-        maleDisplayColor = Util.rgbaToInt(0.9f, 0.35f, 0.42f, 1f);
+
+
+    }
+
+    @Override
+    public SelectedColors getDefaultColors() {
+        SelectedColors colors = new SelectedColors();
+
+        colors.setColor(ColorableBodyParts.EYES, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BODY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MARKINGS, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.BELLY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().toInt());
+        colors.setColor(ColorableBodyParts.MALE_DISPLAY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().toInt());
+
+        return colors;
     }
 
     @Override

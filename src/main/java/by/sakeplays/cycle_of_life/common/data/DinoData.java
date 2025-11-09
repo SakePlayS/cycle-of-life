@@ -270,7 +270,7 @@ public class DinoData implements INBTSerializable<CompoundTag> {
         this.bleed = bleed;
     }
 
-    public boolean isInBuildMode() {
+    public boolean isInHumanMode() {
         return isInBuildMode;
     }
 

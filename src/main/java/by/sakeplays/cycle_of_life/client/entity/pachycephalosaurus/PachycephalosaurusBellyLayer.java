@@ -4,6 +4,7 @@ import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -31,10 +32,10 @@ public class PachycephalosaurusBellyLayer<T extends Entity & GeoAnimatable> exte
         SkinData data;
         if (!animatable.isCorpse()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
-            color = animatable.isForScreenRendering ? animatable.bellyColor : data.getBellyColor();
+            color = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BELLY) : data.getColor(ColorableBodyParts.BELLY);
 
         } else {
-            color = animatable.getBellyColor();
+            color = animatable.getColors().getColor(ColorableBodyParts.BELLY);
         }
 
 

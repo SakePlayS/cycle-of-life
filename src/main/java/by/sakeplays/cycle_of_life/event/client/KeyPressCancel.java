@@ -25,7 +25,7 @@ public class KeyPressCancel {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        if (!mc.player.getData(DataAttachments.DINO_DATA).isInBuildMode()) {
+        if (!mc.player.getData(DataAttachments.DINO_DATA).isInHumanMode()) {
 
             mc.options.keyInventory.setDown(false);
             mc.options.keySprint.setDown(false);
