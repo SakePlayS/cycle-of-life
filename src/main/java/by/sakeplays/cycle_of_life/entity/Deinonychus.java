@@ -77,12 +77,31 @@ public class Deinonychus extends DinosaurEntity implements GeoEntity {
     public SelectedColors getDefaultColors() {
         SelectedColors colors = new SelectedColors();
 
-        colors.setColor(ColorableBodyParts.EYES, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().toInt());
-        colors.setColor(ColorableBodyParts.BODY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().toInt());
-        colors.setColor(ColorableBodyParts.MARKINGS, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().toInt());
-        colors.setColor(ColorableBodyParts.BELLY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().toInt());
-        colors.setColor(ColorableBodyParts.MALE_DISPLAY, Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().toInt());
-
+        colors.setColor(
+                ColorableBodyParts.EYES,
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().first().toInt(),
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.EYES).getFirst().second().toInt()
+        );
+        colors.setColor(
+                ColorableBodyParts.BODY,
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().first().toInt(),
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BODY).getFirst().second().toInt()
+        );
+        colors.setColor(
+                ColorableBodyParts.MARKINGS,
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().first().toInt(),
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MARKINGS).getFirst().second().toInt()
+        );
+        colors.setColor(
+                ColorableBodyParts.BELLY,
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().first().toInt(),
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.BELLY).getFirst().second().toInt()
+        );
+        colors.setColor(
+                ColorableBodyParts.MALE_DISPLAY,
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().first().toInt(),
+                Dinosaurs.DEINONYCHUS.getColorOptions().getColorOptions().get(ColorableBodyParts.MALE_DISPLAY).getFirst().second().toInt()
+        );
         return colors;
     }
 

@@ -1,7 +1,9 @@
 package by.sakeplays.cycle_of_life.util;
 
 import by.sakeplays.cycle_of_life.ModSounds;
+import by.sakeplays.cycle_of_life.client.ModRenderTypes;
 import by.sakeplays.cycle_of_life.client.entity.CrossfadeTickTracker;
+import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DietStat;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
@@ -21,6 +23,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -371,5 +374,16 @@ public class Util {
     public static boolean hasClearLineOfSight(Position from, Position to, Level level) {
         ClipContext context = new ClipContext(from.toVec3(), to.toVec3(), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty());
         return level.clip(context).getType() == HitResult.Type.MISS;
+    }
+
+    public static void applyBodyPartColors(int primaryColor, int secondaryColor) {
+        ShaderInstance shader = ModRenderTypes.getGrayscaleTintedShader();
+        ColorOption primary = ColorOption.fromInt(primaryColor);
+        ColorOption secondary = ColorOption.fromInt(secondaryColor);
+
+        if (shader != null) {
+            shader.safeGetUniform("PrimaryColor").set(primary.r() / 255f, primary.g() / 255f, primary.b() / 255f);
+            shader.safeGetUniform("SecondaryColor").set(secondary.r() / 255f, secondary.g() / 255f, secondary.b() / 255f);
+        }
     }
 }

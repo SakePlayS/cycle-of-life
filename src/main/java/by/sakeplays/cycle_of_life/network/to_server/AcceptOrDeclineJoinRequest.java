@@ -64,12 +64,12 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
                 adaptationData.fullReset();
                 inheritAdaptations(player, nest, adaptationData);
 
-                skinData.setColor(ColorableBodyParts.MARKINGS, Math.random() < 0.5 ? nest.getMatriarchColors().markings : nest.getPatriarchColors().markings);
-                skinData.setColor(ColorableBodyParts.MALE_DISPLAY, nest.getPatriarchColors().maleDisplay);
-                skinData.setColor(ColorableBodyParts.EYES, Math.random() < 0.5 ? nest.getMatriarchColors().eyes : nest.getPatriarchColors().eyes);
-                skinData.setColor(ColorableBodyParts.BELLY, Math.random() < 0.5 ? nest.getMatriarchColors().belly : nest.getPatriarchColors().belly);
-                skinData.setColor(ColorableBodyParts.BODY, Math.random() < 0.5 ? nest.getMatriarchColors().body : nest.getPatriarchColors().body);
-                skinData.setColor(ColorableBodyParts.BODY, Math.random() < 0.5 ? nest.getMatriarchColors().flank : nest.getPatriarchColors().flank);
+
+                inheritColor(player, ColorableBodyParts.EYES, nest);
+                inheritColor(player, ColorableBodyParts.BODY, nest);
+                inheritColor(player, ColorableBodyParts.MARKINGS, nest);
+                inheritColor(player, ColorableBodyParts.BELLY, nest);
+                inheritColor(player, ColorableBodyParts.MALE_DISPLAY, nest);
 
                 PacketDistributor.sendToAllPlayers(new SyncSkinData(player.getId(), skinData.getColors()));
 
@@ -119,6 +119,17 @@ public record AcceptOrDeclineJoinRequest(boolean accepted) implements CustomPack
         for (Adaptation adaptation : data.getAdaptationList()) {
             inherit(player, adaptation, matriarchAdaptations, patriarchAdaptations);
         }
+    }
+
+    private static void inheritColor(ServerPlayer player, ColorableBodyParts bodyPart, Nest nest) {
+        SkinData skinData = player.getData(DataAttachments.SKIN_DATA);
+
+        if (Math.random() < 0.5 || bodyPart == ColorableBodyParts.MALE_DISPLAY) {
+            skinData.setColor(bodyPart, nest.getPatriarchColors().getColor(bodyPart).first(), nest.getPatriarchColors().getColor(bodyPart).second());
+        } else {
+            skinData.setColor(bodyPart, nest.getMatriarchColors().getColor(bodyPart).first(), nest.getMatriarchColors().getColor(bodyPart).second());
+        }
+
     }
 
     private static void inherit(ServerPlayer player, Adaptation adaptation, Map<String, Integer> matriarchAdaptations, Map<String, Integer> patriarchAdaptations) {

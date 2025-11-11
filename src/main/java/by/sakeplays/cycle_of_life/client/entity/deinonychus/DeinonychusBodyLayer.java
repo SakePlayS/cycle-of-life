@@ -1,10 +1,12 @@
 package by.sakeplays.cycle_of_life.client.entity.deinonychus;
 
 import by.sakeplays.cycle_of_life.client.ModRenderTypes;
+import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.entity.Deinonychus;
 import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
+import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -29,15 +31,19 @@ public class DeinonychusBodyLayer<T extends Entity & GeoAnimatable> extends GeoR
     public void render(PoseStack poseStack, Deinonychus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType,
                        MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
 
-        int color;
+        int primaryColor;
+        int secondaryColor;
         SkinData data;
         if (!animatable.isCorpse()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
-            color = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BODY) : data.getColor(ColorableBodyParts.BODY);
-
+            primaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BODY).first() : data.getColor(ColorableBodyParts.BODY).first();
+            secondaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BODY).second() : data.getColor(ColorableBodyParts.BODY).second();
         } else {
-            color = animatable.getColors().getColor(ColorableBodyParts.BODY);
+            primaryColor = animatable.getColors().getColor(ColorableBodyParts.BODY).first();
+            secondaryColor = animatable.getColors().getColor(ColorableBodyParts.BODY).second();
         }
+
+        Util.applyBodyPartColors(primaryColor, secondaryColor);
 
         poseStack.pushPose();
         poseStack.scale(1/animatable.scale, 1/animatable.scale, 1/animatable.scale);
@@ -48,15 +54,17 @@ public class DeinonychusBodyLayer<T extends Entity & GeoAnimatable> extends GeoR
                 bufferSource,
                 animatable,
                 ModRenderTypes.grayscaleTinted(texture),
-                bufferSource.getBuffer(RenderType.entityTranslucent(texture)),
+                bufferSource.getBuffer(ModRenderTypes.grayscaleTinted(texture)),
                 partialTick,
                 packedLight,
                 packedOverlay,
-                color
+               0xFFFFFFFF
         );
+
+        if (bufferSource instanceof MultiBufferSource.BufferSource buf) {
+            buf.endBatch();
+        }
 
         poseStack.popPose();
     }
-
-
 }

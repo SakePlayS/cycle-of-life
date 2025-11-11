@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.common.data;
 
-import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationsHolder;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,8 +20,8 @@ public class Nest {
     private final BlockPos position;
     private boolean isPublic;
     private final int type;
-    private ColorHolder patriarchColors;
-    private ColorHolder matriarchColors;
+    private SelectedColors patriarchColors;
+    private SelectedColors matriarchColors;
     private String matriarchName = "";
     private String patriarchName = "";
     private List<UUID> queuedPlayers = new ArrayList<>();
@@ -30,7 +30,7 @@ public class Nest {
     private AdaptationsHolder matriarchAdaptations;
 
     public Nest(UUID matriarch, UUID patriarch, int maxEggsCount, BlockPos pos, boolean isPublic, int type,
-                ColorHolder patriarchColors, ColorHolder matriarchColors) {
+                SelectedColors patriarchColors, SelectedColors matriarchColors) {
         this.matriarch = matriarch;
         this.patriarch = patriarch;
         this.maxEggsCount = maxEggsCount;
@@ -43,7 +43,7 @@ public class Nest {
     }
 
     public Nest(String matriarch, String patriarch, int maxEggsCount, BlockPos pos, boolean isPublic, int type,
-                ColorHolder patriarchColors, ColorHolder matriarchColors) {
+                SelectedColors patriarchColors, SelectedColors matriarchColors) {
         this.matriarch = UUID.fromString(matriarch);
         this.patriarch = UUID.fromString(patriarch);
         this.maxEggsCount = maxEggsCount;
@@ -142,8 +142,14 @@ public class Nest {
         tag.putString("MatriarchName", matriarchName);
         tag.putString("PatriarchName", patriarchName);
 
-        tag.put("PatriarchColors", patriarchColors.saveToNBT());
-        tag.put("MatriarchColors", matriarchColors.saveToNBT());
+        CompoundTag pColor = new CompoundTag();
+        patriarchColors.toNBT(pColor);
+        CompoundTag mColor = new CompoundTag();
+        matriarchColors.toNBT(mColor);
+
+
+        tag.put("PatriarchColors", pColor);
+        tag.put("MatriarchColors", mColor);
 
         tag.put("PatriarchAdaptations", patriarchAdaptations.toNBT());
         tag.put("MatriarchAdaptations", matriarchAdaptations.toNBT());
@@ -161,8 +167,8 @@ public class Nest {
         int type = tag.getInt("Type");
         boolean isPublic = tag.getBoolean("Public");
         BlockPos pos = BlockPos.of(tag.getLong("Pos"));
-        ColorHolder patriarchColors = ColorHolder.loadFromNBT(tag.getCompound("PatriarchColors"));
-        ColorHolder matriarchColors = ColorHolder.loadFromNBT(tag.getCompound("MatriarchColors"));
+        SelectedColors patriarchColors = SelectedColors.fromNBT(tag.getCompound("PatriarchColors"));
+        SelectedColors matriarchColors = SelectedColors.fromNBT(tag.getCompound("MatriarchColors"));
 
 
         Nest nest = new Nest(matriarch, patriarch, maxEggs, pos, isPublic, type, patriarchColors, matriarchColors);
@@ -177,20 +183,20 @@ public class Nest {
         return nest;
     }
 
-    public ColorHolder getPatriarchColors() {
+    public SelectedColors getPatriarchColors() {
         return patriarchColors;
     }
 
-    public void setPatriarchColors(ColorHolder patriarchColors) {
-        this.patriarchColors = patriarchColors;
+    public void setPatriarchColors(SelectedColors patriarchColors) {
+        this.patriarchColors = patriarchColors.copy();
     }
 
-    public ColorHolder getMatriarchColors() {
+    public SelectedColors getMatriarchColors() {
         return matriarchColors;
     }
 
-    public void setMatriarchColors(ColorHolder matriarchColors) {
-        this.matriarchColors = matriarchColors;
+    public void setMatriarchColors(SelectedColors matriarchColors) {
+        this.matriarchColors = matriarchColors.copy();
     }
 
     public String getMatriarchName() {
@@ -220,18 +226,25 @@ public class Nest {
                         buf.writeInt(nest.getZ());
                         buf.writeBoolean(nest.isPublic());
                         buf.writeInt(nest.getType());
-                        buf.writeInt(nest.getPatriarchColors().eyes);
-                        buf.writeInt(nest.getPatriarchColors().markings);
-                        buf.writeInt(nest.getPatriarchColors().body);
-                        buf.writeInt(nest.getPatriarchColors().flank);
-                        buf.writeInt(nest.getPatriarchColors().belly);
-                        buf.writeInt(nest.getPatriarchColors().maleDisplay);
-                        buf.writeInt(nest.getMatriarchColors().eyes);
-                        buf.writeInt(nest.getMatriarchColors().markings);
-                        buf.writeInt(nest.getMatriarchColors().body);
-                        buf.writeInt(nest.getMatriarchColors().flank);
-                        buf.writeInt(nest.getMatriarchColors().belly);
-                        buf.writeInt(nest.getMatriarchColors().maleDisplay);
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.EYES).first());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.EYES).second());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MARKINGS).first());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MARKINGS).second());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BODY).first());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BODY).second());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BELLY).first());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BELLY).second());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).first());
+                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).second());
+
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MARKINGS).first());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MARKINGS).second());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BODY).first());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BODY).second());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BELLY).first());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BELLY).second());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).first());
+                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).second());
                         buf.writeInt(nest.getEggsCount());
                         buf.writeUtf(nest.getMatriarchName());
                         buf.writeUtf(nest.getPatriarchName());
@@ -244,6 +257,8 @@ public class Nest {
 
                     },
                     buf -> {
+
+
                         Nest nest = new Nest(
                                 buf.readUUID(),
                                 buf.readUUID(),
@@ -251,8 +266,19 @@ public class Nest {
                                 new BlockPos(buf.readInt(), buf.readInt(), buf.readInt()),
                                 buf.readBoolean(),
                                 buf.readInt(),
-                                new ColorHolder(buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt()),
-                                new ColorHolder(buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt())
+                                new SelectedColors()
+                                        .setColor(ColorableBodyParts.EYES, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.MARKINGS, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.BODY, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.BELLY, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.MALE_DISPLAY, buf.readInt(), buf.readInt()),
+
+                                new SelectedColors()
+                                        .setColor(ColorableBodyParts.EYES, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.MARKINGS, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.BODY, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.BELLY, buf.readInt(), buf.readInt())
+                                        .setColor(ColorableBodyParts.MALE_DISPLAY, buf.readInt(), buf.readInt())
                         );
 
                         nest.setEggsCount(buf.readInt());

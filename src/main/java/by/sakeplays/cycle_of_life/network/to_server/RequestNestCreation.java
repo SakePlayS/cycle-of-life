@@ -2,7 +2,6 @@ package by.sakeplays.cycle_of_life.network.to_server;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.block.ModBlocks;
-import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.common.data.*;
 import by.sakeplays.cycle_of_life.common.data.adaptations.AdaptationsHolder;
 import by.sakeplays.cycle_of_life.network.to_client.SyncOwnNest;
@@ -60,8 +59,8 @@ public record RequestNestCreation() implements CustomPacketPayload {
             UUID patriarchUUID = male.getUUID();
             UUID matriarchUUID = female.getUUID();
 
-            ColorHolder patriarchColors = ColorHolder.fromSkinData(male.getData(DataAttachments.SKIN_DATA));
-            ColorHolder matriarchColors = ColorHolder.fromSkinData(female.getData(DataAttachments.SKIN_DATA));
+            SelectedColors patriarchColors = male.getData(DataAttachments.SKIN_DATA).getColors().copy();
+            SelectedColors matriarchColors = female.getData(DataAttachments.SKIN_DATA).getColors().copy();
 
             AdaptationsHolder patriarchAdaptations = male.getData(DataAttachments.ADAPTATION_DATA).toHolder();
             AdaptationsHolder matriarchAdaptations = female.getData(DataAttachments.ADAPTATION_DATA).toHolder();

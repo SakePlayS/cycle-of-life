@@ -1,7 +1,7 @@
 package by.sakeplays.cycle_of_life.common.data;
 
-import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
+import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,12 +11,12 @@ import java.util.*;
 
 public class SelectedColors {
 
-    private EnumMap<ColorableBodyParts, Integer> colors;
+    private EnumMap<ColorableBodyParts, Pair<Integer, Integer>> colors;
 
     public SelectedColors() {
         colors = new EnumMap<>(ColorableBodyParts.class);
         for (ColorableBodyParts part : ColorableBodyParts.values()) {
-            colors.put(part, 0);
+            colors.put(part, Pair.of(0, 0));
         }
     }
 
@@ -25,32 +25,42 @@ public class SelectedColors {
     }
 
     public SelectedColors override(SelectedColors newColors) {
-        colors = new EnumMap<>(newColors.colors);
+        for (Map.Entry<ColorableBodyParts, Pair<Integer, Integer>> e : newColors.colors.entrySet()) {
+            colors.put(e.getKey(), e.getValue());
+        }
         return this;
     }
 
-    public void setColor(ColorableBodyParts part, int color) {
-        colors.put(part, color);
+    public SelectedColors setColor(ColorableBodyParts part, int primary, int secondary) {
+        colors.put(part, Pair.of(primary, secondary));
+        return this;
     }
 
-    public int getColor(ColorableBodyParts part) {
-        return colors.getOrDefault(part, 0);
+    public Pair<Integer, Integer> getColor(ColorableBodyParts part) {
+        return colors.getOrDefault(part, Pair.of(0, 0));
     }
 
     public static SelectedColors fromNBT(CompoundTag tag) {
-        SelectedColors colors = new SelectedColors();
+        SelectedColors selectedColors = new SelectedColors();
         Set<String> keys = tag.getAllKeys();
 
+
         for (String key : keys) {
-            colors.setColor(ColorableBodyParts.fromString(key), tag.getInt(key));
+            CompoundTag savedColors = tag.getCompound(key);
+            selectedColors.setColor(ColorableBodyParts.fromString(key), savedColors.getInt("Primary"), savedColors.getInt("Secondary"));
         }
 
-        return colors;
+        return selectedColors;
     }
 
     public void toNBT(CompoundTag tag) {
-        for (Map.Entry<ColorableBodyParts, Integer> entry : colors.entrySet()) {
-            tag.putInt(entry.getKey().toString().toLowerCase(Locale.ROOT), entry.getValue());
+        for (Map.Entry<ColorableBodyParts, Pair<Integer, Integer>> entry : colors.entrySet()) {
+
+            CompoundTag colors = new CompoundTag();
+            colors.putInt("Primary", entry.getValue().first());
+            colors.putInt("Secondary", entry.getValue().second());
+
+            tag.put(entry.getKey().toString().toLowerCase(Locale.ROOT), colors);
         }
     }
 
@@ -58,13 +68,14 @@ public class SelectedColors {
             StreamCodec.of(
                     (buf, colors) -> {
                         for (ColorableBodyParts part : ColorableBodyParts.values()) {
-                            buf.writeInt(colors.getColor(part));
+                            buf.writeInt(colors.getColor(part).first());
+                            buf.writeInt(colors.getColor(part).second());
                         }
                     },
                     buf -> {
                         SelectedColors colors = new SelectedColors();
                         for (ColorableBodyParts part : ColorableBodyParts.values()) {
-                            colors.setColor(part, buf.readInt());
+                            colors.setColor(part, buf.readInt(), buf.readInt());
                         }
                         return colors;
                     }

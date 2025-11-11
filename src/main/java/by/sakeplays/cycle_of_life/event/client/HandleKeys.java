@@ -351,35 +351,53 @@ public class HandleKeys {
         return newTurnDegree;
     }
 
+
+
     private static float handlePlayerRotationAlt(Player player) {
-        float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
-
-        float playerRot = player.getData(DataAttachments.PLAYER_ROTATION);
-
-        if (KeyMappings.LEFT_MAPPING.isDown()) {
-            turningRate = Math.max(-turnSpeed, turningRate - turnSpeed * (turningRate > 0 ? 0.4f : 0.2f));
-        } else if (KeyMappings.RIGHT_MAPPING.isDown())  {
-            turningRate = Math.min(turnSpeed, turningRate + turnSpeed * (turningRate < 0 ? 0.4f : 0.2f));
-        } else {
-            turningRate = turningRate / 2;
-        }
-
-        float newTurnDegree = playerRot + turningRate;
-
         if (AttackDispatcher.isAltAttacking) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return player.getData(DataAttachments.PLAYER_ROTATION);
 
+        final float EPS = 0.0001f;
 
+        float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
 
-        player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
-        PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
+        float targetYaw = Mth.wrapDegrees(player.getYRot()) * Mth.DEG_TO_RAD;
+        if (KeyMappings.RIGHT_MAPPING.isDown()) targetYaw += Mth.HALF_PI;
+        if (KeyMappings.LEFT_MAPPING.isDown()) targetYaw -= Mth.HALF_PI;
 
-        return newTurnDegree;
+        float playerRot = player.getData(DataAttachments.PLAYER_ROTATION);
+
+        float delta = targetYaw - (float) Math.atan2(Math.sin(playerRot), Math.cos(playerRot));
+        delta = (float) Math.atan2(Math.sin(delta), Math.cos(delta));
+
+        if (Math.abs(delta) > EPS) {
+            if (delta > 0) {
+                turningRate = Math.min(turnSpeed, turningRate + turnSpeed * (turningRate < 0 ? 0.4f : 0.2f));
+            } else {
+                turningRate = Math.max(-turnSpeed, turningRate - turnSpeed * (turningRate > 0 ? 0.4f : 0.2f));
+            }
+        } else {
+            turningRate *= 0.8f - 0.3f * (1.0f - (float)Math.exp(-Math.abs(delta) * 4f));
+        }
+
+        float newRot = playerRot + turningRate;
+
+        float newDelta = targetYaw - (float) Math.atan2(Math.sin(newRot), Math.cos(newRot));
+        newDelta = (float) Math.atan2(Math.sin(newDelta), Math.cos(newDelta));
+
+        if (Math.signum(delta) != Math.signum(newDelta)) {
+            newRot = playerRot + delta;
+        }
+
+        if (Math.abs(newRot - playerRot) > EPS) {
+            player.setData(DataAttachments.PLAYER_ROTATION, newRot);
+            PacketDistributor.sendToServer(new SyncPlayerRotation(newRot, player.getId()));
+        }
+
+        return newRot;
     }
-
-
     private static boolean movementKeyDown() {
         return (KeyMappings.FORWARD_MAPPING.isDown() || KeyMappings.BACKWARD_MAPPING.isDown() ||
                 KeyMappings.RIGHT_MAPPING.isDown() || KeyMappings.LEFT_MAPPING.isDown());

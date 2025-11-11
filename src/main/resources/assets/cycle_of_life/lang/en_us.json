@@ -1,5 +1,11 @@
 {
   "itemGroup.cycle_of_life": "Example Mod Tab",
   "block.cycle_of_life.example_block": "Example Block",
-  "item.cycle_of_life.example_item": "Example Item"
+  "item.cycle_of_life.example_item": "Example Item",
+
+  "col.colorable_part.eyes": "Eyes",
+  "col.colorable_part.markings": "Markings",
+  "col.colorable_part.belly": "Belly",
+  "col.colorable_part.body": "Body",
+  "col.colorable_part.male_display": "Male Display"
 }

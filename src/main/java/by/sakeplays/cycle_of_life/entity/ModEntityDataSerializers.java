@@ -31,7 +31,7 @@ public class ModEntityDataSerializers {
         public SelectedColors copy(SelectedColors value) {
             SelectedColors copy = new SelectedColors();
             for (ColorableBodyParts part : ColorableBodyParts.values()) {
-                copy.setColor(part, value.getColor(part));
+                copy.setColor(part, value.getColor(part).first(), value.getColor(part).second());
             }
             return copy;
         }

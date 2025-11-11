@@ -5,6 +5,7 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
+import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -28,16 +29,20 @@ public class PachycephalosaurusBellyLayer<T extends Entity & GeoAnimatable> exte
     @Override
     public void render(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
 
-        int color;
+        int primaryColor;
+        int secondaryColor;
+
         SkinData data;
         if (!animatable.isCorpse()) {
             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
-            color = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BELLY) : data.getColor(ColorableBodyParts.BELLY);
-
+            primaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BELLY).first() : data.getColor(ColorableBodyParts.BELLY).first();
+            secondaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.BELLY).second() : data.getColor(ColorableBodyParts.BELLY).second();
         } else {
-            color = animatable.getColors().getColor(ColorableBodyParts.BELLY);
+            primaryColor = animatable.getColors().getColor(ColorableBodyParts.BELLY).first();
+            secondaryColor = animatable.getColors().getColor(ColorableBodyParts.BELLY).second();
         }
 
+        Util.applyBodyPartColors(primaryColor, secondaryColor);
 
         poseStack.pushPose();
         poseStack.scale(1/animatable.scale, 1/animatable.scale, 1/animatable.scale);
@@ -48,11 +53,11 @@ public class PachycephalosaurusBellyLayer<T extends Entity & GeoAnimatable> exte
                 bufferSource,
                 animatable,
                 ModRenderTypes.grayscaleTinted(texture),
-                bufferSource.getBuffer(RenderType.entityTranslucent(texture)),
+                bufferSource.getBuffer(ModRenderTypes.grayscaleTinted(texture)),
                 partialTick,
                 packedLight,
                 packedOverlay,
-                color
+                0xFFFFFFFF
         );
 
         poseStack.popPose();

@@ -1,9 +1,8 @@
 package by.sakeplays.cycle_of_life.client.screen;
 
-import by.sakeplays.cycle_of_life.client.screen.util.BodyPartColors;
+import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.screen.util.BrightnessSlider;
 import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
-import by.sakeplays.cycle_of_life.client.screen.util.Colors;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SelectedColors;
 import by.sakeplays.cycle_of_life.entity.*;
@@ -12,11 +11,11 @@ import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.network.bidirectional.SyncSkinData;
 import by.sakeplays.cycle_of_life.network.to_server.RequestSelectDinosaur;
-import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -24,18 +23,19 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
 
 public class SkinCreatorScreen extends Screen {
 
-    private Button CONFIRM_BUTTON;
 
-    private BrightnessSlider BRIGHTNESS;
-    private boolean changingBrightness;
+    private static final ResourceLocation COLOR_PAD = ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID,
+            "color_pad");
+
+    private Button CONFIRM_BUTTON;
 
     SelectedColors selectedColors = new SelectedColors();
     ColorOptionArray colorOptions;
@@ -45,7 +45,6 @@ public class SkinCreatorScreen extends Screen {
     private final DinosaurEntity dummyDino;
 
     private ColorableBodyParts selectedBodyPart = ColorableBodyParts.EYES;
-    private EnumMap<ColorableBodyParts, Double> partBrightness = new EnumMap<>(ColorableBodyParts.class);
     private float modelYRot = 0;
     private float modelXRot = 0;
 
@@ -56,12 +55,8 @@ public class SkinCreatorScreen extends Screen {
 
         colorOptions = Dinosaurs.getById(desiredDinosaurID).getColorOptions();
 
-        for (Map.Entry<ColorableBodyParts, List<ColorOption>> entry : colorOptions.getColorOptions().entrySet()) {
-            selectedColors.setColor(entry.getKey(), entry.getValue().getFirst().toInt());
-        }
-
-        for (ColorableBodyParts part : ColorableBodyParts.values()) {
-            partBrightness.put(part, 1d);
+        for (Map.Entry<ColorableBodyParts, List<Pair<ColorOption, ColorOption>>> entry : colorOptions.getColorOptions().entrySet()) {
+            selectedColors.setColor(entry.getKey(), entry.getValue().getFirst().first().toInt(), entry.getValue().getFirst().second().toInt());
         }
 
     }
@@ -77,25 +72,19 @@ public class SkinCreatorScreen extends Screen {
     }
 
     private void copyColorToDummyDino(ColorableBodyParts part) {
-        if (partBrightness.get(part) == null) {
-            partBrightness.put(part, 1d);
-            return;
-        }
 
-        double brightness = !Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).isMale() && part == ColorableBodyParts.MALE_DISPLAY ?
-                partBrightness.get(ColorableBodyParts.MARKINGS) : partBrightness.get(part);
 
-        ColorOption partColor =
-                (partBrightness.containsKey(part) && colorOptions.getColorOptions().containsKey(part)) ?
-                ColorOption.fromInt(selectedColors.getColor(part)) :
-                new ColorOption(0, 0, 0, 1f, 1f);
+        Pair<Integer, Integer> partColor =
+                (colorOptions.getColorOptions().containsKey(part)) ?
+                selectedColors.getColor(part) :
+                Pair.of(new ColorOption(0,0,0).toInt(), new ColorOption(0,0,0).toInt());
 
         if (part == ColorableBodyParts.MALE_DISPLAY && !Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).isMale()) {
-            partColor = ColorOption.fromInt(selectedColors.getColor(ColorableBodyParts.MARKINGS));
+            partColor = selectedColors.getColor(ColorableBodyParts.MARKINGS);
         }
 
 
-        dummyDino.colors.setColor(part, processColor(partColor, brightness));
+        dummyDino.colors.setColor(part, partColor.first(), partColor.second());
 
     }
 
@@ -109,25 +98,34 @@ public class SkinCreatorScreen extends Screen {
         int startX = 50;
         int startY = 50;
         int size = 20;
-        int padding = 4;
+        int padding = 8;
+
+        guiGraphics.blitSprite(COLOR_PAD, 20, 20, 192, 192);
 
         for (int i = 0; i < getColorPaletteForSelectedPart().size(); i++) {
-            ColorOption color = getColorPaletteForSelectedPart().get(i);
+            Pair<ColorOption, ColorOption> color = getColorPaletteForSelectedPart().get(i);
             int x = startX + (i % 5) * (size + padding);
             int y = startY + (i / 5) * (size + padding);
 
-            guiGraphics.fill(x, y, x + size, y + size, color.toInt());
 
-            int partColor = selectedColors.getColor(selectedBodyPart);
+            for (int j = 0; j < size; j++) {
 
-            if (color.toInt() == partColor) {
+                int r = (int) Mth.lerp((float) j /size, color.first().r(), color.second().r());
+                int g = (int) Mth.lerp((float) j /size, color.first().g(), color.second().g());
+                int b = (int) Mth.lerp((float) j /size, color.first().b(), color.second().b());
+
+                guiGraphics.fill(x, y + j, x + size, y + 1 + j, new ColorOption(r, g, b).toInt());
+
+            }
+
+            Pair<Integer, Integer> partColor = selectedColors.getColor(selectedBodyPart);
+
+            if (partColor.first() == color.first().toInt() && partColor.second() == color.second().toInt()) {
                 guiGraphics.drawCenteredString(this.font, "✔", x + size / 2, y + size / 2 - 4, 0xFFFFFF);
             }
         }
 
-
         renderDinoInScreen(centerX, (int) (centerY * 1.2f), 60);
-
 
     }
 
@@ -136,16 +134,16 @@ public class SkinCreatorScreen extends Screen {
         int startX = 50;
         int startY = 50;
         int size = 20;
-        int padding = 4;
+        int padding = 8;
 
         for (int i = 0; i < getColorPaletteForSelectedPart().size(); i++) {
             int x = startX + (i % 5) * (size + padding);
             int y = startY + (i / 5) * (size + padding);
 
             if (mouseX >= x && mouseX < x + size && mouseY >= y && mouseY < y + size) {
-                ColorOption color = getColorPaletteForSelectedPart().get(i);
+                Pair<ColorOption, ColorOption> color = getColorPaletteForSelectedPart().get(i);
 
-                selectedColors.setColor(selectedBodyPart, color.toInt());
+                selectedColors.setColor(selectedBodyPart, color.first().toInt(), color.second().toInt());
 
                 return true;
             }
@@ -163,43 +161,23 @@ public class SkinCreatorScreen extends Screen {
             PacketDistributor.sendToServer(new RequestSelectDinosaur(desiredDinosaurID));
 
             PacketDistributor.sendToServer(new SyncSkinData(Minecraft.getInstance().player.getId(),
-                    dummyDino.colors));
+                    selectedColors));
             Minecraft.getInstance().setScreen(null);
         }).size(120, 18).pos(width/2 - 60, height - 40).build();
 
         int buttonY = 20;
-        for (Map.Entry<ColorableBodyParts, List<ColorOption>> entry : colorOptions.getColorOptions().entrySet()) {
+        for (Map.Entry<ColorableBodyParts, List<Pair<ColorOption, ColorOption>>> entry : colorOptions.getColorOptions().entrySet()) {
             if (!Minecraft.getInstance().player.getData(DataAttachments.DINO_DATA).isMale() && entry.getKey() == ColorableBodyParts.MALE_DISPLAY) continue;
             bodyPartButtons.add(createSkinButton(entry.getKey().translationKey, entry.getKey(), width - 200, buttonY));
             buttonY += 20;
         }
 
 
-        BRIGHTNESS = new BrightnessSlider(50, height - 40, 120, 20, Component.literal("Brightness"), 1d, val -> {
-
-            partBrightness.put(selectedBodyPart, val);
-
-        }) {
-            @Override
-            public void onRelease(double mouseX, double mouseY) {
-                super.onRelease(mouseX, mouseY);
-
-                changingBrightness = false;
-            }
-
-            @Override
-            public void onClick(double mouseX, double mouseY, int button) {
-                super.onClick(mouseX, mouseY, button);
-
-                changingBrightness = true;
-            }
-        };
 
         addRenderableWidget(CONFIRM_BUTTON);
         for (Button button : bodyPartButtons) {
             addRenderableWidget(button);
         }
-        addRenderableWidget(BRIGHTNESS);
     }
 
     private Button createSkinButton(String translationKey, ColorableBodyParts bodyPart, int x, int y) {
@@ -222,10 +200,9 @@ public class SkinCreatorScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (!changingBrightness) {
-            modelYRot += (float) dragX;
-            modelXRot -= (float) dragY;
-        }
+        modelYRot += (float) dragX;
+        modelXRot -= (float) dragY;
+
 
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
@@ -263,7 +240,7 @@ public class SkinCreatorScreen extends Screen {
     }
 
 
-    private List<ColorOption> getColorPaletteForSelectedPart() {
+    private List<Pair<ColorOption, ColorOption>> getColorPaletteForSelectedPart() {
         return colorOptions.getColorOptions().get(selectedBodyPart);
     }
 
@@ -281,12 +258,5 @@ public class SkinCreatorScreen extends Screen {
 
         // fallback
         return new Deinonychus(ModEntities.DEINONYCHUS.get(), Minecraft.getInstance().level);
-    }
-
-    private int processColor(ColorOption colorOption, double brightness) {
-
-        double modifier = Mth.lerp(brightness, 0.5, 1f);
-
-        return new ColorOption((int)(colorOption.r() * modifier), (int)(colorOption.g() * modifier), (int)(colorOption.b() * modifier), 1f, 1f).toInt();
     }
 }

@@ -6,7 +6,7 @@ public enum ColorableBodyParts {
     MARKINGS("col.colorable_part.markings"),
     BELLY("col.colorable_part.belly"),
     BODY("col.colorable_part.body"),
-    MALE_DISPLAY("col.colorable_part.male)display");
+    MALE_DISPLAY("col.colorable_part.male_display");
 
     public final String translationKey;
 

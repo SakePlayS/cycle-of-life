@@ -1,6 +1,5 @@
 package by.sakeplays.cycle_of_life.network;
 
-import by.sakeplays.cycle_of_life.client.screen.util.ColorHolder;
 import by.sakeplays.cycle_of_life.common.data.Nest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

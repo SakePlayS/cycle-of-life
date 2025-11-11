@@ -1,9 +1,12 @@
 package by.sakeplays.cycle_of_life.event.common;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
+import by.sakeplays.cycle_of_life.client.screen.util.ColorOption;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.DinoData;
 import by.sakeplays.cycle_of_life.common.data.PairData;
+import by.sakeplays.cycle_of_life.common.data.SkinData;
+import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.network.bidirectional.*;
 import by.sakeplays.cycle_of_life.network.to_client.*;
 import by.sakeplays.cycle_of_life.util.Util;
@@ -32,6 +35,176 @@ public class ModCommands {
 
         dispatcher.register(Commands.literal("cycle-of-life").requires(source -> source.hasPermission(2))
                 .then(Commands.literal("set")
+                        .then(Commands.literal("skin")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.literal("body")
+                                                .then(Commands.argument("r1", IntegerArgumentType.integer(0, 255))
+                                                        .then(Commands.argument("g1", IntegerArgumentType.integer(0, 255))
+                                                                .then(Commands.argument("b1", IntegerArgumentType.integer(0, 255))
+                                                                        .then(Commands.argument("r2", IntegerArgumentType.integer(0, 255))
+                                                                                .then(Commands.argument("g2", IntegerArgumentType.integer(0, 255))
+                                                                                        .then(Commands.argument("b2", IntegerArgumentType.integer(0, 255))
+                                                                                                .executes(ctx -> {
+                                                                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+
+                                                                                                    int r1 = IntegerArgumentType.getInteger(ctx, "r1");
+                                                                                                    int g1 = IntegerArgumentType.getInteger(ctx, "g1");
+                                                                                                    int b1 = IntegerArgumentType.getInteger(ctx, "b1");
+
+                                                                                                    int r2 = IntegerArgumentType.getInteger(ctx, "r2");
+                                                                                                    int g2 = IntegerArgumentType.getInteger(ctx, "g2");
+                                                                                                    int b2 = IntegerArgumentType.getInteger(ctx, "b2");
+
+                                                                                                    SkinData data = target.getData(DataAttachments.SKIN_DATA);
+
+                                                                                                    data.setColor(ColorableBodyParts.BODY, new ColorOption(r1, g1, b1).toInt(), new ColorOption(r2, g2, b2).toInt());
+                                                                                                    PacketDistributor.sendToPlayer(target, new SyncSkinData(target.getId(), data.getColors()));
+
+                                                                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully changed the color of " + target.getName().getString()), true);
+                                                                                                    return Command.SINGLE_SUCCESS;
+                                                                                                })
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                        .then(Commands.literal("eyes")
+                                                .then(Commands.argument("r1", IntegerArgumentType.integer(0, 255))
+                                                        .then(Commands.argument("g1", IntegerArgumentType.integer(0, 255))
+                                                                .then(Commands.argument("b1", IntegerArgumentType.integer(0, 255))
+                                                                        .then(Commands.argument("r2", IntegerArgumentType.integer(0, 255))
+                                                                                .then(Commands.argument("g2", IntegerArgumentType.integer(0, 255))
+                                                                                        .then(Commands.argument("b2", IntegerArgumentType.integer(0, 255))
+                                                                                                .executes(ctx -> {
+                                                                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+
+                                                                                                    int r1 = IntegerArgumentType.getInteger(ctx, "r1");
+                                                                                                    int g1 = IntegerArgumentType.getInteger(ctx, "g1");
+                                                                                                    int b1 = IntegerArgumentType.getInteger(ctx, "b1");
+
+                                                                                                    int r2 = IntegerArgumentType.getInteger(ctx, "r2");
+                                                                                                    int g2 = IntegerArgumentType.getInteger(ctx, "g2");
+                                                                                                    int b2 = IntegerArgumentType.getInteger(ctx, "b2");
+
+                                                                                                    SkinData data = target.getData(DataAttachments.SKIN_DATA);
+
+                                                                                                    data.setColor(ColorableBodyParts.EYES, new ColorOption(r1, g1, b1).toInt(), new ColorOption(r2, g2, b2).toInt());
+                                                                                                    PacketDistributor.sendToPlayer(target, new SyncSkinData(target.getId(), data.getColors()));
+
+                                                                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully changed the color of " + target.getName().getString()), true);
+                                                                                                    return Command.SINGLE_SUCCESS;
+                                                                                                })
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                        .then(Commands.literal("male_display")
+                                                .then(Commands.argument("r1", IntegerArgumentType.integer(0, 255))
+                                                        .then(Commands.argument("g1", IntegerArgumentType.integer(0, 255))
+                                                                .then(Commands.argument("b1", IntegerArgumentType.integer(0, 255))
+                                                                        .then(Commands.argument("r2", IntegerArgumentType.integer(0, 255))
+                                                                                .then(Commands.argument("g2", IntegerArgumentType.integer(0, 255))
+                                                                                        .then(Commands.argument("b2", IntegerArgumentType.integer(0, 255))
+                                                                                                .executes(ctx -> {
+                                                                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+
+                                                                                                    int r1 = IntegerArgumentType.getInteger(ctx, "r1");
+                                                                                                    int g1 = IntegerArgumentType.getInteger(ctx, "g1");
+                                                                                                    int b1 = IntegerArgumentType.getInteger(ctx, "b1");
+
+                                                                                                    int r2 = IntegerArgumentType.getInteger(ctx, "r2");
+                                                                                                    int g2 = IntegerArgumentType.getInteger(ctx, "g2");
+                                                                                                    int b2 = IntegerArgumentType.getInteger(ctx, "b2");
+
+                                                                                                    SkinData data = target.getData(DataAttachments.SKIN_DATA);
+
+                                                                                                    data.setColor(ColorableBodyParts.MALE_DISPLAY, new ColorOption(r1, g1, b1).toInt(), new ColorOption(r2, g2, b2).toInt());
+                                                                                                    PacketDistributor.sendToPlayer(target, new SyncSkinData(target.getId(), data.getColors()));
+
+                                                                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully changed the color of " + target.getName().getString()), true);
+                                                                                                    return Command.SINGLE_SUCCESS;
+                                                                                                })
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                        .then(Commands.literal("markings")
+                                                .then(Commands.argument("r1", IntegerArgumentType.integer(0, 255))
+                                                        .then(Commands.argument("g1", IntegerArgumentType.integer(0, 255))
+                                                                .then(Commands.argument("b1", IntegerArgumentType.integer(0, 255))
+                                                                        .then(Commands.argument("r2", IntegerArgumentType.integer(0, 255))
+                                                                                .then(Commands.argument("g2", IntegerArgumentType.integer(0, 255))
+                                                                                        .then(Commands.argument("b2", IntegerArgumentType.integer(0, 255))
+                                                                                                .executes(ctx -> {
+                                                                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+
+                                                                                                    int r1 = IntegerArgumentType.getInteger(ctx, "r1");
+                                                                                                    int g1 = IntegerArgumentType.getInteger(ctx, "g1");
+                                                                                                    int b1 = IntegerArgumentType.getInteger(ctx, "b1");
+
+                                                                                                    int r2 = IntegerArgumentType.getInteger(ctx, "r2");
+                                                                                                    int g2 = IntegerArgumentType.getInteger(ctx, "g2");
+                                                                                                    int b2 = IntegerArgumentType.getInteger(ctx, "b2");
+
+                                                                                                    SkinData data = target.getData(DataAttachments.SKIN_DATA);
+
+                                                                                                    data.setColor(ColorableBodyParts.MARKINGS, new ColorOption(r1, g1, b1).toInt(), new ColorOption(r2, g2, b2).toInt());
+                                                                                                    PacketDistributor.sendToPlayer(target, new SyncSkinData(target.getId(), data.getColors()));
+
+                                                                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully changed the color of " + target.getName().getString()), true);
+                                                                                                    return Command.SINGLE_SUCCESS;
+                                                                                                })
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                        .then(Commands.literal("belly")
+                                                .then(Commands.argument("r1", IntegerArgumentType.integer(0, 255))
+                                                        .then(Commands.argument("g1", IntegerArgumentType.integer(0, 255))
+                                                                .then(Commands.argument("b1", IntegerArgumentType.integer(0, 255))
+                                                                        .then(Commands.argument("r2", IntegerArgumentType.integer(0, 255))
+                                                                                .then(Commands.argument("g2", IntegerArgumentType.integer(0, 255))
+                                                                                        .then(Commands.argument("b2", IntegerArgumentType.integer(0, 255))
+                                                                                                .executes(ctx -> {
+                                                                                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+
+                                                                                                    int r1 = IntegerArgumentType.getInteger(ctx, "r1");
+                                                                                                    int g1 = IntegerArgumentType.getInteger(ctx, "g1");
+                                                                                                    int b1 = IntegerArgumentType.getInteger(ctx, "b1");
+
+                                                                                                    int r2 = IntegerArgumentType.getInteger(ctx, "r2");
+                                                                                                    int g2 = IntegerArgumentType.getInteger(ctx, "g2");
+                                                                                                    int b2 = IntegerArgumentType.getInteger(ctx, "b2");
+
+                                                                                                    SkinData data = target.getData(DataAttachments.SKIN_DATA);
+
+                                                                                                    data.setColor(ColorableBodyParts.BELLY, new ColorOption(r1, g1, b1).toInt(), new ColorOption(r2, g2, b2).toInt());
+
+                                                                                                    PacketDistributor.sendToPlayer(target, new SyncSkinData(target.getId(), data.getColors()));
+                                                                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully changed the color of " + target.getName().getString()), true);
+                                                                                                    return Command.SINGLE_SUCCESS;
+                                                                                                })
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+
+                                )
+                        )
                         .then(Commands.literal("growth")
                                         .then(Commands.argument("player", EntityArgument.player())
                                                 .then(Commands.argument("value", FloatArgumentType.floatArg(0f, 1f))

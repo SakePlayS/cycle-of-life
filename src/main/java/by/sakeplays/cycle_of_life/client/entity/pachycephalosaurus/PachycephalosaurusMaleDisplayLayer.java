@@ -5,6 +5,7 @@ import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.common.data.SkinData;
 import by.sakeplays.cycle_of_life.entity.Pachycephalosaurus;
 import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
+import by.sakeplays.cycle_of_life.util.Util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,18 +28,31 @@ public class PachycephalosaurusMaleDisplayLayer<T extends Entity & GeoAnimatable
 
     @Override
     public void render(PoseStack poseStack, Pachycephalosaurus animatable, BakedGeoModel bakedModel, @Nullable RenderType renderType, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-        int color;
+        int primaryColor;
+        int secondaryColor;
         SkinData data;
         if (!animatable.isCorpse()) {
-             data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
-             color = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.MALE_DISPLAY) : data.getColor(ColorableBodyParts.MALE_DISPLAY);
-            if (!animatable.isForScreenRendering) color = animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale()
-                    ? color : data.getColor(ColorableBodyParts.MARKINGS);
+            data = animatable.getPlayer().getData(DataAttachments.SKIN_DATA);
+
+            if (!animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMale()) {
+                primaryColor = animatable.isForScreenRendering ?  animatable.colors.getColor(ColorableBodyParts.MARKINGS).first() : data.getColor(ColorableBodyParts.MARKINGS).first();
+                secondaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.MARKINGS).second() : data.getColor(ColorableBodyParts.MARKINGS).second();
+            } else {
+                primaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.MALE_DISPLAY).first() : data.getColor(ColorableBodyParts.MALE_DISPLAY).first();
+                secondaryColor = animatable.isForScreenRendering ? animatable.colors.getColor(ColorableBodyParts.MALE_DISPLAY).second() : data.getColor(ColorableBodyParts.MALE_DISPLAY).second();
+            }
 
         } else {
-            color = animatable.getColors().getColor(ColorableBodyParts.MALE_DISPLAY);
-            if (!animatable.isMale()) color = animatable.getColors().getColor(ColorableBodyParts.MALE_DISPLAY);
+            if (!animatable.isMale()) {
+                primaryColor = animatable.getColors().getColor(ColorableBodyParts.MARKINGS).first();
+                secondaryColor = animatable.getColors().getColor(ColorableBodyParts.MARKINGS).second();
+            } else {
+                primaryColor = animatable.getColors().getColor(ColorableBodyParts.MALE_DISPLAY).first();
+                secondaryColor = animatable.getColors().getColor(ColorableBodyParts.MALE_DISPLAY).second();
+            }
         }
+
+        Util.applyBodyPartColors(primaryColor, secondaryColor);
 
 
         poseStack.pushPose();
@@ -50,11 +64,11 @@ public class PachycephalosaurusMaleDisplayLayer<T extends Entity & GeoAnimatable
                 bufferSource,
                 animatable,
                 ModRenderTypes.grayscaleTinted(texture),
-                bufferSource.getBuffer(RenderType.entityTranslucent(texture)),
+                bufferSource.getBuffer(ModRenderTypes.grayscaleTinted(texture)),
                 partialTick,
                 packedLight,
                 packedOverlay,
-                color
+                0xFFFFFFFF
         );
 
         poseStack.popPose();
