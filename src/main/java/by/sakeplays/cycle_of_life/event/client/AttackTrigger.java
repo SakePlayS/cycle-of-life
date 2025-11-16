@@ -4,5 +4,6 @@ public enum AttackTrigger {
     MAIN_1,
     MAIN_2,
     ALT_1,
-    ALT_2;
+    ALT_2,
+    NONE;
 }

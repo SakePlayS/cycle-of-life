@@ -6,6 +6,9 @@ import by.sakeplays.cycle_of_life.common.data.DinosaurFood;
 import by.sakeplays.cycle_of_life.common.data.SelectedColors;
 import by.sakeplays.cycle_of_life.entity.util.ColorableBodyParts;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +17,11 @@ import net.minecraft.world.phys.Vec2;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.util.ClientUtil;
 import software.bernie.geckolib.util.GeckoLibUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pteranodon extends DinosaurEntity implements GeoEntity {
 
@@ -29,7 +36,34 @@ public class Pteranodon extends DinosaurEntity implements GeoEntity {
     protected static final RawAnimation FLAP = RawAnimation.begin().thenPlay("flap");
     protected static final RawAnimation FLAP_FAST = RawAnimation.begin().thenPlay("flap_fast");
     protected static final RawAnimation AIRBRAKING = RawAnimation.begin().thenPlay("airbrake");
+    protected static final RawAnimation PECK_FLIGHT = RawAnimation.begin().thenPlay("peck_flying");
+    protected static final RawAnimation ATTACK_NONE = RawAnimation.begin().thenPlay("attack_none");
 
+    public List<Float> yMomentumHistory = new ArrayList<>();
+    public float legPos = 0;
+    public float legPosOld = 0;
+
+    public float legRotX1 = 0;
+    public float legRotX2 = 0;
+
+
+    public float targetLegRotX1 = 0;
+    public float targetLegRotX2 = 0;
+
+    public void recordYMomentumHistory(float val) {
+        yMomentumHistory.add(val);
+        if (yMomentumHistory.size() >15) yMomentumHistory.removeFirst();
+    }
+
+    public void clientRenderTick() {
+
+        recordRotHistory(getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2);
+
+
+        recordYMomentumHistory(legPos - legPosOld);
+        legPosOld = legPos;
+
+    }
 
     public Pteranodon(EntityType<? extends LivingEntity> entityType, Level level) {
         super(entityType, level);
@@ -69,10 +103,28 @@ public class Pteranodon extends DinosaurEntity implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "movement", 5, this::movementController));
+        controllers.add(new AnimationController<>(this, "movement", 5, this::movementController).setSoundKeyframeHandler(state -> {
+            Player player = getPlayer();
+
+            if (player != null) {
+                player.level().playSound(player, player.getOnPos(), SoundEvents.PHANTOM_FLAP, SoundSource.PLAYERS, 1.5f, 1.5f);
+            }
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack", 0, this::attackController).setSoundKeyframeHandler(state -> {
+            Player player = getPlayer();
+
+            if (player != null) {
+                player.level().playSound(player, player.getOnPos(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.5f, 2f);
+                player.level().playSound(player, player.getOnPos(), SoundEvents.PLAYER_HURT, SoundSource.PLAYERS, 1.5f, 2f);
+
+            }
+        }));
 
     }
 
+    private int flapSoundTick = 0;
+    private boolean flapSoundPlayed = false;
     protected PlayState movementController(final AnimationState<Pteranodon> state) {
 
         if (getPlayer() != null) {
@@ -82,10 +134,15 @@ public class Pteranodon extends DinosaurEntity implements GeoEntity {
             float xzDelta = new Vec2((float)(player.getX() - player.xOld), (float)(player.getZ() - player.zOld)).length();
 
             if (data.isFlying()) {
+
                 state.getController().transitionLength(8);
 
-                if (data.isAirbraking())  return state.setAndContinue(AIRBRAKING);
-                if ((xzDelta < 0.6f) || player.getY() - player.yOld > 0.15f || data.isSprinting()) return state.setAndContinue(FLAP_FAST);
+                if (data.isAirbraking()) {
+                    return state.setAndContinue(AIRBRAKING);
+                }
+                if ((xzDelta < 0.6f) || player.getY() - player.yOld > 0.15f || data.isSprinting()) {
+                    return state.setAndContinue(FLAP_FAST);
+                }
                 if (player.getY() - player.yOld > 0f) return state.setAndContinue(FLAP);
 
                 return state.setAndContinue(GLIDE);
@@ -96,6 +153,28 @@ public class Pteranodon extends DinosaurEntity implements GeoEntity {
 
         return state.setAndContinue(IDLE);
     }
+
+    private int tickToResetAttack = 0;
+    protected PlayState attackController(final AnimationState<Pteranodon> state) {
+
+        if (getPlayer() != null) {
+
+            DinoData data = getPlayer().getData(DataAttachments.DINO_DATA);
+
+            if (getPlayer().getData(DataAttachments.ATTACK_MAIN_1) && data.isFlying()) {
+                tickToResetAttack = getPlayer().tickCount + 20;
+                return state.setAndContinue(PECK_FLIGHT);
+            }
+
+            if (getPlayer().tickCount > tickToResetAttack) return state.setAndContinue(ATTACK_NONE);
+
+
+        }
+
+        return PlayState.CONTINUE;
+    }
+
+
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

@@ -226,25 +226,19 @@ public class Nest {
                         buf.writeInt(nest.getZ());
                         buf.writeBoolean(nest.isPublic());
                         buf.writeInt(nest.getType());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.EYES).first());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.EYES).second());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MARKINGS).first());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MARKINGS).second());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BODY).first());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BODY).second());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BELLY).first());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.BELLY).second());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).first());
-                        buf.writeInt(nest.getPatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).second());
 
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MARKINGS).first());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MARKINGS).second());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BODY).first());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BODY).second());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BELLY).first());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.BELLY).second());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).first());
-                        buf.writeInt(nest.getMatriarchColors().getColor(ColorableBodyParts.MALE_DISPLAY).second());
+                        for (ColorableBodyParts part : ColorableBodyParts.values()) {
+                            buf.writeInt(nest.getPatriarchColors().getColor(part).first());
+                            buf.writeInt(nest.getPatriarchColors().getColor(part).second());
+
+                        }
+
+                        for (ColorableBodyParts part : ColorableBodyParts.values()) {
+                            buf.writeInt(nest.getMatriarchColors().getColor(part).first());
+                            buf.writeInt(nest.getMatriarchColors().getColor(part).second());
+
+                        }
+
                         buf.writeInt(nest.getEggsCount());
                         buf.writeUtf(nest.getMatriarchName());
                         buf.writeUtf(nest.getPatriarchName());

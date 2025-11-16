@@ -79,6 +79,32 @@ public class GrowthCurve {
 
         return list.getLast().second();
     }
+
+    public static final GrowthCurve PTERANODON_CURVE = new GrowthCurve()
+            .addKeypoint(GrowthCurveStat.SCALE, 0f, 0.07f)
+            .addKeypoint(GrowthCurveStat.SCALE, 1f, 1f)
+
+            .addKeypoint(GrowthCurveStat.WEIGHT, 0f, 0.5f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 0.25f, 22f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 0.66f, 50f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 1f, 40f)
+
+            .addKeypoint(GrowthCurveStat.SPEED, 0f, 0.05f)
+            .addKeypoint(GrowthCurveStat.SPEED, 0.25f, 0.75f)
+            .addKeypoint(GrowthCurveStat.SPEED, 0.66f, 1.25f)
+            .addKeypoint(GrowthCurveStat.SPEED, 1f, 1f)
+
+            .addKeypoint(GrowthCurveStat.JUMP_STRENGTH, 0f, 0.05f)
+            .addKeypoint(GrowthCurveStat.JUMP_STRENGTH, 0.25f, 0.45f)
+            .addKeypoint(GrowthCurveStat.JUMP_STRENGTH, 0.66f, 1.05f)
+            .addKeypoint(GrowthCurveStat.JUMP_STRENGTH, 1f, 1f)
+
+            .addKeypoint(GrowthCurveStat.RUN_BASE_ANIM_SPEED, 0f, 0.9f)
+            .addKeypoint(GrowthCurveStat.RUN_BASE_ANIM_SPEED, 1f, 1f)
+
+            .addKeypoint(GrowthCurveStat.WALK_BASE_ANIM_SPEED, 0f, 1.3f)
+            .addKeypoint(GrowthCurveStat.WALK_BASE_ANIM_SPEED, 1f, 1.4f)
+            ;
     
     public static final GrowthCurve DEINONYCHUS_CURVE = new GrowthCurve()
             .addKeypoint(GrowthCurveStat.SCALE, 0f, 0.07f)
@@ -87,9 +113,9 @@ public class GrowthCurve {
             .addKeypoint(GrowthCurveStat.SCALE, 1f, 0.8f)
 
             .addKeypoint(GrowthCurveStat.WEIGHT, 0f, 0.5f)
-            .addKeypoint(GrowthCurveStat.WEIGHT, 0.25f, 15f)
-            .addKeypoint(GrowthCurveStat.WEIGHT, 0.66f, 30f)
-            .addKeypoint(GrowthCurveStat.WEIGHT, 1f, 75f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 0.25f, 22f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 0.66f, 50f)
+            .addKeypoint(GrowthCurveStat.WEIGHT, 1f, 100f)
 
             .addKeypoint(GrowthCurveStat.SPEED, 0f, 0.05f)
             .addKeypoint(GrowthCurveStat.SPEED, 0.25f, 0.75f)

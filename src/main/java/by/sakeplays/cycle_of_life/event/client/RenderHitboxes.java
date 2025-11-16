@@ -3,6 +3,8 @@ package by.sakeplays.cycle_of_life.event.client;
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
+import by.sakeplays.cycle_of_life.event.client.attack.AttackDispatcher;
+import by.sakeplays.cycle_of_life.event.client.attack.AttackType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
@@ -59,6 +61,12 @@ public class RenderHitboxes {
             renderAABBWireframe(ClientHitboxData.hitboxMap.get(player.getId()).get(2), poseStack, bufferSource, camPos, 1f, 0f, 0f, 1f);
             renderAABBWireframe(ClientHitboxData.hitboxMap.get(player.getId()).get(3), poseStack, bufferSource, camPos, 1f, 0f, 0f, 1f);
             renderAABBWireframe(ClientHitboxData.hitboxMap.get(player.getId()).get(4), poseStack, bufferSource, camPos, 1f, 0f, 0f, 1f);
+
+            for (AttackType attackType : AttackDispatcher.attackTypes) {
+                if (attackType.isActive) {
+                    renderAABBWireframe(attackType.getAttackHitbox(), poseStack, bufferSource, camPos, 1f, 1f, 0f, 1f);
+                }
+            }
 
             poseStack.popPose();
 

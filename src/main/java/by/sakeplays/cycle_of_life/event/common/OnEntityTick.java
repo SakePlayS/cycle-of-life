@@ -28,6 +28,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @EventBusSubscriber(modid = CycleOfLife.MODID, bus = EventBusSubscriber.Bus.GAME)
@@ -364,6 +366,8 @@ public class OnEntityTick {
         damage.addPermanentModifier(modifier);
     }
 
+    private static Map<Integer, Double> oldYs = new HashMap<>();
+
     private static void handleStamina(Player player) {
 
         float stamina = player.getData(DataAttachments.DINO_DATA).getStamina();
@@ -376,7 +380,15 @@ public class OnEntityTick {
 
         if (Util.getDino(player) == Dinosaurs.PTERANODON && player.getData(DataAttachments.DINO_DATA).isFlying()) {
 
-            if (player.getData(DataAttachments.DINO_DATA).isSprinting() || player.getData(DataAttachments.DINO_DATA).isAirbraking()) additionalStam = -5f;
+            if (player.getData(DataAttachments.DINO_DATA).isSprinting() || player.getData(DataAttachments.DINO_DATA).isAirbraking())
+                additionalStam -= 5f;
+
+
+            if (oldYs.containsKey(player.getId())) if (player.getY() - oldYs.get(player.getId()) > 0.001) additionalStam -= (float) Math.min(5f, player.getY() - oldYs.get(player.getId()));
+            oldYs.put(player.getId(), player.getY());
+
+            if (additionalStam >= 0f && stamina > 1f) additionalStam = 0.8f * Util.getStamRegen(player);
+
 
         } else if (player.getData(DataAttachments.DINO_DATA).isSprinting()) {
             additionalStam = -5f;

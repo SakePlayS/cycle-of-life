@@ -2,10 +2,12 @@ package by.sakeplays.cycle_of_life.event.client;
 
 import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.client.ClientHitboxData;
+import by.sakeplays.cycle_of_life.client.sound_instance.PteranodonFlightSound;
 import by.sakeplays.cycle_of_life.common.data.*;
 import by.sakeplays.cycle_of_life.entity.util.Dinosaurs;
 import by.sakeplays.cycle_of_life.entity.util.GrowthCurveStat;
 import by.sakeplays.cycle_of_life.entity.util.HitboxType;
+import by.sakeplays.cycle_of_life.event.client.attack.AttackDispatcher;
 import by.sakeplays.cycle_of_life.network.bidirectional.RequestFoodSwallow;
 import by.sakeplays.cycle_of_life.network.to_server.RequestNestCreation;
 import by.sakeplays.cycle_of_life.network.to_server.SyncPairing;
@@ -40,6 +42,7 @@ public class HandleKeys {
     public static float speed = 0;
     public static int attackTimer = 0;
     public static int attackTimeout = 0;
+    public static boolean isAltAttacking = false;
     public static boolean turningLocked = false;
     protected static boolean restingPressed = false;
     protected static boolean isPairing = false;
@@ -49,12 +52,11 @@ public class HandleKeys {
     protected static boolean pairingLocked = false;
     protected static boolean drinkingLocked = false;
     protected static boolean isGrabbing = false;
-    protected static int lastGrabTick = 0;
-    protected static float additionalSpeed = 1;
+    public static float additionalSpeed = 1;
     public static float dz = 0;
     public static float dx = 0;
     private static boolean pairMovementLocked = false;
-    protected static float angleDiff = 0;
+    protected static float lastDelta = 0;
     private static int airborneTime = 0;
     public static int cameraMode = 0;
     private static float turningRate = 0;
@@ -204,6 +206,11 @@ public class HandleKeys {
             return;
         }
 
+
+        float targetYaw = getTargetYaw(player);
+        float playerRot = player.getData(DataAttachments.PLAYER_ROTATION);
+        float rotDelta = Mth.wrapDegrees(Mth.RAD_TO_DEG * (targetYaw - playerRot)) * Mth.DEG_TO_RAD;
+
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
         float turnDegree = player.getData(DataAttachments.PLAYER_ROTATION);
         float acceleration = Util.getAcceleration(player);
@@ -213,6 +220,8 @@ public class HandleKeys {
 
         float additionalTurn = 0;
         float newTurnDegree = turnDegree;
+
+        if (Mth.abs(rotDelta) > Mth.HALF_PI * 0.8 && speed < 0.02f) maxSpeed = 0.005f;
 
 
         if (airborneTime >= 3) {
@@ -238,7 +247,7 @@ public class HandleKeys {
             dinoData.setMoving(true);
             PacketDistributor.sendToServer(new SyncDinoWalking(true, player.getId()));
 
-            newTurnDegree = handlePlayerRotationAlt(player);
+            newTurnDegree = handlePlayerRotation(player);
 
         } else {
             handleDrag(drag, player);
@@ -336,24 +345,7 @@ public class HandleKeys {
         }
     }
 
-    private static float handlePlayerRotation(float turnDegree, float delta, Player player) {
-
-        float newTurnDegree = turnDegree + (delta * Math.abs(turnMultiplier));
-
-        if (AttackDispatcher.isAltAttacking) return player.getData(DataAttachments.PLAYER_ROTATION);
-        if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
-        if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
-        if (player.getData(DataAttachments.KNOCKDOWN_TIME) > 0) return player.getData(DataAttachments.PLAYER_ROTATION);
-
-        player.setData(DataAttachments.PLAYER_ROTATION, newTurnDegree);
-        PacketDistributor.sendToServer(new SyncPlayerRotation(newTurnDegree, player.getId()));
-
-        return newTurnDegree;
-    }
-
-
-
-    private static float handlePlayerRotationAlt(Player player) {
+    private static float handlePlayerRotation(Player player) {
         if (AttackDispatcher.isAltAttacking) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (!shouldMove(player)) return player.getData(DataAttachments.PLAYER_ROTATION);
         if (KeyMappings.DIRECTIONAL_ATTACK.isDown()) return player.getData(DataAttachments.PLAYER_ROTATION);
@@ -363,33 +355,21 @@ public class HandleKeys {
 
         float turnSpeed = Util.getTurnSpeed(player) * Mth.DEG_TO_RAD;
 
-        float targetYaw = Mth.wrapDegrees(player.getYRot()) * Mth.DEG_TO_RAD;
-        if (KeyMappings.RIGHT_MAPPING.isDown()) targetYaw += Mth.HALF_PI;
-        if (KeyMappings.LEFT_MAPPING.isDown()) targetYaw -= Mth.HALF_PI;
+        if (isAirborne(player)) turnSpeed = turnSpeed * 0.1f;
+
+        float targetYaw = getTargetYaw(player);
 
         float playerRot = player.getData(DataAttachments.PLAYER_ROTATION);
 
-        float delta = targetYaw - (float) Math.atan2(Math.sin(playerRot), Math.cos(playerRot));
-        delta = (float) Math.atan2(Math.sin(delta), Math.cos(delta));
+        float delta = Mth.wrapDegrees(Mth.RAD_TO_DEG * (targetYaw - playerRot)) * Mth.DEG_TO_RAD;
+        lastDelta = delta;
 
-        if (Math.abs(delta) > EPS) {
-            if (delta > 0) {
-                turningRate = Math.min(turnSpeed, turningRate + turnSpeed * (turningRate < 0 ? 0.4f : 0.2f));
-            } else {
-                turningRate = Math.max(-turnSpeed, turningRate - turnSpeed * (turningRate > 0 ? 0.4f : 0.2f));
-            }
-        } else {
-            turningRate *= 0.8f - 0.3f * (1.0f - (float)Math.exp(-Math.abs(delta) * 4f));
-        }
+        float targetTurningRate = Mth.clamp(delta, -turnSpeed, turnSpeed);
+        turningRate += (targetTurningRate - turningRate) * 0.35f;
+        turningRate = Mth.clamp(turningRate, -turnSpeed, turnSpeed);
 
         float newRot = playerRot + turningRate;
 
-        float newDelta = targetYaw - (float) Math.atan2(Math.sin(newRot), Math.cos(newRot));
-        newDelta = (float) Math.atan2(Math.sin(newDelta), Math.cos(newDelta));
-
-        if (Math.signum(delta) != Math.signum(newDelta)) {
-            newRot = playerRot + delta;
-        }
 
         if (Math.abs(newRot - playerRot) > EPS) {
             player.setData(DataAttachments.PLAYER_ROTATION, newRot);
@@ -398,6 +378,27 @@ public class HandleKeys {
 
         return newRot;
     }
+
+    private static float getTargetYaw(Player player) {
+        float targetYaw = player.getYRot() * Mth.DEG_TO_RAD;
+        if (KeyMappings.LEFT_MAPPING.isDown() && KeyMappings.BACKWARD_MAPPING.isDown()) {
+            targetYaw -= (2.35619f);
+        } else if (KeyMappings.RIGHT_MAPPING.isDown() && KeyMappings.BACKWARD_MAPPING.isDown()) {
+            targetYaw += (2.35619f);
+        } else if (KeyMappings.LEFT_MAPPING.isDown() && KeyMappings.FORWARD_MAPPING.isDown()) {
+            targetYaw += (float) -(Math.PI / 4f);
+        } else if (KeyMappings.RIGHT_MAPPING.isDown() && KeyMappings.FORWARD_MAPPING.isDown()) {
+            targetYaw += (float) (Math.PI / 4f);
+        } else if (KeyMappings.LEFT_MAPPING.isDown()) {
+            targetYaw += (float) -(Math.PI / 2f);
+        } else if (KeyMappings.RIGHT_MAPPING.isDown()) {
+            targetYaw += (float) (Math.PI / 2f);
+        } else if (KeyMappings.BACKWARD_MAPPING.isDown()) {
+            targetYaw += (float) (Math.PI);
+        }
+        return targetYaw;
+    }
+
     private static boolean movementKeyDown() {
         return (KeyMappings.FORWARD_MAPPING.isDown() || KeyMappings.BACKWARD_MAPPING.isDown() ||
                 KeyMappings.RIGHT_MAPPING.isDown() || KeyMappings.LEFT_MAPPING.isDown());
@@ -411,6 +412,7 @@ public class HandleKeys {
     private static float turnSpeed = 0;
     private static boolean airbrakingOld = false;
     private static boolean hitWall = false;
+    private static PteranodonFlightSound pteranodonFlightSound = null;
 
     private static void handleFlight(Player player) {
 
@@ -425,6 +427,11 @@ public class HandleKeys {
             PacketDistributor.sendToServer(new SyncFlightState(false, player.getId()));
             xzMomentum = 0.15f;
             return;
+        }
+
+        if (pteranodonFlightSound == null || !Minecraft.getInstance().getSoundManager().isActive(pteranodonFlightSound)) {
+            pteranodonFlightSound = new PteranodonFlightSound(player);
+            Minecraft.getInstance().getSoundManager().play(pteranodonFlightSound);
         }
 
         if (KeyMappings.LEFT_MAPPING.isDown()) {

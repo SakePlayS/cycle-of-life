@@ -13,14 +13,14 @@ public enum Dinosaurs {
             0.5f, GrowthCurve.PACHY_CURVE, 30, 55, 1.3f, ColorOptionArray.DEINONYCHUS_COLORS),
 
     DEINONYCHUS(5, 0.14f,0.67f,0.005f,75f, 5f, 12f,
-            15f, 0.28f, 0.007f, 0.8f, 3800f, 525, 0.05f,
+            17f, 0.28f, 0.007f, 0.8f, 3800f, 525, 0.05f,
             0.00031f, 0.00037f, Diet.CARNIVORE, false, 0.6f, 0.0003f,2,
             0.75f, GrowthCurve.DEINONYCHUS_CURVE, 50, 20, 1f, ColorOptionArray.DEINONYCHUS_COLORS),
 
-    PTERANODON(4, 0.07f,0.25f, 0.08f, 40f, 3f, 4f,
-            5f, 0.15f, 0.002f, 3f, 450f, 650, 0.01f,
+    PTERANODON(4, 0.07f,0.25f, 0.007f, 40f, 3f, 4f,
+            5f, 0.15f, 0.002f, 1.2f, 450f, 650, 0.01f,
             0.00045f, 0.0008f, Diet.CARNIVORE, false, 0.65f,0.00027f ,3,
-            0.6f, GrowthCurve.DEINONYCHUS_CURVE, 30, 20, 0.6f, ColorOptionArray.DEINONYCHUS_COLORS),
+            0.6f, GrowthCurve.PTERANODON_CURVE, 30, 20, 0.6f, ColorOptionArray.DEINONYCHUS_COLORS),
 
     UTAHRAPTOR(5, 0.18f,0.61f, 0.08f, 225f, 3f, 4f,
             8f, 0.15f, 0.002f, 0.4f, 2150f, 650, 0.01f,

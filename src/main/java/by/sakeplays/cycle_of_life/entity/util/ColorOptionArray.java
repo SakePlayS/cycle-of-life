@@ -45,6 +45,7 @@ public class ColorOptionArray {
             .addColorOption(new ColorOption(73, 103, 77), new ColorOption(12, 36, 36))
             .addColorOption(new ColorOption(98, 117, 114), new ColorOption(20, 38, 52))
             .addColorOption(new ColorOption(147, 140, 126), new ColorOption(38, 23, 17))
+            .addColorOption(new ColorOption(230, 210, 200), new ColorOption(39, 10, 10))
 
             .buildCategory(ColorableBodyParts.BODY)
 

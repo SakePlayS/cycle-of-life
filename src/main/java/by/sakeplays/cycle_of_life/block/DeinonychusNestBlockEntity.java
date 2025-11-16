@@ -57,6 +57,9 @@ public class DeinonychusNestBlockEntity extends BlockEntity implements GeoBlockE
     }
 
     public void serverTick(Level level, BlockPos pos, BlockState st) {
+
+        if (level.getServer() == null || NestData.get(level.getServer()).getNestByBlockPos(pos) == null) return;
+
         eggsCount = NestData.get(level.getServer()).getNestByBlockPos(pos).getEggsCount();
 
         if (eggsCount != oldEggsCount) {

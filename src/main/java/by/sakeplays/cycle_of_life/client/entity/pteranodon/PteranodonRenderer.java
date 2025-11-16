@@ -65,6 +65,17 @@ public class PteranodonRenderer extends GeoEntityRenderer<Pteranodon>  {
     }
 
 
+    @Override
+    public void renderFinal(PoseStack poseStack, Pteranodon animatable, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.renderFinal(poseStack, animatable, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, colour);
+        GeoBone legPos = model.getBone("right_leg_physics_handler").get();
+
+        if (animatable.getPlayer() == null) return;
+
+        animatable.legPos = (float) (animatable.getPlayer().getY() + legPos.getWorldPosition().y);
+
+    }
+
     private void moveToBone(PoseStack poseStack, GeoBone bone) {
         poseStack.translate(bone.getPosX() / 16f, bone.getPosY() / 16f, bone.getPosZ() / 16f);
         poseStack.mulPose(Axis.XP.rotationDegrees(bone.getRotX()));

@@ -22,9 +22,9 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RequestPachyBash(int target, String hbType) implements CustomPacketPayload {
+public record RequestPachyChargedBash(int target, String hbType) implements CustomPacketPayload {
 
-    public static final Type<RequestPachyBash> TYPE =
+    public static final Type<RequestPachyChargedBash> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(CycleOfLife.MODID, "request_pachy_bash"));
 
     @Override
@@ -32,14 +32,14 @@ public record RequestPachyBash(int target, String hbType) implements CustomPacke
         return TYPE;
     }
 
-    public static final StreamCodec<FriendlyByteBuf, RequestPachyBash> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.INT, RequestPachyBash::target,
-            ByteBufCodecs.STRING_UTF8, RequestPachyBash::hbType,
-            RequestPachyBash::new
+    public static final StreamCodec<FriendlyByteBuf, RequestPachyChargedBash> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, RequestPachyChargedBash::target,
+            ByteBufCodecs.STRING_UTF8, RequestPachyChargedBash::hbType,
+            RequestPachyChargedBash::new
     );
 
 
-    public static void handleServer(final RequestPachyBash packet, final IPayloadContext context) {
+    public static void handleServer(final RequestPachyChargedBash packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
             DinoData dataSource = context.player().getData(DataAttachments.DINO_DATA);
 

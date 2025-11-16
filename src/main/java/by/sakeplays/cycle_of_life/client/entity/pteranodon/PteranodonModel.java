@@ -4,6 +4,7 @@ import by.sakeplays.cycle_of_life.CycleOfLife;
 import by.sakeplays.cycle_of_life.common.data.DataAttachments;
 import by.sakeplays.cycle_of_life.entity.Pteranodon;
 import by.sakeplays.cycle_of_life.event.client.CameraEvent;
+import by.sakeplays.cycle_of_life.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -41,10 +42,10 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
 
         float partialTick = animationState.getPartialTick();
 
-        if (animatable.lastUpdatedTick != animatable.getPlayer().tickCount) {
-            animatable.lastUpdatedTick = animatable.getPlayer().tickCount;
+        if (animatable.getPlayer() != null && animatable.lastUpdatedTick != animatable.getPlayer().tickCount) {
 
-            animatable.recordRotHistory(animatable.getPlayer().getData(DataAttachments.PLAYER_ROTATION), 2);
+            animatable.clientRenderTick();
+            animatable.lastUpdatedTick = animatable.getPlayer().tickCount;
         }
 
         handleBodyRotation(this, animationState.getAnimatable(), partialTick);
@@ -129,12 +130,6 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
 
         float xRot = (float) Math.atan2(yDelta, xzDelta) * flightFactor;
 
-        if (player.getId() == Minecraft.getInstance().player.getId()) {
-            CameraEvent.rawPitch = xRot * -Mth.RAD_TO_DEG;
-        } else {
-            CameraEvent.rawPitch = 0;
-        }
-
         root.setRotX(xRot * animatable.airbrakeFactor);
 
         ArrayList<Float> turnDegreeHistory = animatable.getPlayer().getData(DataAttachments.TURN_HISTORY);
@@ -147,12 +142,6 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
 
             float zRot = (turnDegreeHistory.getLast() - turnDegreeHistory.get(turnDegreeHistory.size() - 2)) * flightFactor;
 
-            if (player.getId() == Minecraft.getInstance().player.getId()) {
-                CameraEvent.rawRoll = zRot * 5 * Mth.RAD_TO_DEG;
-            } else {
-                CameraEvent.rawRoll = 0;
-            }
-
             flightHelper.setRotZ(zRot * -7 * animatable.airbrakeFactor);
 
             neck_tilt.setRotZ(zRot * 3);
@@ -162,6 +151,35 @@ public class PteranodonModel extends GeoModel<Pteranodon> {
             head_tilt.setRotZ(zRot * 3);
             head_tilt.setRotY(zRot * -2.5f);
             neck_tilt.setRotX(Math.abs(zRot));
+
+        }
+
+        if (animatable.yMomentumHistory.size() > 10) {
+            GeoBone rightLegPhysics = getAnimationProcessor().getBone("right_leg_physics_handler");
+            GeoBone leftLegPhysics = getAnimationProcessor().getBone("left_leg_physics_handler");
+            GeoBone rightKneePhysics = getAnimationProcessor().getBone("right_knee_physics_handler");
+            GeoBone leftKneePhysics = getAnimationProcessor().getBone("left_knee_physics_handler");
+            GeoBone neckPhysics = getAnimationProcessor().getBone("neck_physics_handler");
+            GeoBone headPhysics = getAnimationProcessor().getBone("head_physics_handler");
+
+            float seg1 = (Util.getFromEnd(animatable.yMomentumHistory, 0) - Util.getFromEnd(animatable.yMomentumHistory, 1));
+            float seg2 = (Util.getFromEnd(animatable.yMomentumHistory, 2) - Util.getFromEnd(animatable.yMomentumHistory, 3));
+            float deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+
+            animatable.targetLegRotX1 = seg1;
+            animatable.targetLegRotX2 = seg2;
+
+            animatable.legRotX1 = animatable.legRotX1 + (animatable.targetLegRotX1 - animatable.legRotX1) * 0.3f * deltaTime;
+            animatable.legRotX2 = animatable.legRotX2 + (animatable.targetLegRotX2 - animatable.legRotX2) * 0.3f * deltaTime;
+
+            rightLegPhysics.setRotX(-animatable.legRotX1 * 3f);
+            leftLegPhysics.setRotX(-animatable.legRotX1 * 3f);
+
+            rightKneePhysics.setRotX(-animatable.legRotX2 * 3f);
+            leftKneePhysics.setRotX(-animatable.legRotX2 * 3f);
+
+            neckPhysics.setRotX(animatable.legRotX1 * 2);
+            headPhysics.setRotX(animatable.legRotX2 * 2);
 
         }
     }

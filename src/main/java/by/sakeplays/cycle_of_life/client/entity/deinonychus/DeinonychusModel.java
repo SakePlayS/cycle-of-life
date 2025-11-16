@@ -141,37 +141,20 @@ public class DeinonychusModel extends GeoModel<Deinonychus> {
         targetYaw = playerYaw * Mth.DEG_TO_RAD + additionalTurn;
 
 
-        if (animatable.getPlayer().getData(DataAttachments.DINO_DATA).isMoving()) {
 
-            float desiredHeadRotY = -Math.clamp(
-                    Mth.lerp(partialTick, animatable.playerRotDeltaOld, animatable.playerRotDelta),
-                    -Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD,
-                    Util.getDino(animatable.getPlayer()).getTurnSpeed() * Mth.DEG_TO_RAD
-            );
+        float desiredHeadRotY = -Math.clamp(
+                Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
+                -0.35f, 0.35f);
 
-            rot += (desiredHeadRotY - rot) * 0.3f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+        rot += (desiredHeadRotY - rot) * 0.3f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
 
-            neck_tilt.setRotY(rot * 1.5f);
-            head_tilt.setRotY(rot * 1.5f);
+        neck_tilt.setRotY(rot * 1.15f);
+        head_tilt.setRotY(rot * 1.5f);
 
-            animatable.headRot = rot;
+        neck_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.2f);
+        head_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.8f);
+        animatable.headRot = rot;
 
-        } else {
-
-            float desiredHeadRotY = -Math.clamp(
-                    Mth.wrapDegrees((float) Math.toDegrees((targetYaw - playerRot) - additionalTurn)) * Mth.DEG_TO_RAD,
-                    -0.35f, 0.35f);
-
-            rot += (desiredHeadRotY - rot) * 0.3f * Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
-
-            neck_tilt.setRotY(rot * 1.15f);
-            head_tilt.setRotY(rot * 1.5f);
-
-            neck_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.2f);
-            head_tilt.setRotX(Math.clamp(animatable.getPlayer().getXRot() - 20, -70, 70) * Mth.DEG_TO_RAD * -0.8f);
-
-            animatable.headRot = rot;
-        }
 
 
     }
